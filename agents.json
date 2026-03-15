@@ -1,0 +1,8 @@
+{
+  "source": "~/.agents/skills",
+  "targets": [
+    "~/.claude/skills",
+    "~/.codex/skills",
+    "~/.cursor/skills"
+  ]
+}

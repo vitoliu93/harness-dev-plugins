@@ -1,0 +1,10 @@
+{
+  "name": "@vito/agents",
+  "version": "1.0.0",
+  "bin": {
+    "link-skills": "./scripts/link-skills.ts"
+  },
+  "scripts": {
+    "link": "bun run scripts/link-skills.ts"
+  }
+}
