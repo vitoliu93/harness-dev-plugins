@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TITLE — replace me</title>
+
+  <!-- Tailwind CSS v4, browser build. Self-contained, no build step.
+       v4 has NO JS config object — configure via the @theme block below. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* House-style tokens. Replace with the project's design-system values
+         (point Claude at the codebase to extract them). */
+      --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: ui-monospace, "JetBrains Mono", monospace;
+
+      --color-ink: oklch(0.22 0.01 250);
+      --color-muted: oklch(0.55 0.01 250);
+      --color-line: oklch(0.92 0.005 250);
+      --color-bg: oklch(0.99 0 0);
+      --color-accent: oklch(0.55 0.18 255);
+
+      --color-sev-high: oklch(0.58 0.20 25);
+      --color-sev-med: oklch(0.72 0.16 75);
+      --color-sev-low: oklch(0.62 0.13 150);
+    }
+
+    /* Readable defaults + tasteful dark mode. */
+    @layer base {
+      body { @apply bg-bg text-ink font-sans antialiased; }
+      h1 { @apply text-3xl font-bold tracking-tight; }
+      h2 { @apply text-xl font-semibold mt-10 mb-3; }
+      p  { @apply leading-7 text-ink/90; }
+      code { @apply font-mono text-[0.85em] bg-line/60 rounded px-1 py-0.5; }
+      pre code { @apply block bg-transparent p-0; }
+      pre { @apply font-mono text-sm bg-ink text-bg rounded-lg p-4 overflow-x-auto; }
+      a { @apply text-accent underline underline-offset-2; }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --color-ink: oklch(0.93 0.01 250);
+          --color-muted: oklch(0.65 0.01 250);
+          --color-line: oklch(0.30 0.01 250);
+          --color-bg: oklch(0.17 0.01 250);
+        }
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Reading container. ~75ch keeps long-form scannable. -->
+  <main class="mx-auto max-w-3xl px-6 py-12">
+
+    <header class="mb-10 border-b border-line pb-6">
+      <p class="text-sm text-muted uppercase tracking-wide">Spec · Report · Explainer — pick one, delete the rest</p>
+      <h1 class="mt-1">TITLE — replace me</h1>
+      <p class="mt-2 text-muted">One sentence on what this is and how to read it.</p>
+    </header>
+
+    <!-- Optional tab nav for multi-section artifacts (anchors, no JS needed). -->
+    <nav class="mb-8 flex flex-wrap gap-2 text-sm">
+      <a href="#overview" class="rounded-full border border-line px-3 py-1 no-underline">Overview</a>
+      <a href="#detail" class="rounded-full border border-line px-3 py-1 no-underline">Detail</a>
+      <a href="#gotchas" class="rounded-full border border-line px-3 py-1 no-underline">Gotchas</a>
+    </nav>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>Body. Use real content ingested from the codebase / git / MCPs — not placeholders.</p>
+    </section>
+
+    <section id="detail">
+      <h2>Detail</h2>
+      <!-- Severity-coded callout pattern -->
+      <div class="my-4 rounded-lg border-l-4 border-sev-high bg-sev-high/10 p-4">
+        <strong class="text-sev-high">High</strong> — finding goes here.
+      </div>
+      <pre><code>// annotated code snippet</code></pre>
+    </section>
+
+    <section id="gotchas">
+      <h2>Gotchas</h2>
+      <p>The 2–3 things a reader will trip on. Optimize for read-once.</p>
+    </section>
+
+    <!-- ===== INTERACTIVE ARTIFACTS ONLY — delete for static docs =====
+         The non-negotiable: end with an export that round-trips UI state
+         back into a paste-able prompt/JSON. Wire real state into export(). -->
+    <section class="mt-12 border-t border-line pt-6">
+      <button id="exportBtn"
+        class="rounded-lg bg-accent px-4 py-2 text-bg no-underline">
+        Copy as prompt
+      </button>
+      <span id="exportMsg" class="ml-3 text-sm text-muted"></span>
+    </section>
+  </main>
+
+  <script>
+    function exportState() {
+      // Replace with the artifact's actual state.
+      return "Apply these choices:\n- key: value";
+    }
+    document.getElementById("exportBtn")?.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(exportState());
+      const m = document.getElementById("exportMsg");
+      m.textContent = "Copied — paste into Claude Code.";
+      setTimeout(() => (m.textContent = ""), 2000);
+    });
+  </script>
+</body>
+</html>
