@@ -1,0 +1,22 @@
+{
+  "name": "vito-agents",
+  "owner": {
+    "name": "vito",
+    "email": "santiagoliu333@gmail.com"
+  },
+  "metadata": {
+    "description": "Vito's agent skills marketplace.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "vito-agent-plugins",
+      "source": "./",
+      "description": "12 skills: advanced-plan, agent-browser, ask-codex, audit-context, cc-reflection, exa-code, find-docs, handoff, harness-loop, html-doc, self-learn, tech-selection.",
+      "version": "1.0.0",
+      "author": {
+        "name": "vito"
+      }
+    }
+  ]
+}
