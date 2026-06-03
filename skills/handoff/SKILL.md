@@ -19,6 +19,10 @@ Steps:
 1. Create `tmp/` directory in project root if it doesn't exist.
 2. Generate a short 2-4 word kebab-case title summarizing the task.
 3. Write the handoff document to: `tmp/handoff-<YYYY-MM-DD>-<short-title>.md`
+   - **Background sessions**: if `Write` to `tmp/...` is blocked with `This background session hasn't isolated its changes yet`, **do NOT call `EnterWorktree`** — the handoff is meant to live in the main checkout (worktrees get deleted). Instead:
+     1. `Write` to `$CLAUDE_JOB_DIR/handoff-<YYYY-MM-DD>-<short-title>.md`
+     2. `Bash`: `cp "$CLAUDE_JOB_DIR/handoff-<filename>.md" tmp/handoff-<filename>.md`
+   - `tmp/` is typically gitignored, so the file persists locally without polluting commits.
 4. The document MUST follow this structure:
 
 ```markdown

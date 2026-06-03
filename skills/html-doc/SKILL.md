@@ -1,107 +1,215 @@
 ---
 name: html-doc
 description: >-
-  Produce a single self-contained HTML file instead of Markdown for specs,
-  plans, reports, PR/code explainers, design explorations, and throwaway
-  editors. Use when an output is meant to be read, shared, or interacted with
-  rather than diffed — long plans, leadership/status reports, PR writeups,
-  design option comparisons, config/prompt/ticket editors, concept explainers.
-  Trigger on "make an HTML file/artifact", "write this up", "explain this",
-  "review this PR", "explore options", "build me a quick editor/tool".
-argument-hint: [what the artifact should do]
+  Produce a single self-contained HTML file as a visual explainer —
+  infographic-style with diagrams and spatial layout, not restyled prose. Use
+  when output should be grasped at a glance: architecture, comparisons, flows,
+  timelines, dashboards, PR/code visualizations, quick interactive tools. Trigger
+  on "make an HTML file", "visualize this", "diagram this", "explain this",
+  "review this PR".
+argument-hint: [what the artifact should show]
 ---
 
-# HTML over Markdown
+# Visual explainer, not restyled prose
 
-Markdown is fine for things you edit by hand. But most agent output now gets
-*read* and *shared*, not hand-edited — and a 100+ line Markdown plan rarely gets
-read by anyone, including the person who asked for it. HTML carries far richer
-information (tables, CSS, SVG diagrams, interactive controls, spatial layout)
-and a link gets opened where Markdown attachments get ignored.
+Markdown and most styled-text HTML are linear: a stack of headers, paragraphs,
+maybe a bulleted list. They produce the same shape regardless of the content.
+This skill produces something different — an *infographic*. The picture comes
+first; the text annotates the picture. Spatial layout, color, iconography, and
+SVG diagrams carry the meaning that paragraphs would otherwise have to spell
+out.
+
+A 500-word blog post and one well-drawn annotated diagram can convey the same
+idea. The diagram is what the reader will actually remember.
 
 ## The one rule
 
-There is no template. Do **not** generate boilerplate. Before writing, decide
-**what this specific artifact should let the person do** — read once and
-understand? compare options side by side? tweak values and copy them back? —
-then build exactly that. The skill is the judgment below, not a skeleton.
+Before writing any HTML, decide **what the picture is**. Sketch it mentally —
+is it a flow? a tree? a 2×2? a timeline? a system map? a side-by-side
+comparison? a stats panel? Build that shape. Reach for prose only after the
+picture is settled.
 
-## When to choose HTML
+Do **not** start from the template's structure and pour text into it. Start
+from the composition that makes this specific information legible at a glance,
+then strip the template down to that shape.
 
-Default to HTML when the output is:
-- A spec, implementation plan, or brainstorm you expect to be >100 lines
-- A report / status update / incident writeup for yourself, team, or leadership
-- A PR writeup or code explainer (diffs, annotations, flow)
-- Design exploration or component prototyping
-- A purpose-built, throwaway tool to manipulate some data
+## When to produce a visual HTML artifact
 
-Keep Markdown when the file is genuinely going to be hand-edited often, or when
-clean version-control diffs matter (HTML diffs are noisy — a real tradeoff).
+Default to a visual HTML artifact when the output is:
 
-## Use-case patterns
+- A system / architecture explainer — the diagram *is* the explanation
+- A comparison of options, designs, or tradeoffs — grid or side-by-side
+- A process, flow, state machine, or decision tree
+- A timeline, roadmap, or incident reconstruction
+- A dashboard, stats panel, or before/after comparison
+- A PR or code explainer — annotated diff + flow of the affected subsystem
+- A throwaway interactive tool — controls + live preview + export
 
-**Exploration / planning.** Don't produce one plan — produce a web of HTML
-files. Brainstorm N distinctly different options in one file laid out as a
-comparison grid, each labeled with the tradeoff it makes. Expand the chosen one
-into mockups + code snippets. Only then write the implementation plan. Pass the
-whole set into a fresh session to implement.
+Keep Markdown when the content is genuinely linear text needing hand-edits or
+clean version-control diffs (HTML diffs are noisy — a real tradeoff).
 
-**Code / PR understanding.** Render the actual diff with inline margin
-annotations, color-code findings by severity, add flowcharts for the tricky
-subsystem the reviewer flagged. This beats the default GitHub diff view —
-attach one to PRs.
+## Visual patterns
 
-**Design / prototyping.** Sketch in HTML even when the target is React/Swift.
-Add sliders and knobs for animations, easing, color. Always finish with a
-**copy-the-parameters** button so tuned values come back as a paste-able prompt.
+Each pattern below describes the *shape* of the artifact, not its content.
+Pick one (or compose two) based on what the information actually is.
 
-**Reports / explainers.** Synthesize across codebase, git history, MCPs (Slack,
-Linear), and the web. Use SVG for the core diagram, annotate the 3–4 key code
-snippets, end with a "gotchas" section. Optimize for someone reading it once.
+**System / architecture explainer.** A primary SVG diagram dominates the
+canvas; small annotated cards arranged around it carry detail. Subsystems are
+color-coded with a consistent palette. Static is fine if labeling is good —
+interactivity isn't the point.
 
-**Throwaway editors.** A single purpose-built HTML file to reorder/triage/tag
-data, edit constrained config, tune a prompt with live preview, or annotate a
-doc. The non-negotiable: **end with an export** — "copy as JSON / Markdown /
-prompt / diff" — that turns the UI state back into something paste-able into
-Claude Code.
+**Option comparison (exploration / brainstorm).** A grid of N option cards
+laid out side by side, each with a tiny mockup or sketch and a one-line
+tradeoff label. Never stack options vertically — the reader has to compare
+spatially or the artifact has failed.
+
+**Process / flow.** Stage nodes (pills or rounded rectangles) connected by
+arrows, branching where decisions matter. Edge annotations attach to the
+arrows, not to a separate legend.
+
+**Timeline / incident / roadmap.** A horizontal or vertical axis with events
+plotted in time. Color bands encode actor or system. Callouts pull out the
+moments that matter; the rest stays as low-contrast scaffolding.
+
+**Dashboard / report.** Big headline numbers up top, supporting metrics and
+sparklines in a 2- or 3-column grid below. The reader's eye should land on the
+hero metric first.
+
+**PR / code explainer.** Annotated diff alongside a small SVG flow of the
+affected subsystem, with 2–3 numbered callouts pointing at the lines that
+matter. Beats GitHub's default diff view; attach the file to PRs.
+
+**Throwaway editor / tool.** Controls on one side, live visual preview on the
+other, **export button** at the bottom. The state has to round-trip back out
+as JSON / prompt / diff so the result is paste-able into Claude Code.
+
+## Techniques that make the picture work
+
+- **SVG for diagrams, not raster images.** Inline SVG is editable, scalable,
+  and themable via CSS. Use `<marker>` for arrowheads, `<g transform>` to group
+  + place nodes. (Mermaid emits SVG too — see below.)
+  **⚠ CSS variables inside SVG pitfall:** `var(--color-*)` works for `fill`
+  and `stroke` on direct SVG shapes (`<rect>`, `<circle>`, `<text>`) but
+  **fails silently** on `<line>` strokes and inside `<defs>`/`<marker>`
+  elements in many browsers (Safari, some Chromium versions). The line or
+  arrowhead simply doesn't render — no error, no fallback. **Always use
+  hardcoded hex values** for `<line stroke="...">` and `<marker>` / `<path>`
+  fills. Keep CSS variables for the surrounding HTML/Tailwind layer only.
+  Define a comment block mapping hex → semantic name for maintainability:
+  ```
+  <!-- Palette: #6a9bcc = sys-a/sky, #d97757 = sys-b/clay,
+       #788c5d = sys-c/olive, #c46686 = sys-d/fig -->
+  ```
+- **CSS Grid for spatial composition.** `grid-template-areas` lets regions be
+  placed by meaning (`"hero hero" "panel-a panel-b"`), not by document order.
+  Don't centre everything into a narrow reading column — let the canvas
+  breathe.
+- **Encode meaning visually.** Color = category. Size = magnitude. Position =
+  time or sequence. Line weight = importance. Don't decorate — make every
+  visual attribute carry information.
+- **One strong focal point.** The reader's eye should land somewhere obvious
+  first. Build outward from that anchor, not from an even grid of equal-weight
+  blocks.
+- **Annotate in place.** Pull-lines from labels to the things they describe,
+  or numbered callouts (①②③) tied to the diagram, beat a separate legend the
+  reader has to cross-reference.
+- **Responsive by default.** The composition has to survive a phone — re-flow
+  grids to single column, scale SVG with `viewBox`, never fix pixel widths.
+- **Restraint.** Two or three colors from the palette, not all of them. One
+  diagram done well, not three half-drawn ones.
+
+## Techniques that still apply
+
+- **Exploit ingestion.** Base the artifact on real data — codebase, git
+  history, MCP results — not placeholder lorem. This is the reason to do it
+  here rather than in a web UI.
+- **Self-contained.** Inline CSS and JS so the file opens standalone in a
+  browser, no build step, no network dependencies beyond the Tailwind CDN.
+- **Match house style.** If a design-system reference exists, point at it
+  before inventing colors and type.
+- **Always-export for interactive artifacts.** Any tool the user manipulates
+  must round-trip its state back out as a paste-able artifact.
+
+## Mermaid for standard diagram types
+
+The starter template pre-loads Mermaid v11 — reach for it when the picture
+fits a known diagram type. Mermaid is fast to write, the text is the source
+of truth for later edits, and the output is themeable SVG. The cost: less
+control over layout and visual emphasis than hand-rolled SVG.
+
+**Use Mermaid for:** flowcharts (`flowchart` / `graph`), sequence diagrams
+(`sequenceDiagram`), state machines (`stateDiagram-v2`), class & ER diagrams
+(`classDiagram`, `erDiagram`), Gantt and timelines (`gantt`, `timeline`),
+mind maps (`mindmap`), git graphs (`gitGraph`), user journeys (`journey`),
+2×2 quadrants (`quadrantChart`), block diagrams (`block-beta`).
+
+**Use hand-rolled SVG for:** the headline picture when its shape doesn't
+match a standard type, when pixel-perfect layout matters, when custom shapes
+or annotations are central, or when the diagram must precisely match the
+house palette in ways Mermaid's themer can't reach.
+
+A mixed approach is often best — hand-SVG for the hero diagram (full
+control), Mermaid for secondary diagrams (sequence flow, state machine,
+mindmap of options) where the standard form is enough.
+
+Any `<pre class="mermaid">` block auto-renders on page load:
+
+    <pre class="mermaid">
+    sequenceDiagram
+      participant P as Producer
+      participant Q as Queue
+      participant C as Consumer
+      P->>Q: emit event
+      Q->>C: deliver (at-least-once)
+      C-->>Q: ack
+    </pre>
+
+**Theme integration.** The template initializes Mermaid with `theme: 'base'`
+and `themeVariables` mapped to the page's `--color-sys-*` palette so diagrams
+look native to the artifact. Swap the variables when re-skinning.
+
+**Caveats.** Mermaid loads from a CDN — works locally over `file://` and is
+cached after first fetch, but needs network on first open (same as the
+Tailwind dependency). Switching system theme after page load won't re-render
+already-rendered diagrams without a reload.
 
 ## Starter template
 
-`references/template.html` is a self-contained starting point: Tailwind CSS
-**v4** via the browser build, an `@theme` token block, readable typography,
-auto dark mode, anchor-tab nav, severity callouts, and the export-button
-pattern. It is a starting point, **not** the output — strip every section the
-artifact doesn't need and replace `@theme` tokens with the project's real
-design-system values.
+`references/template.html` is a graphic-first starting point: a CSS Grid
+canvas with a hero SVG diagram region, a colour-coded card grid, and a stats
+band. It uses Tailwind CSS v4 via the browser build with an `@theme` token
+block (Anthropic official palette — clay primary `#d97757` on cream `#faf9f5`,
+with sky / olive / fig functional accents), and pre-loads Mermaid v11 themed
+to match. Palette source: `anthropics/skills/brand-guidelines`. Clay accent
+is restricted to interactive states (links, primary buttons) and at most one
+hero element per artifact — it's a signal, not a decoration.
+
+Light-only by design: most visual artifacts get read once or shared as a
+link, and the dual-mode CSS adds noise without much payoff. Add a dark mode
+block back in if the artifact really needs it.
 
 Tailwind v4 specifics that bite if you guess instead of follow:
+
 - Load `https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4` — **not** the v3
   `cdn.tailwindcss.com`.
 - v4 has **no JS config object**. Configure inside
   `<style type="text/tailwindcss">` with `@theme { --color-x: …; }`; those
-  tokens auto-generate utilities (`text-x`, `bg-x`).
-- For static read-once docs, delete the `<script>` and export section.
+  tokens auto-generate utilities (`text-x`, `bg-x`, `stroke-x`).
 
-## Techniques that make these good
-
-- **Exploit ingestion.** The reason to do this in Claude Code, not a web UI:
-  read the actual codebase / git history / MCP data and base the artifact on it.
-- **Self-contained.** Inline CSS/JS so the file opens standalone in a browser.
-- **Navigable & responsive.** Tabs, anchored sections, links; mobile-responsive
-  so it reads on any form factor.
-- **Match house style.** If a design-system HTML reference file exists (or build
-  one once by pointing at the codebase), reference it so output isn't generic.
-- **Always-export for interactive artifacts.** Any tool the user manipulates
-  must round-trip its state back out as a prompt/JSON/diff.
+The template is a starting point, **not** the output — strip every region the
+artifact doesn't need, replace the example diagram with the actual picture
+this artifact is built around, and replace the `@theme` palette with the
+project's design-system values when one is available.
 
 ## Delivering it
 
-Write the `.html` file, then offer to open it in the browser
-(`open <file>` on macOS). For a shareable link, the user uploads to S3 — don't
-assume an upload path exists.
+Write the `.html` file, then offer to open it (`open <file>` on macOS). For a
+shareable link, the user uploads to S3 — don't assume an upload path exists.
 
-## Known tradeoffs (state them, don't hide them)
+## Tradeoffs (state them, don't hide them)
 
 - Generation takes ~2–4× longer than Markdown.
-- More tokens than Markdown (negligible against a large context window).
+- Ugly visual HTML is worse than ugly text HTML — invest in the composition,
+  don't ship a half-drawn diagram. If the picture isn't working, fall back to
+  prose rather than ship a bad infographic.
 - HTML diffs are noisy — poor for things under heavy version control.
