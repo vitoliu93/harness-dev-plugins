@@ -51,9 +51,23 @@ PUSHBACK_PATTERN = re.compile(
     r")"
 )
 
+# v1.4 §6.2: ALWAYS_NOISE_PATTERN — structural tool-result/command wrappers and Stop-hook
+# markers that are NEVER real user speech, regardless of length. Must be checked WITHOUT
+# any length gate (they are short, so the >400 gate on NOISE_PATTERN would miss them).
+ALWAYS_NOISE_PATTERN = re.compile(
+    r"^<bash-stdout>|^<bash-stderr>|^<local-command-caveat>|"
+    r"^<task-notification>|^<command-message>|^<command-name>|^<system-reminder>|"
+    r"Bash completed with no output|"
+    # Stop-hook auto-feedback is harness-generated, not vito
+    r"^A session-scoped Stop hook is now active|Stop hook feedback:",
+    re.MULTILINE | re.IGNORECASE,
+)
+
 # v1.2: noise filter — messages that look like framework injections, doc pastes, or
 # second-opinion requests should NOT be tested for pushback (§6.1)
 # v1.3 §6.3: extend with bash-output wrappers that triggered false pushback on "no output" text
+# v1.4 §6.2: bash-output wrappers moved to ALWAYS_NOISE_PATTERN (length-gate-free);
+#            NOISE_PATTERN now covers only «long-paste» class (still gated by >400)
 NOISE_PATTERN = re.compile(
     r"^<task-notification>|"
     r"^This session is being continued from a previous conversation|"
@@ -302,19 +316,13 @@ def process_event(
                 # are not real vito input and frequently contain words like "NO prose summary")
                 # v1.2: also skip if message is framework/paste noise (§6.1)
                 is_noise = bool(
-                    real_user_text
-                    and (
-                        (NOISE_PATTERN.search(real_user_text) and len(real_user_text) > 400)
-                        or (
-                            STATUS_UPDATE_PATTERN.match(real_user_text.strip())
+                    real_user_text and (
+                        ALWAYS_NOISE_PATTERN.search(real_user_text)        # v1.4 §6.2: no length gate
+                        or (NOISE_PATTERN.search(real_user_text) and len(real_user_text) > 400)
+                        or (STATUS_UPDATE_PATTERN.match(real_user_text.strip())
                             and len(real_user_text) < 300
-                            and not STATUS_NEGATIVE_PATTERN.search(real_user_text)
-                        )
-                        # v1.3 §6.4: long requirement brief — > 500 chars with context keywords
-                        or (
-                            len(real_user_text) > 500
-                            and bool(REQUIREMENT_BRIEF_KEYWORDS.search(real_user_text))
-                        )
+                            and not STATUS_NEGATIVE_PATTERN.search(real_user_text))
+                        or (len(real_user_text) > 500 and bool(REQUIREMENT_BRIEF_KEYWORDS.search(real_user_text)))
                     )
                 )
                 if real_user_text and not evt.get("isSidechain") and not is_noise and PUSHBACK_PATTERN.search(real_user_text):

@@ -37,7 +37,7 @@ Follow these steps in order. Do not skip the critic step.
 Run `scripts/resolve_date_range.py` with the user's date expression (pass empty for default `today`):
 
 ```bash
-~/.claude/skills/cc-reflection/scripts/resolve_date_range.py "<user expression>"
+~/.agents/skills/cc-reflection/scripts/resolve_date_range.py "<user expression>"
 ```
 
 Output is one tab-separated line: `<start_utc_iso>\t<end_utc_iso>\t<label>`. Capture all three.
@@ -49,7 +49,7 @@ If the user gave no date hint, pass no argument (defaults to today).
 Run the scan script with the resolved range:
 
 ```bash
-~/.claude/skills/cc-reflection/scripts/scan_sessions.py \
+~/.agents/skills/cc-reflection/scripts/scan_sessions.py \
   --start <start_iso> \
   --end <end_iso> \
   --label <label>
@@ -197,7 +197,7 @@ lark-cli im +messages-send \
 
 ### Step 9 — Auto-repair skill self-bugs (v1.1, MANDATORY when §6 has actionable findings)
 
-After saving the report, scan the saved markdown for a `## 6. Skill v1 自暴露的 bug` (or any heading with `Skill` + `bug` + `自暴露` / `self-exposed`) section. If that section contains **at least one finding with a `修复 diff` (or `Fix diff` / fenced code block proposing an edit) targeting files under `~/.claude/skills/cc-reflection/`**, auto-repair WITHOUT asking the user.
+After saving the report, scan the saved markdown for a `## 6. Skill v1 自暴露的 bug` (or any heading with `Skill` + `bug` + `自暴露` / `self-exposed`) section. If that section contains **at least one finding with a `修复 diff` (or `Fix diff` / fenced code block proposing an edit) targeting files under `~/.agents/skills/cc-reflection/`**, auto-repair WITHOUT asking the user.
 
 **How:** spawn a fresh `general-purpose` Agent (subagent_type=general-purpose). The fix is done by the subagent, not the main agent, for three reasons:
 1. Main agent context is already heavy with report content; fresh context produces cleaner diffs.
@@ -218,17 +218,17 @@ For each finding in §6 that has a `修复 diff` subsection or fenced code
 block proposing concrete code changes:
 
 1. Apply the diff to the target file. Scope is strictly limited to:
-   - ~/.claude/skills/cc-reflection/scripts/*.py
-   - ~/.claude/skills/cc-reflection/SKILL.md
-   - ~/.claude/skills/cc-reflection/references/*.md
+   - ~/.agents/skills/cc-reflection/scripts/*.py
+   - ~/.agents/skills/cc-reflection/SKILL.md
+   - ~/.agents/skills/cc-reflection/references/*.md
    DO NOT modify ~/.claude/CLAUDE.md, settings.json, hooks, or any
    file outside the cc-reflection skill directory. If §6 proposes
    changes to those, list them in your final report as "requires
    user approval" and do NOT apply them.
 
 2. After all applicable diffs are applied, smoke-test by re-running:
-     ~/.claude/skills/cc-reflection/scripts/resolve_date_range.py
-     ~/.claude/skills/cc-reflection/scripts/scan_sessions.py \\
+     ~/.agents/skills/cc-reflection/scripts/resolve_date_range.py
+     ~/.agents/skills/cc-reflection/scripts/scan_sessions.py \\
        --start 2026-05-26T16:00:00Z --end 2026-05-27T16:00:00Z \\
        --label v11-autorepair-smoketest
    Verify the scan exits 0 and the JSON parses.
@@ -249,7 +249,7 @@ Under 400 words.
 Replace `<REPORT_PATH>` with the actual saved path from Step 8.
 
 **Trigger conditions (binding):**
-- §6 exists AND contains ≥ 1 fenced code block proposing a diff to a file under `~/.claude/skills/cc-reflection/` → trigger
+- §6 exists AND contains ≥ 1 fenced code block proposing a diff to a file under `~/.agents/skills/cc-reflection/` → trigger
 - §6 is absent OR contains only "requires user approval" items → skip, mention in final summary
 - §6 contains only diffs to `~/.claude/CLAUDE.md`, settings, or hooks → skip auto-repair, surface "vito 决策" items to user
 
@@ -267,7 +267,7 @@ Replace `<REPORT_PATH>` with the actual saved path from Step 8.
 - **Thin sample → sparse output (v1.1).** When `user_msgs < 10`, report MUST NOT have Top-N sections. Pad-to-look-impressive was the dominant v1 failure mode.
 - **Skill bugs go to §6, not §1 (v1.1).** §1 is reserved for real cc × vito collaboration friction. Bugs in the scan/resolve scripts are meta-findings and belong in a separate section.
 - **Window honesty (v1.1).** Header lists both nominal scan window AND actual observed activity span. ⚠️ warning when nominal window extends into the future.
-- **Auto-repair skill self-bugs (v1.1).** When §6 of the saved report contains diffs targeting `~/.claude/skills/cc-reflection/**`, spawn a fresh general-purpose subagent to apply them — without asking the user. Scope strictly limited to the skill's own files; CLAUDE.md / hooks / settings changes still require approval. See Step 9.
+- **Auto-repair skill self-bugs (v1.1).** When §6 of the saved report contains diffs targeting `~/.agents/skills/cc-reflection/**`, spawn a fresh general-purpose subagent to apply them — without asking the user. Scope strictly limited to the skill's own files; CLAUDE.md / hooks / settings changes still require approval. See Step 9.
 - **Auto-deliver to 飞书 (v1.2).** 报告保存后立即 (a) 用 `lark-cli drive +import --type docx` 把完整 md 上传为飞书在线文档 (primary delivery)，(b) 用 `lark-cli im +messages-send --text` 给 vito 私聊发一行带文档链接的消息 (secondary delivery)。不要发长摘要 — vito 要点进去看文档。复盘类产出和 daily-report 同等对待。See Step 8.5.
 
 ## Resources
@@ -286,8 +286,8 @@ Replace `<REPORT_PATH>` with the actual saved path from Step 8.
 ## Quick reference — one-shot for "today"
 
 ```bash
-RANGE=$(~/.claude/skills/cc-reflection/scripts/resolve_date_range.py)
+RANGE=$(~/.agents/skills/cc-reflection/scripts/resolve_date_range.py)
 START=$(echo "$RANGE" | cut -f1); END=$(echo "$RANGE" | cut -f2); LABEL=$(echo "$RANGE" | cut -f3)
-~/.claude/skills/cc-reflection/scripts/scan_sessions.py --start "$START" --end "$END" --label "$LABEL"
+~/.agents/skills/cc-reflection/scripts/scan_sessions.py --start "$START" --end "$END" --label "$LABEL"
 # → prints path to scan JSON. Read it, then follow steps 4-8.
 ```
