@@ -6,10 +6,10 @@ is the plugin root — all 16 skills under `skills/` are auto-discovered.
 ## Install
 
 This repo doubles as its own marketplace. From any machine with the repo checked
-out at `~/.agents`:
+out (e.g. at `~/codebase/projects/agent-plugins`):
 
 ```
-/plugin marketplace add ~/.agents
+/plugin marketplace add ~/codebase/projects/agent-plugins
 /plugin install vito-agent-plugins@vito-agents
 ```
 
