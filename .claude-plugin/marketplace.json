@@ -12,7 +12,7 @@
     {
       "name": "vito-agent-plugins",
       "source": "./",
-      "description": "12 skills: advanced-plan, agent-browser, ask-codex, audit-context, cc-reflection, exa-code, find-docs, handoff, harness-loop, html-doc, self-learn, tech-selection.",
+      "description": "14 skills: advanced-plan, ask-codex, audit-context, bilibili-cli, cc-reflection, exa-code, gemini-media, handoff, harness-loop, html-doc, self-learn, tech-selection, xiaohongshu-cli, youtube-cli.",
       "version": "1.0.0",
       "author": {
         "name": "vito"

@@ -1,7 +1,7 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 16 skills under `skills/` are auto-discovered.
+is the plugin root — all 14 skills under `skills/` are auto-discovered.
 
 ## Install
 
@@ -21,13 +21,11 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | Skill | What it does |
 |---|---|
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
-| agent-browser | Browser/Electron automation CLI for AI agents. |
 | ask-codex | Consult OpenAI Codex CLI for a second opinion on hard problems. |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | bilibili-cli | Search B站 and read videos by subtitle + AI summary + comment 舆情 (via `bili`). |
 | cc-reflection | Research-grounded reflection report on collaboration over a date range. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
-| find-docs | Retrieve up-to-date library/framework/API documentation (Context7). |
 | gemini-media | Base skill: understand any audio/video file via Gemini Flash-Lite (no-subtitle fallback for the video skills). |
 | handoff | Save / pick up task state for cross-session, cross-agent transfer. |
 | harness-loop | Autonomous develop → observe → verify → iterate methodology. |
@@ -43,7 +41,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 .claude-plugin/
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 16 skills, auto-discovered
+skills/              # 14 skills, auto-discovered
 ```
 
 ## Note on portability
