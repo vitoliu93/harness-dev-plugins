@@ -18,11 +18,11 @@ This skill provides two powerful search tools: general web search and specialize
 
 **web_search_exa**: Search the web for any topic and get clean, ready-to-use content.
 - Use for: Finding current information, news, facts, or answering general questions
-- Usage: `bun skills/exa-code/scripts/web_search_exa.ts --query "your search query" [--numResults 8] [--livecrawl fallback|preferred] [--type auto|fast] [--contextMaxCharacters 10000]`
+- Usage: `bun ${CLAUDE_PLUGIN_ROOT}/skills/exa-code/scripts/web_search_exa.ts --query "your search query" [--numResults 8] [--livecrawl fallback|preferred] [--type auto|fast] [--contextMaxCharacters 10000]`
 
 **get_code_context_exa**: Find code examples, documentation, and programming solutions.
 - Use for: Any programming question - API usage, library examples, code snippets, debugging help
-- Usage: `bun skills/exa-code/scripts/get_code_context_exa.ts --query "your search query" [--tokensNum 5000]`
+- Usage: `bun ${CLAUDE_PLUGIN_ROOT}/skills/exa-code/scripts/get_code_context_exa.ts --query "your search query" [--tokensNum 5000]`
 
 ## How to Trigger
 

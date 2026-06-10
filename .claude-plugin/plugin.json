@@ -1,7 +1,7 @@
 {
   "name": "vito-agent-plugins",
-  "version": "1.0.0",
-  "description": "Vito's personal Claude Code skill collection — research, planning, session reflection, content retrieval (YouTube/Bilibili/Xiaohongshu), media understanding (Gemini), and harness workflows. Bundles 14 skills auto-discovered from skills/.",
+  "version": "1.1.0",
+  "description": "Vito's personal Claude Code skill collection — research, planning, session reflection, content retrieval (YouTube/Bilibili/Xiaohongshu), media understanding (Gemini), and harness workflows. Bundles 14 skills auto-discovered from skills/, plus 8 companion subagents (agents/) that run the noisy skills in isolated contexts.",
   "author": {
     "name": "vito",
     "email": "santiagoliu333@gmail.com"
