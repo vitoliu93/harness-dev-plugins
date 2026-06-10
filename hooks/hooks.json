@@ -1,0 +1,17 @@
+{
+  "description": "Redirect inline lark-* skill usage (and lark skill file reads) in the main context to the lark-operator subagent; subagent contexts are exempt via agent_id.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/lark-guard.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

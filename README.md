@@ -1,8 +1,8 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 14 skills under `skills/` and 8 subagents under
-`agents/` are auto-discovered.
+is the plugin root — all 14 skills under `skills/`, 9 subagents under
+`agents/`, and the hooks under `hooks/` are auto-discovered.
 
 ## Install
 
@@ -58,9 +58,28 @@ tech-selection).
 | xiaohongshu-researcher | xiaohongshu-cli | 小红书 consensus + 避坑/软广 flags, cited by note. |
 | youtube-researcher | youtube-cli | Per-video verdicts with timestamps + synthesis. |
 
+A ninth subagent, **lark-operator** (pinned to sonnet), wraps the *global*
+`lark-*` skill family (installed via `npx skills`, not part of this repo). It
+executes 飞书 operations — notify, archive, schedule, read-back — and returns
+only a confirmation (链接/ID) or a digest, keeping skill bodies and lark-cli
+JSON out of the main session.
+
 Note: Claude Code subagents cannot spawn nested subagents, so the wrappers read
 content inline with strict distillation discipline instead of fanning out the
 per-video/per-note readers their skills describe for main-session use.
+
+## Hooks
+
+`hooks/hooks.json` registers one PreToolUse command hook (`lark-guard.sh`)
+matching `Skill|Read`. In the **main context** it denies loading any `lark-*`
+skill (and reading `*/skills/lark-*` files), with a reason that redirects the
+agent to delegate to `vito-agent-plugins:lark-operator` — most Lark work is
+task-irrelevant post-hoc 通知/留档. Inside **any subagent** (the hook input
+carries `agent_id` there) lark-* runs freely, so the delegation itself is never
+blocked. Exemptions: `lark-skill-maker` (skill development is a main-context
+task); typing a `/lark-*` slash command directly also bypasses the guard since
+that path doesn't go through the Skill tool. Hook changes load at session
+start — restart the session after editing.
 
 ## Layout
 
@@ -69,7 +88,10 @@ per-video/per-note readers their skills describe for main-session use.
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
 skills/              # 14 skills, auto-discovered
-agents/              # 8 companion subagents, auto-discovered
+agents/              # 9 companion subagents, auto-discovered
+hooks/
+  hooks.json         # PreToolUse: lark-guard
+  scripts/lark-guard.sh
 ```
 
 ## Note on portability
