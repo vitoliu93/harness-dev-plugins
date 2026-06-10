@@ -29,7 +29,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
 | gemini-media | Base skill: understand any audio/video file via Gemini Flash-Lite (no-subtitle fallback for the video skills). |
 | handoff | Save / pick up task state for cross-session, cross-agent transfer. |
-| harness-loop | Autonomous develop → observe → verify → iterate methodology. |
+| harness-loop | Autonomous orient → plan → execute → observe → decide → persist loop methodology. |
 | html-doc | Produce a single self-contained, infographic-style HTML explainer. |
 | self-learn | Extract knowledge from the session into Chinese learning notes. |
 | tech-selection | Track an open research/feasibility question as a resumable study. |
