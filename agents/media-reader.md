@@ -1,7 +1,7 @@
 ---
 name: media-reader
 description: Use this agent to understand, transcribe, or summarize any local or downloadable audio/video file using Gemini Flash-Lite. Typical triggers include "理解这个视频/音频文件"、"转写这个录音"、"用 Gemini 看这个视频"、"这个视频说了什么"、"transcribe this recording"、"summarize this video file"、"what is said in this audio"、"understand this screencast", or when youtube-cli / bilibili-cli finds no usable subtitles and needs a Gemini audio-understanding fallback. Delegate here so file upload progress, polling loops, ffmpeg stderr, and the raw transcript stay out of the main context — only the final structured digest comes back. See "When to invoke" in the agent body.
-model: inherit
+model: haiku
 color: cyan
 tools: ["Skill", "Bash", "Read"]
 ---

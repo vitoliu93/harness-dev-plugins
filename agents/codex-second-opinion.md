@@ -1,7 +1,7 @@
 ---
 name: codex-second-opinion
 description: Use this agent when you need a second-opinion diagnosis from OpenAI Codex / GPT-5.5 on a hard engineering problem — after 2+ failed hypotheses, a cross-environment contradiction (Node vs browser, local vs CI), or when the user says "ask codex"、"ask gpt"、"get a second opinion"、"问一下 codex"、"让 GPT 看看"、"第二意见"、"escalate to codex". Delegate here so codex's verbose banner output, token counts, and multi-round consensus transcripts stay out of the main context — only the distilled diagnosis and a verification note come back. See "When to invoke" in the agent body.
-model: inherit
+model: sonnet
 color: orange
 tools: ["Skill", "Bash", "Read", "Write"]
 ---

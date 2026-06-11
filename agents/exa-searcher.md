@@ -1,7 +1,7 @@
 ---
 name: exa-searcher
 description: Use this agent to search the web or find code examples, documentation, and programming solutions via the Exa API. Typical triggers include "search for"、"look up"、"find code examples"、"how do I use [library/API]"、"what's the documentation for"、"搜索"、"查一下"、"找代码示例"、"查文档"、"帮我查这个报错". Also use for GitHub code search, Stack Overflow lookups, or any question that benefits from live web content. Delegate here so raw multi-result dumps (up to 80-100KB per search) stay out of the main context — only a synthesized answer with sources comes back. See "When to invoke" in the agent body.
-model: inherit
+model: sonnet
 color: green
 tools: ["Skill", "Bash", "Read"]
 ---

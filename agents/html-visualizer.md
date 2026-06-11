@@ -1,7 +1,7 @@
 ---
 name: html-visualizer
 description: Use this agent when you need a self-contained HTML visual explainer, infographic, or diagram written to a file from source material you already have. Typical triggers include "make an HTML infographic"、"visualize this"、"diagram this"、"generate a PR explainer"、"做一个 HTML 可视化"、"用 HTML 图表展示"、"画个架构图"、"生成信息图"、"show this as a dashboard"、"explain this as a flow diagram". The caller provides a complete brief (what to visualize, source file paths or diff range, target audience); this agent reads the sources, picks a visual pattern, and writes the artifact — keeping hundreds of lines of SVG/CSS/JS out of the main context. Only the output file path, pattern choice, and open command come back. See "When to invoke" in the agent body.
-model: inherit
+model: sonnet
 color: yellow
 tools: ["Skill", "Bash", "Read", "Write", "Glob", "Grep"]
 ---

@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
       "name": "vito-agent-plugins",
       "source": "./",
       "description": "14 skills: advanced-plan, ask-codex, audit-context, bilibili-cli, cc-reflection, exa-code, gemini-media, handoff, harness-loop, html-doc, self-learn, tech-selection, xiaohongshu-cli, youtube-cli. 9 subagents: bilibili-researcher, cc-reflector, codex-second-opinion, exa-searcher, html-visualizer, lark-operator, media-reader, xiaohongshu-researcher, youtube-researcher. 1 hook: lark-guard (PreToolUse, redirects inline lark-* usage to lark-operator).",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "author": {
         "name": "vito"
       }
