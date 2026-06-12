@@ -22,7 +22,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | Skill | What it does |
 |---|---|
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
-| ask-codex | Consult OpenAI Codex CLI for a second opinion on hard problems. |
+| ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / Claude headless fable (ultra). |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | bilibili-cli | Search B站 and read videos by subtitle + AI summary + comment 舆情 (via `bili`). |
 | cc-reflection | Research-grounded reflection report on collaboration over a date range. |
@@ -49,9 +49,9 @@ tech-selection).
 
 | Agent | Wraps skill | Returns |
 |---|---|---|
+| ai-second-opinion | ask-ai | Distilled verdict from the chosen engine (opus/codex/ultra) + verification note. |
 | bilibili-researcher | bilibili-cli | Quality-assessed digest of B站 videos, cited by BVID. |
 | cc-reflector | cc-reflection | Report path + Lark URL + top findings + critic tally. |
-| codex-second-opinion | ask-codex | Distilled GPT diagnosis + verification note. |
 | exa-searcher | exa-code | Synthesized answer + sources from Exa web/code search. |
 | html-visualizer | html-doc | Path of the written HTML artifact + pattern rationale. |
 | media-reader | gemini-media | Structured digest (or verbatim transcript on request). |

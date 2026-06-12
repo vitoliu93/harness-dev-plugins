@@ -10,7 +10,7 @@ When the same model generates and critiques, self-evaluation **monotonically inf
 
 Source: Snorkel AI "The Self-Critique Paradox"; arXiv 2310.18679 (N-Critics).
 
-**Implication:** Never let the main agent be its own judge. The critic pass MUST use a different model instance (Opus second-opinion subagent) or a different vendor (ask-codex).
+**Implication:** Never let the main agent be its own judge. The critic pass MUST use a different model instance (Opus second-opinion subagent) or a different vendor (ask-ai in codex mode).
 
 ### 2. Premature commitment
 
@@ -65,7 +65,7 @@ Reports with only "fix" sections drift toward negative self-criticism without le
 After drafting the report, MUST invoke one of:
 
 - `second-opinion` subagent — Opus 4.7 in fresh context (heterogeneous instance, same model family but no shared context — partial mitigation).
-- `ask-codex` skill — OpenAI GPT-5.5 (full cross-vendor — strongest mitigation, preferred).
+- `ask-ai` skill, `codex` mode — OpenAI GPT-5.5 (full cross-vendor — strongest mitigation, preferred).
 
 Critic prompt template (literal):
 

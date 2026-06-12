@@ -26,7 +26,7 @@ In either variant, the header MUST include both the nominal scan window and the 
 **扫描范围 (名义):** <start_iso> → <end_iso>
 **实际观察活动:** <first_ts_across_sessions> → <last_ts_across_sessions>
 **会话数:** <N>  |  **总时长:** <X> min  |  **pushback:** <P>  |  **tool_error flagged+text:** <Ef>+<Et>  |  **confident_claim:** <Cc>
-**报告生成:** <ISO timestamp>  |  **critic:** <ask-codex | second-opinion | both>
+**报告生成:** <ISO timestamp>  |  **critic:** <ask-ai(codex) | second-opinion | both>
 
 ---
 
@@ -109,7 +109,7 @@ In either variant, the header MUST include both the nominal scan window and the 
 
 ## 4. Critic 摘要
 
-调用了: `<ask-codex | second-opinion>`，prompt: "假设此报告有 3 个最严重错误..."
+调用了: `<ask-ai(codex) | second-opinion>`，prompt: "假设此报告有 3 个最严重错误..."
 
 | Critique | 处理 | 修改位置 |
 |---|---|---|

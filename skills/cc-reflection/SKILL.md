@@ -122,8 +122,8 @@ The whole skill exists for this step. Do not skip it, do not stub it.
 
 Invoke ONE of these (preference order):
 
-**Preferred — ask-codex (cross-vendor, strongest mitigation):**
-Invoke the `ask-codex` skill with the draft report path and this exact critic prompt (translate to English if codex prefers):
+**Preferred — ask-ai in `codex` mode (cross-vendor, strongest mitigation):**
+Invoke the `ask-ai` skill (mode `codex`) with the draft report path and this exact critic prompt (translate to English if codex prefers):
 
 > 下面这份复盘报告**假设有 3 个最严重的错误或盲区**——可能是：
 > (a) cc 在为自己开脱（把 cc 的失败包装成"系统问题"或"vito 没说清楚"），
@@ -134,7 +134,7 @@ Invoke the `ask-codex` skill with the draft report path and this exact critic pr
 > 如果你找不出 3 个，再读一遍——报告越流畅越可疑。
 
 **Fallback — second-opinion subagent (heterogeneous Opus instance):**
-Invoke the `second-opinion` agent with the same prompt. Weaker mitigation (same model family) but acceptable when ask-codex is unavailable.
+Invoke the `second-opinion` agent with the same prompt. Weaker mitigation (same model family) but acceptable when ask-ai's codex mode is unavailable.
 
 **Incorporate the critique into the report:**
 For each critic point, decide and document in the "Critic 摘要" section:

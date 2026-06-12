@@ -20,7 +20,7 @@ tool_name=$(jq -r '.tool_name // empty' <<<"$input")
 SKILL_AGENTS=(
   "bilibili-cli:bilibili-researcher:B站/哔哩哔哩搜索与视频摘要"
   "cc-reflection:cc-reflector:协作复盘"
-  "ask-codex:codex-second-opinion:Codex/GPT 第二意见"
+  "ask-ai:ai-second-opinion:AI 第二意见/清洁上下文校审"
   "exa-code:exa-searcher:Exa 网页搜索与代码查找"
   "gemini-media:media-reader:音视频文件理解与转写"
   "html-doc:html-visualizer:HTML 可视化/信息图/架构图"
@@ -63,9 +63,11 @@ case "$tool_name" in
     # Only guard reads of skill definition files under our skills/ directory
     case "$file_path" in
       */skills/lark-*) exit 0 ;; # lark-guard.sh handles this
-      */skills/bilibili-cli/*|*/skills/cc-reflection/*|*/skills/ask-codex/*|*/skills/exa-code/*|*/skills/gemini-media/*|*/skills/html-doc/*|*/skills/xiaohongshu-cli/*|*/skills/youtube-cli/*)
-        # Extract skill dir name
-        skill_dir=$(basename "$(dirname "$file_path")")
+      */skills/bilibili-cli/*|*/skills/cc-reflection/*|*/skills/ask-ai/*|*/skills/exa-code/*|*/skills/gemini-media/*|*/skills/html-doc/*|*/skills/xiaohongshu-cli/*|*/skills/youtube-cli/*)
+        # Extract skill dir name (first path segment after /skills/, so
+        # nested files like references/*.md still map to the skill)
+        skill_dir="${file_path##*/skills/}"
+        skill_dir="${skill_dir%%/*}"
         for entry in "${SKILL_AGENTS[@]}"; do
           IFS=':' read -r pattern subagent hint <<< "$entry"
           if [ "$skill_dir" = "$pattern" ]; then

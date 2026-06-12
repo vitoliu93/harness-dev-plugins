@@ -100,7 +100,7 @@ Periodically — not just at the end — re-read `notes.md` against `question.md
 
 **Append dated revisions; never rewrite history.** When a later finding overturns an earlier one, mark the old one superseded and write the new one beside it with a date (the M0/M1/M2 pattern). The trail of how the understanding changed is itself valuable — and it's what lets a resuming agent trust the notes.
 
-**Chaining / self-correction.** For the final write-up: draft the conclusion → critique it against the success criteria (ideally a fresh subagent, or `ask-codex`/`second-opinion` to dodge self-bias) → refine. Each pass is independent, so disagreement surfaces instead of being smoothed over.
+**Chaining / self-correction.** For the final write-up: draft the conclusion → critique it against the success criteria (ideally a fresh subagent, or `ask-ai`/`second-opinion` to dodge self-bias) → refine. Each pass is independent, so disagreement surfaces instead of being smoothed over.
 
 ---
 
