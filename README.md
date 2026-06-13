@@ -22,7 +22,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | Skill | What it does |
 |---|---|
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
-| ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / Claude headless fable (ultra). |
+| ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / ultra (gpt-5.5 @ xhigh or opus-4.8 @ max). |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | bilibili-cli | Search B站 and read videos by subtitle + AI summary + comment 舆情 (via `bili`). |
 | cc-reflection | Research-grounded reflection report on collaboration over a date range. |

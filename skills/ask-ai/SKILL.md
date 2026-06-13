@@ -2,7 +2,8 @@
 name: ask-ai
 description: >-
   Clean-context second opinion on a plan, design, bug, or diff — 当局者迷，旁观者清.
-  Three engines: opus subagent review, Codex CLI (gpt-5.5), Claude headless (fable, ultra).
+  Three modes: opus subagent review, Codex CLI (gpt-5.5), and ultra — the top-tier
+  escalation, gpt-5.5 @ xhigh or opus-4.8 @ max (caller picks).
   Use when stuck after 2+ failed hypotheses, before shipping a high-stakes plan, or on
   "second opinion / ask codex / ask gpt / ultra review / 第二意见 / 校审".
 ---
@@ -17,22 +18,22 @@ Escalate a tough problem to a fresh reasoning pass in a clean context. Whoever i
 |---|---|---|---|
 | `opus` | Claude Opus, clean subagent context | the executor agent itself, spawned with `model: "opus"` — no CLI | think / think hard / ultrathink |
 | `codex` | OpenAI Codex CLI, gpt-5.5 | headless `codex exec` | minimal / low / medium / high / xhigh |
-| `ultra` | Claude Code headless, fable | `claude -p --model fable` | low / medium / high / xhigh / max |
+| `ultra` | gpt-5.5 (codex CLI) **or** opus 4.8 (claude headless) — caller picks | `codex exec` @ xhigh — or — `claude -p --model opus` @ max | xhigh (codex leg) / max (opus leg) |
 
 When to pick which:
 
 - **`opus` — the default.** Plan/code review that needs unbiased eyes more than it needs a different model. Fast, no CLI dependency, and the reviewer has live repo access through its own tools.
 - **`codex` — cross-vendor view.** 2+ distinct hypotheses failed, an irreconcilable contradiction (works in repro, fails in app; Node vs browser), or the deadlock may be a Claude-family blind spot. Also whenever the user says "ask codex / gpt / openai".
-- **`ultra` — highest stakes.** Fable is the strongest model available; reserve it for ship-critical architecture decisions, problems that survived an `opus` or `codex` pass, or an explicit "ultra" from the user. Expensive and slow — that is the point.
+- **`ultra` — highest stakes, max effort.** The top-tier escalation: reserve for ship-critical architecture decisions, problems that survived an `opus` or `codex` pass, or an explicit "ultra" from the user. Caller picks the leg — **gpt-5.5 @ xhigh** (codex CLI, cross-vendor) or **opus 4.8 @ max** (claude headless, deepest Claude-family pass; `max` effort is exclusive to ultra). Expensive and slow — that is the point. (While **fable is temporarily suspended**, these stand in for it — fable was ultra's original engine; see the restore note in `references/claude-headless.md`.)
 
 ## Contract — mode and effort are the main agent's call
 
-The MAIN agent (the caller) decides mode and effort by problem difficulty × importance, before spawning the executor. The spawn prompt must carry three things: **mode**, **effort**, and a **self-contained brief** (next section). Effort rubric:
+The MAIN agent (the caller) decides mode and effort by problem difficulty × importance, before spawning the executor. The spawn prompt must carry three things: **mode**, **effort**, and a **self-contained brief** (next section). For `ultra`, also name the leg (gpt-5.5 or opus); if unspecified, default to the opus leg. Effort rubric:
 
 - routine sanity check → low / medium (think)
 - genuinely hard problem, standard stakes → high (think hard)
 - production-critical or repeatedly-failed → xhigh (ultrathink)
-- existential / architecture-defining → max (`ultra` mode only)
+- existential / architecture-defining → ultra (gpt-5.5 @ xhigh, or opus 4.8 @ max — `max` is ultra-only)
 
 If the caller omits mode or effort, default to `opus` + high and say so in the report.
 
@@ -58,9 +59,14 @@ In this mode there is no external engine: the executor agent, spawned on opus, I
 
 Full invocation guide, stdin pattern for long prompts, concurrency cap, and hung-process recovery: **`references/codex-cli.md`**. Wire effort with `-c model_reasoning_effort="<effort>"`.
 
-## Mode `ultra` — drive Claude headless
+## Mode `ultra` — top-tier escalation, caller picks the leg
 
-Full invocation guide and timeout handling: **`references/claude-headless.md`**. Wire effort with `--effort <effort>`; model is always `fable`.
+Two engines; pick per the caller's instruction (default to the opus leg if unspecified). `max` effort is exclusive to ultra.
+
+- **gpt-5.5 @ xhigh** — cross-vendor max. Same Codex CLI as `codex` mode at its top effort: **`references/codex-cli.md`**, with `-c model_reasoning_effort="xhigh"`.
+- **opus 4.8 @ max** — deepest Claude-family pass in a fresh headless context: **`references/claude-headless.md`**, with `claude -p --model opus --effort max`.
+
+> **Fable is temporarily suspended (2026-06-13).** Ultra normally ran Claude headless on fable (the strongest model). Until it returns, the two legs above stand in. The original fable guide is archived verbatim at `references/archive/claude-headless-fable.md` — to restore, move it back to `references/claude-headless.md` and revert the model from `opus` to `fable`.
 
 ## Multi-round consensus (codex / ultra plan reviews)
 
