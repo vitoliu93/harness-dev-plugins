@@ -60,6 +60,16 @@ case "$tool_name" in
     ;;
   Read)
     file_path=$(jq -r '.tool_input.file_path // empty' <<<"$input")
+    cwd=$(jq -r '.cwd // empty' <<<"$input")
+    # Editing a skill's *source* inside the current working tree (i.e. developing
+    # this plugin repo) is legitimate — exempt it. Only out-of-tree skill files
+    # (the installed plugin cache during normal usage) stay guarded. If cwd is
+    # absent, fall through to the strict guard — never open a hole.
+    if [ -n "$cwd" ]; then
+      case "$file_path" in
+        "$cwd"/*) exit 0 ;;
+      esac
+    fi
     # Only guard reads of skill definition files under our skills/ directory
     case "$file_path" in
       */skills/lark-*) exit 0 ;; # lark-guard.sh handles this
