@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "1.6.0"
+    "version": "1.7.0"
   },
   "plugins": [
     {
       "name": "vito-agent-plugins",
       "source": "./",
-      "description": "6 skills: advanced-plan, ask-ai, audit-context, exa-code, handoff, html-doc. 4 subagents: ai-second-opinion, exa-searcher, html-visualizer, lark-operator. 2 PreToolUse hooks: skill-guard (redirects inline ask-ai/exa-code/html-doc usage to their subagents) and lark-guard (redirects inline lark-* usage to lark-operator). Archived skills/subagents live under archive/.",
-      "version": "1.6.0",
+      "description": "6 skills: advanced-plan, ask-ai, audit-context, exa-code, handoff, html-doc. 3 subagents: general-skills-executor (generic isolated runner for noisy delegated skills), ai-second-opinion, code-search. 1 PreToolUse hook: skill-guard — a table-driven redirect of inline noisy-skill usage to a subagent (exa-code/html-doc/lark-* -> general-skills-executor, ask-ai -> ai-second-opinion). Archived skills/subagents live under archive/.",
+      "version": "1.7.0",
       "author": {
         "name": "vito"
       }

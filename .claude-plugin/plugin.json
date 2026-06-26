@@ -1,7 +1,7 @@
 {
   "name": "vito-agent-plugins",
-  "version": "1.6.0",
-  "description": "Vito's personal Claude Code skill collection — planning, clean-context second opinions, context auditing, web/code search, session handoff, and HTML visualization. Bundles 6 skills auto-discovered from skills/, plus 4 companion subagents (agents/) that run the noisy skills in isolated contexts, and PreToolUse hooks that redirect inline skill usage to the corresponding subagent.",
+  "version": "1.7.0",
+  "description": "Vito's personal Claude Code skill collection — planning, clean-context second opinions, context auditing, web/code search, session handoff, and HTML visualization. Bundles 6 skills auto-discovered from skills/, plus 3 subagents (agents/) — a generic general-skills-executor that runs noisy delegated skills in isolated contexts, the clean-context ai-second-opinion reviewer, and the standalone code-search explorer — and a table-driven PreToolUse skill-guard that redirects inline noisy-skill usage to the right subagent.",
   "author": {
     "name": "vito",
     "email": "santiagoliu333@gmail.com"

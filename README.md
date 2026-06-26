@@ -1,7 +1,7 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 6 skills under `skills/`, 4 subagents under
+is the plugin root — all 6 skills under `skills/`, 3 subagents under
 `agents/`, and the hooks under `hooks/` are auto-discovered. Retired skills and
 their companion subagents are parked under `archive/` (out of auto-discovery,
 kept for reference).
@@ -32,48 +32,50 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 
 ## Subagents
 
-Three skills also ship a companion subagent (spawnable via the Agent/Task tool as
-`vito-agent-plugins:<agent>`). Each wraps its skill in an isolated context so the
-noisy intermediate work — search dumps, engine transcripts, upload logs — never
-enters the main session; only a distilled answer comes back. The other three
-skills are deliberately *not* wrapped: they either need the live session
-conversation (handoff), are interactive end-to-end (audit-context), or are
+Three subagents (spawnable via the Agent/Task tool as `vito-agent-plugins:<agent>`).
+Each runs noisy work in an isolated context so search dumps, engine transcripts,
+and upload logs never enter the main session; only a distilled answer comes back.
+
+| Agent | Model | Role |
+|---|---|---|
+| general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `html-doc`, `lark-*`), runs it end-to-end, returns only the distilled result (answer + sources / file path / 链接·ID). Holds no skill-specific knowledge — the skill body carries the specifics. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
+| ai-second-opinion | opus | Clean-context second opinion (当局者迷,旁观者清). Not a thin wrapper — it picks engine/mode (opus self-review / Codex gpt-5.5 / ultra) and reasons itself. Backs the `ask-ai` skill. |
+| code-search | sonnet | Standalone token-efficient codebase explorer — wraps no skill. Prefers auggie-mcp semantic search, `rg`/`fd` for exact matches, gemini-cli for complex analysis; returns terse located results, not raw file dumps. |
+
+The other repo skills are deliberately *not* delegated: they either need the live
+session conversation (handoff), are interactive end-to-end (audit-context), or are
 methodologies the main agent itself must drive (advanced-plan).
 
-| Agent | Wraps skill | Returns |
-|---|---|---|
-| ai-second-opinion | ask-ai | Distilled verdict from the chosen engine (opus/codex/ultra) + verification note. |
-| exa-searcher | exa-code | Synthesized answer + sources from Exa web/code search. |
-| html-visualizer | html-doc | Path of the written HTML artifact + pattern rationale. |
-
-A fourth subagent, **lark-operator** (pinned to sonnet), wraps the *global*
-`lark-*` skill family (installed via `npx skills`, not part of this repo). It
-executes 飞书 operations — notify, archive, schedule, read-back — and returns
-only a confirmation (链接/ID) or a digest, keeping skill bodies and lark-cli
-JSON out of the main session.
-
-Note: Claude Code subagents cannot spawn nested subagents, so the wrappers read
+Note: Claude Code subagents cannot spawn nested subagents, so the executor reads
 content inline with strict distillation discipline instead of fanning out the
-per-item readers their skills describe for main-session use.
+per-item readers its skills describe for main-session use.
 
 ## Hooks
 
-`hooks/hooks.json` registers two PreToolUse command hooks matching `Skill|Read`,
-both exempt inside **any subagent** (the hook input carries `agent_id` there) so
-delegation itself is never blocked:
+`hooks/hooks.json` registers one PreToolUse command hook (`skill-guard.sh`)
+matching `Skill|Read`, exempt inside **any subagent** (the hook input carries
+`agent_id` there) so delegation itself is never blocked:
 
-- **`skill-guard.sh`** — in the main context, denies inline use of the three
-  wrapped skills (`ask-ai`, `exa-code`, `html-doc`) and reading their source
-  files, redirecting to the matching subagent so the noisy skill body stays out
-  of the main session.
-- **`lark-guard.sh`** — denies loading any `lark-*` skill (and reading
-  `*/skills/lark-*` files), redirecting to `vito-agent-plugins:lark-operator` —
-  most Lark work is task-irrelevant post-hoc 通知/留档. Exemption:
-  `lark-skill-maker` (skill development is a main-context task).
+- **`skill-guard.sh`** — in the main context, denies inline use of the noisy
+  delegated skills (and reading their source files) and redirects each to its
+  subagent. A single `DELEGATE` table is the source of truth — `skill_glob |
+  target_agent | model | hint` per row, so delegating a new skill is one line:
+
+  | skill | target | model |
+  |---|---|---|
+  | `exa-code` | general-skills-executor | sonnet |
+  | `html-doc` | general-skills-executor | sonnet |
+  | `lark-*` | general-skills-executor | haiku |
+  | `ask-ai` | ai-second-opinion | (agent picks its own mode) |
+
+  `lark-skill-maker` is exempt (skill development is a main-context task).
+  The Read-guard's `*/skills/<name>/*` glob protects those skills' source files
+  wherever they live — the global `~/.agents/skills/` store, `$PWD/skills/`, or
+  the installed plugin cache.
 
 Editing a skill's *source* inside the current working tree (developing this repo)
-is exempt from both guards. Typing a `/<skill>` slash command directly also
-bypasses them, since that path doesn't go through the Skill tool. Hook changes
+is exempt from the guard. Typing a `/<skill>` slash command directly also
+bypasses it, since that path doesn't go through the Skill tool. Hook changes
 load at session start — restart the session after editing.
 
 ## Layout
@@ -83,11 +85,10 @@ load at session start — restart the session after editing.
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
 skills/              # 6 skills, auto-discovered
-agents/              # 4 companion subagents, auto-discovered
+agents/              # 3 subagents, auto-discovered
 hooks/
-  hooks.json         # PreToolUse: skill-guard + lark-guard
+  hooks.json         # PreToolUse: skill-guard
   scripts/skill-guard.sh
-  scripts/lark-guard.sh
 archive/             # retired skills/ + agents/, not auto-discovered
 ```
 
