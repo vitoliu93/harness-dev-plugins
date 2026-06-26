@@ -150,7 +150,7 @@ The templates carry the structure; these are the rules for filling them honestly
   - **Refactor** → existing tests green + behavior unchanged (name the command).
   - A phase is `done` only after its verification has actually run and passed — record the evidence (test name, screenshot path, output). Status: `todo` → `in_progress` → `blocked` / `done`.
 - **exploration.md** — Facts about the **codebase/task**, not feelings. Candidates to later graduate into project knowledge (CLAUDE.md, docs). Append under `## [session-id]`; never rewrite history. Concurrent agents each write `exploration-<session-id>.md`, merged at the end.
-- **review.md** — The only file about the **agent's process**, not the code. After the task is done, analyze the agent×user collaboration. **Reuse `/cc-reflection`** for the heavy lifting — point it at this task's session-id(s) and distill its output into the template.
+- **review.md** — The only file about the **agent's process**, not the code. After the task is done, analyze the agent×user collaboration over this task's session-id(s) — what worked, what caused rework, what to do differently next time — and distill it into the template.
 
 Boundary reminder: `exploration.md` = "what I learned about the code"; `review.md` = "what I learned about how we worked." Don't mix them.
 
@@ -184,5 +184,4 @@ When more than one agent shares a working tree:
 ## Integration with other skills
 
 - **handoff**: advanced-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
-- **cc-reflection**: the engine behind `review.md` — invoke it on the task's session-id(s) rather than reinventing the analysis.
 - **agent-browser**: the default frontend verification method named in phase acceptance criteria.
