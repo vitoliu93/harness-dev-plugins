@@ -127,22 +127,6 @@ git push -u origin HEAD
 
 ---
 
-## Evolution
-
-| Change size | Path |
-|---|---|
-| Wording, one-liner | Edit this file or the agent directly |
-| New skill/stage/agent | Run `/ship` on it — plan dir is the audit trail |
-| Edge case found mid-run | Append to `unexpected.md` as `deferred`; review after task ships |
-
-Known edge cases land in `## Known Limitations` below. Recurrent ones become fixes.
-
-## Known Limitations
-
-<!-- Append edge cases here as they surface. Format: `- [date] <symptom> — <workaround or fix pending>` -->
-
----
-
 ## unexpected.md template
 
 ```markdown
