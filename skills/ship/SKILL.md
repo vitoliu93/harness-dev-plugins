@@ -20,7 +20,7 @@ One skill, full cycle. Each stage delegates to focused sub-skills and agents.
 git worktree list | grep "advanced-plan"
 ```
 
-- **Plan worktree found** → `EnterWorktree path: <that path>`, read `todo.md` Current State, jump to the right stage.
+- **Plan worktree found** → enter it (`EnterWorktree path: <that path>`, see `worktree`), read `todo.md` Current State, jump to the right stage.
 - **Nothing found** → start Stage 1.
 
 ---
@@ -81,7 +81,7 @@ Create the tmux session (persistence anchor):
 tmux new-session -d -s "ship-<slug>" 2>/dev/null || true
 ```
 
-For each worktree in "Affected Repos": ensure worktree exists on the plan branch.
+For each repo in "Affected Repos": ensure a worktree exists on the plan branch (attach mechanics in the `worktree` skill).
 
 ### Per-todo loop
 

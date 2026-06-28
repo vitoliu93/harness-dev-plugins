@@ -1,7 +1,7 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 6 skills under `skills/`, 3 subagents under
+is the plugin root — all 8 skills under `skills/`, 3 subagents under
 `agents/`, and the hooks under `hooks/` are auto-discovered. Retired skills and
 their companion subagents are parked under `archive/` (out of auto-discovery,
 kept for reference).
@@ -23,7 +23,9 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 
 | Skill | What it does |
 |---|---|
+| ship | Full dev SOP: grill → plan → code → review → push. Chains advanced-plan, per-todo test subagents, ponytail-review. |
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
+| worktree | Isolate a unit of work on a dedicated git worktree + branch; branch-as-identity, cross-agent / cross-machine handoff. |
 | ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / ultra (gpt-5.5 @ xhigh or opus-4.8 @ max). |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
@@ -84,7 +86,7 @@ load at session start — restart the session after editing.
 .claude-plugin/
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 6 skills, auto-discovered
+skills/              # 8 skills, auto-discovered
 agents/              # 3 subagents, auto-discovered
 hooks/
   hooks.json         # PreToolUse: skill-guard

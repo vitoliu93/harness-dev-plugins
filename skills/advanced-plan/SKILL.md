@@ -32,13 +32,9 @@ If the task is genuinely trivial (one obvious edit), say so and skip the skill �
 
 ## Preconditions & isolation (non-negotiable)
 
-advanced-plan **only runs inside a git repo, on a dedicated worktree + branch**. This is what makes the plan a real, shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch.
+advanced-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch. The worktree/branch mechanics live in the **`worktree`** skill; advanced-plan adds only the naming convention below.
 
-1. **Require git.** If `git rev-parse --is-inside-work-tree` fails, stop and offer `git init` — do not build a plan in a non-repo.
-2. **Enter a worktree before any plan work.** If not already inside one (`git rev-parse --is-inside-work-tree` is true but you're on the main checkout), call **`EnterWorktree`** with a name derived from the slug — `name: "advanced-plan-<date>-<slug>"`. This creates `.claude/worktrees/advanced-plan-<date>-<slug>/` on a new branch of the same name and switches the session into it. *Only then* start creating files. (If already inside a worktree, reuse it — `EnterWorktree` refuses to nest.)
-3. **One plan = one branch = one worktree.** The slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by the same keyword.
-
-> `EnterWorktree`'s base ref follows the repo's `worktree.baseRef` setting (`fresh` = origin/default branch, `head` = current HEAD). Don't override it unless the user asks.
+Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop. See `worktree` for nesting, baseRef, and resume.)
 
 ## Location & layout
 
@@ -55,10 +51,7 @@ $ROOT/docs/advanced-plans/<YYYY-MM-DD>-<slug>/
 
 `<slug>` = 2-4 word kebab-case summary, matching the branch/worktree stem. **Commit the plan dir on its branch** (it's the audit trail and the cross-agent channel) — never gitignore `docs/advanced-plans/`. When the branch merges to main, the dir lands in history alongside the code it produced, as first-class project docs.
 
-**Cross-agent reach** then has exactly one model — the branch:
-- **Same machine** → another agent runs `git worktree list`, finds the worktree, and `EnterWorktree path: <that path>`. The plan is right there.
-- **Worktree pruned but branch kept** → `git worktree add .claude/worktrees/<stem> <branch>`, then `EnterWorktree path: …`.
-- **Another machine** → push the branch; the other agent `git fetch`es, creates a worktree from it, enters. Push after each phase if live cross-machine handoff matters (see Enforcement).
+**Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. The discovery + cross-machine handoff mechanics are in the **`worktree`** skill.
 
 ## Templates
 
@@ -101,14 +94,9 @@ Follow `todo.md` phase by phase. The Enforcement rules below are non-negotiable 
 A bare `/advanced-plan <args>` is ambiguous (is `<args>` a new task or a keyword for an existing plan?). **Always discover before creating** — never silently start a duplicate plan. Discovery keys off the **branch/worktree**, not a loose file glob:
 
 1. Strip routing verbs (`new` / `resume` / `continue` / `继续` / `恢复` / `接着做`) to get the keyword.
-2. Look for a live worktree, then a branch:
-   ```bash
-   git worktree list | grep -i "$kw"                 # live worktree?
-   git branch -a --list "*$kw*"                       # branch (local or remote)?
-   ```
+2. Discover an existing plan by its worktree/branch — use the discovery + attach steps in the **`worktree`** skill (`git worktree list` / `git branch -a`, then `EnterWorktree`).
 3. Decide:
-   - **live worktree matches** → `EnterWorktree path: <its path>`, then recover (below).
-   - **branch matches, no worktree** → `git worktree add .claude/worktrees/<stem> <branch>`, then `EnterWorktree path: …`. (Remote-only branch? `git fetch` first.)
+   - **worktree or branch matches** → enter it (per `worktree`), then recover (below).
    - **nothing matches** → treat `<args>` as a **new** task (`new` flow above).
 4. Explicit verbs override the guess: `new <x>` always creates; `resume/继续 <x>` always searches and **reports "no plan found"** rather than creating.
 
@@ -133,7 +121,7 @@ Trigger: task done, or "review advanced-plan", "复盘这个任务".
 
 1. Copy `review.md`'s template and run the retrospective (see semantics below).
 2. Commit the final plan state on the branch. Land the work the usual way (open a PR / merge the branch) — the committed `docs/advanced-plans/<slug>/` rides along as the audit trail.
-3. Leave the worktree only when the user asks: `ExitWorktree action: "keep"` to preserve it, or `"remove"` once merged. Don't auto-remove — uncommitted work or an unmerged branch would be lost.
+3. Leave the worktree only when the user asks (`ExitWorktree keep|remove`, see `worktree`) — `keep` to preserve, `remove` once merged. Don't auto-remove.
 
 ---
 
@@ -165,16 +153,11 @@ Documents that lie are worse than no documents. Keep them honest:
 3. **Code and runtime win over docs.** If `spec.md`/`todo.md` disagree with what the code actually does, the docs are wrong — fix them in the same turn you notice.
 4. **`goal.md` is immutable** except append-only scope-change entries. Approach changed? Edit `spec.md`.
 5. **Don't let process block small work.** Light tier exists for a reason; preflight is conditional. Match the ceremony to the risk.
-6. **Commit on the plan branch as you go** — at minimum after each phase, alongside the `Current State` update, so the branch always reflects real progress. For live cross-machine handoff, `git push` after each phase too; the branch is the only thing another machine can see.
+6. **Commit on the plan branch as you go** — at minimum after each phase, alongside the `Current State` update, so the branch always reflects real progress. (Commit/push discipline + cross-machine handoff: see `worktree`.)
 
 ## Multi-agent collaboration
 
-The plan branch is the shared object. How agents share it:
-
-- **Same machine, same plan** → each agent enters the *same* worktree (`EnterWorktree path: …`) and coordinates via the lock below. They share one working tree, so the lock matters.
-- **Parallel independent strands** → give each agent its own worktree off the plan branch (`git worktree add … <branch>`); they commit to the same branch and reconcile in git rather than racing on one tree.
-
-When more than one agent shares a working tree:
+The plan branch is the shared object — how agents share a worktree vs. take one each off the branch is in the **`worktree`** skill (Parallel agents). What's plan-specific is coordinating on the plan files when agents share one working tree:
 
 - **Lock file** `docs/advanced-plans/<slug>/.lock` with `owner: <session-id>`, `since: <ts>`, `lease: <ts+TTL>`. Take it before editing shared files; release (delete) when stopping. A stale lease (past TTL) may be reclaimed — note the takeover in `exploration.md`.
 - **Phase claiming:** an agent sets `Owner` + `Lease` on the phase it drives in `todo.md` `Current State`. Other agents pick a different unclaimed phase.
@@ -183,5 +166,6 @@ When more than one agent shares a working tree:
 
 ## Integration with other skills
 
+- **worktree**: the isolation/branch mechanism advanced-plan runs on — entering, resuming, cross-machine handoff, parallel agents. advanced-plan adds the plan dir and the `advanced-plan-<date>-<slug>` naming on top.
 - **handoff**: advanced-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
 - **agent-browser**: the default frontend verification method named in phase acceptance criteria.

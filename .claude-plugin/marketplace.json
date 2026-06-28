@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "1.8.0"
+    "version": "1.9.0"
   },
   "plugins": [
     {
       "name": "vito-agent-plugins",
       "source": "./",
-      "description": "7 skills: ship (full dev SOP), advanced-plan, ask-ai, audit-context, exa-code, handoff, html-doc. 5 subagents: ship-tester, ship-analyst, general-skills-executor, ai-second-opinion, code-search. 1 PreToolUse hook: skill-guard.",
-      "version": "1.8.0",
+      "description": "8 skills: ship (full dev SOP), advanced-plan, worktree, ask-ai, audit-context, exa-code, handoff, html-doc. 5 subagents: ship-tester, ship-analyst, general-skills-executor, ai-second-opinion, code-search. 1 PreToolUse hook: skill-guard.",
+      "version": "1.9.0",
       "author": {
         "name": "vito"
       }
