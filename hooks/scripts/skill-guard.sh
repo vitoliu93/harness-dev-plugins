@@ -12,6 +12,15 @@ input=$(cat)
 # Subagent context — allow everything
 [ -n "$(jq -r '.agent_id // empty' <<<"$input")" ] && exit 0
 
+# The redirect targets carry Anthropic-tier models (sonnet/haiku) that don't
+# resolve on a custom provider — and nothing is cheaper to delegate to when the
+# whole session already runs a coding-plan model. So guard only genuine Anthropic
+# sessions; on any custom provider, skip and let the skill run inline.
+case "${ANTHROPIC_BASE_URL:-}" in
+  ""|*anthropic.com*) ;;
+  *) exit 0 ;;
+esac
+
 tool_name=$(jq -r '.tool_name // empty' <<<"$input")
 
 # Delegation table — the single source of truth. To delegate a new noisy skill,
