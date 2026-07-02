@@ -55,15 +55,15 @@
 
 - **v1.10(本次)**:ship 尺寸门控 + 扩展点;debrief 收盘技能;dispatch 派活技能 + 引擎
   卡片;worktree 瘦身修正;advanced-plan 模板路径可移植性修复。全部纯 prompt,零新基建。
-- **v1.11(钩子化)**:Stop 钩子正则捕获 `[LEARN]` 标记自动写 memory(pro-workflow);
-  SessionStart 注入"上次教训回放";worktree 退出安全序 PreToolUse 校验。
-- **v1.12(自动化)**:skill 保鲜度报告 + 路由重叠检查 —— 引擎直接采用 yao-meta-skill
-  上游仓库(~/codebase/github/yao-meta-skill)的 `build_skill_atlas.py`(Jaccard 路由
-  重叠矩阵 + cadence 陈旧度)、`trigger_eval.py`(描述触发评测,fixture 格式
-  `evals/trigger_cases.json`:should/should-not/near-neighbor)、`context_sizer.py`
-  (token 预算)——全部 stdlib-only、离线、已实测可跑,不必自建;skill bundles
-  (一个 YAML 组合 N 个技能应对固定场景);dispatch 的 workflow 模板化
-  (计划→多引擎并行→验收)。
+- **v1.11(钩子化)✅ 2026-07-03**:learn-capture(Stop,`[LEARN]` 标记 → `.claude/LEARNED.md`
+  原始收件箱,debrief 负责毕业)+ session-replay(SessionStart,回放最近 5 条 + 注入标记约定)
+  + worktree-guard(PreToolUse Bash,退出安全序强制)。
+- **v1.12(自动化)✅ 2026-07-03**:新技能 `skill-atlas`(舰队体检:路由重叠/陈旧度/触发
+  评测/context 预算,引擎 = yao-meta-skill 上游的 `build_skill_atlas.py` +
+  `trigger_eval.py` + `context_sizer.py`);ship/debrief/dispatch 三份触发评测夹具
+  已建并全绿(P=R=1.0);首次全舰扫描 153 对 0 冲突。
+  **刻意推迟**(按 debrief 自己的 3 次规则):skill bundles、dispatch workflow 模板
+  ——等真实场景重复出现 3 次再固化,先进入实战期。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。
 

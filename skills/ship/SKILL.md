@@ -4,9 +4,9 @@ description: >-
   Adaptive dev SOP: size the task (S/M/L), then requirement confirmation →
   planning → coding → review → 收盘. Small tasks skip ceremony; large tasks get
   the full pipeline. Chains grill-me, advanced-plan, per-todo testing subagents,
-  ponytail-review, project-level extension agents, and debrief. Trigger with a
-  natural requirement or Gitee issue URL. Re-run in an existing plan worktree to
-  resume mid-task.
+  ponytail-review, project-level extension agents, and debrief. Trigger with
+  /ship, a natural requirement, or a Gitee issue URL. Re-run in an existing
+  plan worktree to resume mid-task.
 argument-hint: "[requirement text | Gitee issue URL]"
 ---
 

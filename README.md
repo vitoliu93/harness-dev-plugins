@@ -1,7 +1,7 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 10 skills under `skills/`, 5 subagents under
+is the plugin root — all 11 skills under `skills/`, 5 subagents under
 `agents/`, and the hooks under `hooks/` are auto-discovered. Retired skills and
 their companion subagents are parked under `archive/` (out of auto-discovery,
 kept for reference). North star + roadmap: `docs/north-star.md`.
@@ -26,6 +26,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | ship | Adaptive dev SOP: size (S/M/L) → grill → plan → code → review → 收盘. Chains grill-me, advanced-plan, test subagents, ponytail-review, project extension agents, debrief. |
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
 | dispatch | Outsource brief-able execution to external headless engines (dscode/arkcode/droid/cursor-agent/codex) — smart model plans, cheap engine types, you verify the diff. |
+| skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget — via yao-meta-skill upstream tools. |
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
 | worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order; documents what Claude Code auto-isolates. |
 | ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / ultra (gpt-5.5 @ xhigh or opus-4.8 @ max). |
@@ -102,7 +103,7 @@ load at session start — restart the session after editing.
 .claude-plugin/
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 10 skills, auto-discovered
+skills/              # 11 skills, auto-discovered
 agents/              # 5 subagents, auto-discovered
 hooks/
   hooks.json         # PreToolUse: skill-guard

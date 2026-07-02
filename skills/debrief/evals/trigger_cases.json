@@ -1,0 +1,25 @@
+{
+  "recommended_threshold": 0.33,
+  "negative_patterns": ["summarize this article", "写周报", "解释什么是"],
+  "should_trigger": [
+    { "text": "收盘吧", "family": "explicit_zh" },
+    { "text": "复盘一下这个任务", "family": "explicit_zh" },
+    { "text": "debrief this session", "family": "explicit_en" },
+    { "text": "任务做完了,沉淀一下经验", "family": "sediment" },
+    { "text": "merge 完了,收个尾,把这次学到的存下来", "family": "post_merge" },
+    { "text": "issue 关了,把教训写进 memory 再归档计划目录", "family": "post_issue" },
+    { "text": "settle this task and archive the plan", "family": "explicit_en" }
+  ],
+  "should_not_trigger": [
+    { "text": "总结一下这篇文章的要点", "family": "summary_only" },
+    { "text": "帮我写这周的周报", "family": "report_writing" },
+    { "text": "解释什么是复盘方法论", "family": "explain_only" },
+    { "text": "把这个文档归档到飞书云盘", "family": "lark_archive" }
+  ],
+  "near_neighbor": [
+    { "text": "review 一下这个 PR 的代码质量", "family": "code_review" },
+    { "text": "audit 一下 CLAUDE.md,清理过期记忆", "family": "audit_context" },
+    { "text": "handoff,保存当前进度我换台机器继续", "family": "handoff" },
+    { "text": "验收通过,关掉这个 issue 合并代码", "family": "finalize" }
+  ]
+}

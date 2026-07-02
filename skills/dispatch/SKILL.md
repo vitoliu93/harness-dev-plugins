@@ -43,7 +43,7 @@ OUTPUT    where results land (worktree branch / file path / stdout)
 |---|---|---|
 | Bulk implementation from a settled plan | `dscode` (fallback `arkcode`) | Same claude binary → your skills/hooks/plugins work as-is; independent quota |
 | Autonomous subtask in its own branch | `droid exec --auto low -w` | Built-in worktree + autonomy levels |
-| Cross-family second opinion on a diff/plan | `codex exec` | Different model family = genuinely independent eyes |
+| Cross-family second opinion on a diff/plan | `codex exec` | Different model family = genuinely independent eyes. But if the ask is "review/second opinion" itself, prefer the `ask-ai` skill — it manages engine choice and briefing; dispatch is for execution offload |
 | Task benefiting from workspace indexing | `cursor-agent -p` | Cursor's index; `--mode plan` for read-only passes |
 | Cheap long-context summarize/translate | `gemini -p` | Large context, separate quota |
 

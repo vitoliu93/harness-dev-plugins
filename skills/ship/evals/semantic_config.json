@@ -1,0 +1,27 @@
+{
+  "positive_concepts": {
+    "explicit_ship": {
+      "weight": 0.3,
+      "phrases": ["/ship", "ship 一下", "ship this", "ship it"]
+    },
+    "requirement": {
+      "weight": 0.3,
+      "phrases": ["需求", "requirement", "实现", "implement", "做一个", "加一个", "功能", "feature", "修一下", "修复", "重构", "refactor", "限流", "bug", "一条龙", "端到端", "end to end", "完整流程", "full pipeline", "做完"]
+    },
+    "issue": {
+      "weight": 0.3,
+      "phrases": ["gitee", "issues/", "这个 issue", "fix this issue"]
+    },
+    "resume": {
+      "weight": 0.3,
+      "phrases": ["resume", "继续上次", "接着", "worktree 还在"]
+    }
+  },
+  "negative_concepts": {
+    "explain_only": { "weight": 0.3, "exclusive": true, "phrases": ["解释", "explain", "是干嘛的", "什么意思", "讲讲"] },
+    "summary_only": { "weight": 0.3, "exclusive": true, "phrases": ["总结", "summarize", "summary"] },
+    "read_only": { "weight": 0.28, "exclusive": true, "phrases": ["查一下", "看看就行", "什么状态", "有没有性能问题"] },
+    "translate_only": { "weight": 0.3, "exclusive": true, "phrases": ["翻译", "translate"] },
+    "sibling_skills": { "weight": 0.3, "exclusive": true, "phrases": ["advanced-plan", "开个 worktree", "隔离干点活", "复盘", "沉淀经验", "派活给", "deepseek"] }
+  }
+}

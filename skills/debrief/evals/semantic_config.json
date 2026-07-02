@@ -1,0 +1,23 @@
+{
+  "positive_concepts": {
+    "closing": {
+      "weight": 0.45,
+      "phrases": ["收盘", "复盘", "debrief", "settle", "收个尾", "收尾"]
+    },
+    "sediment": {
+      "weight": 0.35,
+      "phrases": ["沉淀", "经验", "教训", "写进 memory", "存下来", "归档计划", "archive the plan", "lessons"]
+    },
+    "post_completion": {
+      "weight": 0.2,
+      "phrases": ["做完了", "merge 完", "issue 关了", "任务结束", "验收完", "任务"]
+    }
+  },
+  "negative_concepts": {
+    "summary_only": { "weight": 0.3, "exclusive": true, "phrases": ["总结", "文章", "要点", "summarize"] },
+    "report_writing": { "weight": 0.3, "exclusive": true, "phrases": ["周报", "汇报"] },
+    "explain_only": { "weight": 0.3, "exclusive": true, "phrases": ["解释", "什么是", "方法论"] },
+    "lark_archive": { "weight": 0.3, "exclusive": true, "phrases": ["飞书", "云盘"] },
+    "sibling_skills": { "weight": 0.28, "exclusive": true, "phrases": ["review 一下这个 PR", "代码质量", "CLAUDE.md", "清理过期记忆", "handoff", "换台机器", "关掉这个 issue", "合并代码"] }
+  }
+}

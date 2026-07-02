@@ -1,0 +1,27 @@
+{
+  "recommended_threshold": 0.22,
+  "negative_patterns": ["explain only", "just summarize", "只是看看", "查一下"],
+  "should_trigger": [
+    { "text": "帮我实现这个需求:给素材列表页加一个批量删除功能", "family": "natural_requirement" },
+    { "text": "implement this feature end to end: bulk export of briefs", "family": "natural_requirement" },
+    { "text": "https://e.gitee.com/icc_2/issues/IJYABC 修一下这个 issue", "family": "issue_url" },
+    { "text": "/ship 重构渲染管线,前后端都要动", "family": "explicit" },
+    { "text": "走完整流程把这个 feature 做完:需求确认、开发、review、收盘", "family": "full_pipeline" },
+    { "text": "这个 bug 从确认到提交一条龙修掉", "family": "full_pipeline" },
+    { "text": "ship 一下:给 apirouter 加限流", "family": "explicit" },
+    { "text": "继续上次 ship 的任务,worktree 还在", "family": "resume" }
+  ],
+  "should_not_trigger": [
+    { "text": "解释一下这个函数是干嘛的", "family": "explain_only" },
+    { "text": "帮我总结这次会话讲了什么", "family": "summary_only" },
+    { "text": "查一下这个 issue 现在什么状态", "family": "issue_read_only" },
+    { "text": "这段代码有没有性能问题,看看就行", "family": "review_only" },
+    { "text": "翻译这段注释成英文", "family": "translation" }
+  ],
+  "near_neighbor": [
+    { "text": "接着做 advanced-plan spec-v12 那个计划", "family": "plan_resume_direct" },
+    { "text": "开个 worktree 我要隔离干点活", "family": "worktree_only" },
+    { "text": "复盘一下刚才的任务,沉淀经验", "family": "debrief_only" },
+    { "text": "把这批机械改动派活给 deepseek 跑", "family": "dispatch_only" }
+  ]
+}
