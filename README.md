@@ -58,9 +58,21 @@ per-item readers its skills describe for main-session use.
 
 ## Hooks
 
-`hooks/hooks.json` registers one PreToolUse command hook (`skill-guard.sh`)
-matching `Skill|Read`, exempt inside **any subagent** (the hook input carries
-`agent_id` there) so delegation itself is never blocked:
+`hooks/hooks.json` registers four command hooks:
+
+- **`learn-capture.py`** (Stop) — greps the session transcript for
+  `[LEARN] <type>: <rule>` markers the model emitted while working and appends
+  new ones (deduped) to the project's `.claude/LEARNED.md` — the raw learning
+  inbox. Pure observer: always exit 0, never blocks stopping.
+- **`session-replay.py`** (SessionStart) — injects the [LEARN] convention plus
+  the last 5 LEARNED.md entries as context, closing the loop: correct once,
+  remembered next session. `/debrief` graduates inbox entries into curated memory.
+- **`worktree-guard.sh`** (PreToolUse, `Bash`) — enforces the exit-safety order
+  on `git worktree remove`: denies removal from inside the worktree, and
+  removal of a dirty worktree without `--force`.
+- **`skill-guard.sh`** (PreToolUse, `Skill|Read`) — exempt inside **any
+  subagent** (the hook input carries `agent_id` there) so delegation itself is
+  never blocked:
 
 - **`skill-guard.sh`** — in the main context, denies inline use of the noisy
   delegated skills (and reading their source files) and redirects each to its
