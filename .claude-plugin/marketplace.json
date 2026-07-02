@@ -13,7 +13,7 @@
       "name": "vito-agent-plugins",
       "source": "./",
       "description": "8 skills: ship (full dev SOP), advanced-plan, worktree, ask-ai, audit-context, exa-code, handoff, html-doc. 5 subagents: ship-tester, ship-analyst, general-skills-executor, ai-second-opinion, code-search. 1 PreToolUse hook: skill-guard.",
-      "version": "1.9.2",
+      "version": "1.9.3",
       "author": {
         "name": "vito"
       }
