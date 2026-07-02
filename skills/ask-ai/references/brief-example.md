@@ -1,6 +1,6 @@
 # Worked example — the dagre brief that worked
 
-The brief below (sent to codex, 2026-04-24) shows all five required sections in action: framing, inputs, expected vs actual, ruled out, length cap. It produced the correct diagnosis in one pass.
+The brief below (2026-04-24) shows all five required sections in action: framing, inputs, expected vs actual, ruled out, length cap. It produced the correct diagnosis in one pass.
 
 ```
 I have a puzzling bug with dagre graph layout. Same dagre@0.8.5, same

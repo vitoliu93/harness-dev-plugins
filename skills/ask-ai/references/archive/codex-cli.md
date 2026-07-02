@@ -1,4 +1,13 @@
-# Codex CLI operations (`codex` mode)
+# [ARCHIVED] Codex CLI operations (`codex` mode)
+
+> **Archived 2026-07-02 — codex is unavailable long-term.** Both the `codex` mode
+> and ultra's gpt-5.5 @ xhigh cross-vendor leg are suspended until codex returns
+> (no ETA). Kept verbatim so they can be reinstated. **To restore:** move this file
+> back to `../codex-cli.md`, then in `SKILL.md` + `agents/ai-second-opinion.md`
+> reinstate the `codex` mode row and ultra's gpt-5.5 leg.
+
+---
+
 
 Drive OpenAI's Codex CLI non-interactively via the Bash tool. **Never rely on codex's stdout** — Bash background mode swallows it, and it is full of banner/token-count noise. Capture the answer with `--output-last-message` and Read the file.
 
