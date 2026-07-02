@@ -57,8 +57,12 @@
   卡片;worktree 瘦身修正;advanced-plan 模板路径可移植性修复。全部纯 prompt,零新基建。
 - **v1.11(钩子化)**:Stop 钩子正则捕获 `[LEARN]` 标记自动写 memory(pro-workflow);
   SessionStart 注入"上次教训回放";worktree 退出安全序 PreToolUse 校验。
-- **v1.12(自动化)**:skill 保鲜度报告(hermes curator 的 dry-run 版,手动触发);
-  skill bundles(一个 YAML 组合 N 个技能应对固定场景);dispatch 的 workflow 模板化
+- **v1.12(自动化)**:skill 保鲜度报告 + 路由重叠检查 —— 引擎直接采用 yao-meta-skill
+  上游仓库(~/codebase/github/yao-meta-skill)的 `build_skill_atlas.py`(Jaccard 路由
+  重叠矩阵 + cadence 陈旧度)、`trigger_eval.py`(描述触发评测,fixture 格式
+  `evals/trigger_cases.json`:should/should-not/near-neighbor)、`context_sizer.py`
+  (token 预算)——全部 stdlib-only、离线、已实测可跑,不必自建;skill bundles
+  (一个 YAML 组合 N 个技能应对固定场景);dispatch 的 workflow 模板化
   (计划→多引擎并行→验收)。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。

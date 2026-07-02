@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "1.10.0"
+    "version": "1.10.1"
   },
   "plugins": [
     {
       "name": "vito-agent-plugins",
       "source": "./",
       "description": "10 skills: ship (adaptive dev SOP), debrief (收盘 sedimentation), dispatch (cheap-engine offload), advanced-plan, worktree, ask-ai, audit-context, exa-code, handoff, html-doc. 5 subagents: ship-tester, ship-analyst, general-skills-executor, ai-second-opinion, code-search. 1 PreToolUse hook: skill-guard.",
-      "version": "1.10.0",
+      "version": "1.10.1",
       "author": {
         "name": "vito"
       }

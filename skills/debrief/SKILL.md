@@ -90,6 +90,15 @@ Two checks against this task's experience:
    same task must not double-count). A row reaching **3** → propose invoking
    `yao-meta-skill` to author it (ask the user; never auto-create).
 
+   Graduation conditions (from yao-meta-skill's method — apply before proposing):
+   - **Near-neighbor rule**: draft the candidate's one-line `description:`
+     first; if it isn't clearly distinguishable from an existing skill's
+     description, fold the pattern into that skill instead of creating one.
+   - **Boundary test**: a pattern graduates only if it also names a boundary
+     or cost ("use for X, NOT for Y") — recurrence count alone isn't enough.
+   - On promotion, record a 3-line **eval-delta** in the candidate row:
+     before-description → after-description → what route confusion it fixes.
+
 2. **Skill drift** — did an existing skill mislead us this task (stale path,
    wrong assumption, missing branch)? Propose the one-line fix to that
    SKILL.md now, while the failure is fresh. Its own repo (e.g.
