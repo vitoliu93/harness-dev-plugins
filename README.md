@@ -1,10 +1,10 @@
 # vito-agent-plugins
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 8 skills under `skills/`, 3 subagents under
+is the plugin root — all 10 skills under `skills/`, 5 subagents under
 `agents/`, and the hooks under `hooks/` are auto-discovered. Retired skills and
 their companion subagents are parked under `archive/` (out of auto-discovery,
-kept for reference).
+kept for reference). North star + roadmap: `docs/north-star.md`.
 
 ## Install
 
@@ -23,9 +23,11 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 
 | Skill | What it does |
 |---|---|
-| ship | Full dev SOP: grill → plan → code → review → push. Chains advanced-plan, per-todo test subagents, ponytail-review. |
+| ship | Adaptive dev SOP: size (S/M/L) → grill → plan → code → review → 收盘. Chains grill-me, advanced-plan, test subagents, ponytail-review, project extension agents, debrief. |
+| debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
+| dispatch | Outsource brief-able execution to external headless engines (dscode/arkcode/droid/cursor-agent/codex) — smart model plans, cheap engine types, you verify the diff. |
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
-| worktree | Isolate a unit of work on a dedicated git worktree + branch; branch-as-identity, cross-agent / cross-machine handoff. |
+| worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order; documents what Claude Code auto-isolates. |
 | ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / ultra (gpt-5.5 @ xhigh or opus-4.8 @ max). |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
@@ -34,12 +36,14 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 
 ## Subagents
 
-Three subagents (spawnable via the Agent/Task tool as `vito-agent-plugins:<agent>`).
+Five subagents (spawnable via the Agent/Task tool as `vito-agent-plugins:<agent>`).
 Each runs noisy work in an isolated context so search dumps, engine transcripts,
 and upload logs never enter the main session; only a distilled answer comes back.
 
 | Agent | Model | Role |
 |---|---|---|
+| ship-tester | sonnet | Per-todo verification for /ship — reads the item, designs a test, runs it, writes `[PASS]`/`[FAIL + reason]` back to `todo.md`. Never fixes code. |
+| ship-analyst | sonnet | Autonomous requirement analyst for /ship — resolves `unexpected.md` items against goal/spec without interrupting the user. |
 | general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `html-doc`, `lark-*`), runs it end-to-end, returns only the distilled result (answer + sources / file path / 链接·ID). Holds no skill-specific knowledge — the skill body carries the specifics. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
 | ai-second-opinion | opus | Clean-context second opinion (当局者迷,旁观者清). Not a thin wrapper — it picks engine/mode (opus self-review / Codex gpt-5.5 / ultra) and reasons itself. Backs the `ask-ai` skill. |
 | code-search | sonnet | Standalone token-efficient codebase explorer — wraps no skill. Prefers auggie-mcp semantic search, `rg`/`fd` for exact matches, gemini-cli for complex analysis; returns terse located results, not raw file dumps. |
@@ -86,8 +90,8 @@ load at session start — restart the session after editing.
 .claude-plugin/
   plugin.json        # plugin manifest (name: vito-agent-plugins)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 8 skills, auto-discovered
-agents/              # 3 subagents, auto-discovered
+skills/              # 10 skills, auto-discovered
+agents/              # 5 subagents, auto-discovered
 hooks/
   hooks.json         # PreToolUse: skill-guard
   scripts/skill-guard.sh
@@ -96,10 +100,7 @@ archive/             # retired skills/ + agents/, not auto-discovered
 
 ## Note on portability
 
-Several skills (`advanced-plan`, `exa-code`)
-reference their own scripts/assets via hardcoded `~/.claude/skills/<name>/...` (or
-repo-relative `skills/<name>/...`) paths. When loaded as a plugin, skills live in
-the plugin cache, not `~/.claude/skills`, so those hardcoded paths do **not**
-resolve — those skills need `${CLAUDE_PLUGIN_ROOT}`-relative paths to be fully
-portable. The packaging here does not modify skill internals; fix those paths if
-you hit a missing-file error when a skill tries to read its own assets.
+`advanced-plan` now resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
+`~/.claude/skills` fallback. `exa-code` still references its scripts via
+hardcoded paths — fix those if you hit a missing-file error when it tries to
+read its own assets under a plugin-cache install.

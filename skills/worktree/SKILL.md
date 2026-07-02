@@ -1,70 +1,89 @@
 ---
 name: worktree
 description: >-
-  Isolate a unit of work in a dedicated git worktree + branch — the branch is
-  that work's durable, shareable identity, and any agent or machine picks it up
-  by entering the worktree or checking out the branch. Use when the user says
-  "开个 worktree", "隔离干活", "并行 agent", "按分支交接", "push 给另一台机器接着做",
-  or mentions EnterWorktree / ExitWorktree. Requires a git repo.
+  Conventions on top of git worktrees: the branch is a unit of work's durable,
+  shareable identity — any agent or machine picks it up by entering the worktree
+  or checking out the branch. Covers what Claude Code already isolates
+  automatically, naming, attach/resume, cross-machine handoff, parallel agents,
+  and the exit-safety order. Use when the user says "开个 worktree", "隔离干活",
+  "并行 agent", "按分支交接", or mentions EnterWorktree / ExitWorktree.
 argument-hint: "[new <slug> | enter <branch-or-path> | exit keep|remove]"
 ---
 
 # worktree
 
-Isolate a piece of work on its own git worktree and branch, so it can't collide with the main checkout, can run in parallel with other work, and can be handed to another agent or machine with zero prior context. The **branch is the identity** of the work; the worktree is just a checkout of it you can edit.
+The **branch is the identity** of the work; the worktree is just a checkout of
+it you can edit. Higher-level skills (`advanced-plan`, `ship`) layer artifacts
+on top of this model.
 
-This skill is the mechanism. Higher-level skills (e.g. `advanced-plan`, `ship`) layer their own artifacts on top — they all reach for the same model below.
+## What's already built in (don't re-do it)
+
+Verified against current Claude Code behavior:
+
+- **Background sessions** (`/bg`, `claude --bg`, agent view) auto-move into an
+  isolated worktree under `.claude/worktrees/` **before their first file edit**.
+  You don't need to arrange isolation for them.
+- **Main interactive sessions and plain subagents do NOT auto-isolate** — the
+  main session only via explicit `EnterWorktree`/`--worktree`; a subagent only
+  via `isolation: worktree`.
+- Auto-cleanup only sweeps worktrees that are old *and* clean (no uncommitted
+  changes / unpushed commits); a running agent's worktree is locked.
+
+So this skill's job is the **conventions**, not the mechanics.
 
 ## When to use / when not
 
-- **Use** when work is risky, parallel, or multi-step: a feature/refactor you don't want polluting the main checkout, several agents working at once, or a task that may be handed off or resumed later.
-- **Don't** bother for a trivial in-place edit — a 2-minute fix doesn't need its own worktree.
-- **Background sessions that haven't isolated their changes yet:** do **not** call `EnterWorktree` (worktrees there get pruned and the work is lost). Keep the work in the main checkout instead. (See `handoff` for the canonical case.)
-
-## Core model: one unit of work = one branch = one worktree
-
-The branch *is* the work's identity. Keep the worktree name, branch name, and any slug on the same `<date>-<slug>` stem so one keyword greps all three. `<slug>` = a 2-4 word kebab-case summary.
+- **Use** for risky, parallel, multi-step, or handoff-able work.
+- **Don't** for a trivial in-place edit — a 2-minute fix doesn't need a branch.
 
 ## Create / enter
 
-1. **Require git.** If `git rev-parse --is-inside-work-tree` fails, stop and offer `git init` — don't work in a non-repo.
-2. **Enter a worktree before any work.** If you're on the main checkout, call **`EnterWorktree`** with `name: "<date>-<slug>"`. This creates `.claude/worktrees/<date>-<slug>/` on a new branch of the same name and switches the session into it. *Only then* start editing.
-3. **Already inside a worktree?** Reuse it — `EnterWorktree` refuses to nest.
+1. Require git (`git rev-parse --is-inside-work-tree`; else offer `git init`).
+2. `EnterWorktree name: "<date>-<slug>"` before any work — `<slug>` = 2-4 word
+   kebab-case summary; worktree, branch, and any plan slug share the same stem
+   so one keyword greps all three.
+3. Already inside a worktree? Reuse it — EnterWorktree refuses to nest.
+4. Base ref follows the repo's `worktree.baseRef` setting; don't override
+   unless asked.
 
-> `EnterWorktree`'s base ref follows the repo's `worktree.baseRef` setting (`fresh` = origin/default branch, `head` = current HEAD). Don't override it unless the user asks.
+## Attach to existing work (resume / handoff)
 
-## Attach to an existing branch (resume / handoff)
-
-To pick up work that already has a branch, discover by the **branch/worktree**, not a loose file glob:
+Discover by branch/worktree, not file globs:
 
 ```bash
 git worktree list | grep -i "<kw>"          # live worktree?
 git branch -a --list "*<kw>*"                # branch (local or remote)?
 ```
 
-- **Live worktree matches** → `EnterWorktree path: <its path>`.
-- **Branch matches, no worktree** → `git worktree add .claude/worktrees/<stem> <branch>`, then `EnterWorktree path: …`. (Remote-only branch? `git fetch` first.)
-- **Nothing matches** → it's new work; create one (above).
+- Live worktree → `EnterWorktree path: <its path>`.
+- Branch only → `git worktree add .claude/worktrees/<stem> <branch>`, then enter.
+  (Remote-only → `git fetch` first.)
+- Nothing → it's new work.
 
-## Cross-machine handoff
-
-The branch is the only thing another machine can see:
-
-- Push the branch.
-- The other machine: `git fetch`, `git worktree add .claude/worktrees/<stem> <branch>`, then enter it.
-- Push after each meaningful checkpoint if live cross-machine handoff matters.
+**Cross-machine**: push the branch; the other machine fetches, adds a worktree
+on it, enters. Push after each meaningful checkpoint if live handoff matters.
 
 ## Commit discipline
 
-Commit on the branch as you go — at minimum at each checkpoint. Another worktree or machine only sees what's committed; uncommitted work is invisible to handoff.
+Commit on the branch as you go — uncommitted work is invisible to every other
+worktree, machine, and future session.
 
 ## Parallel agents
 
-The branch is the shared object. Two ways to share it:
+- **Same worktree**: each agent `EnterWorktree path:` the same path,
+  coordinate via a `.lock` file (owner/lease), one writer per file.
+- **Worktree per agent, same branch**: `git worktree add … <branch>` each;
+  reconcile in git instead of racing on one tree.
 
-- **Same worktree** → each agent enters the *same* worktree (`EnterWorktree path: …`) and coordinates via a lock (e.g. a `.lock` file with `owner` / `lease`; one writer per file at a time). They share one working tree, so the lock matters.
-- **A worktree per agent off the same branch** → `git worktree add … <branch>` each; they commit to the same branch and reconcile in git instead of racing on one tree.
+## Exit safety (the #1 observed failure mode)
 
-## Exit
+The order is fixed — violating it has caused deadlocks and lost work:
 
-Leave only when the user asks: `ExitWorktree action: "keep"` to preserve it, or `"remove"` once the branch is merged. **Don't auto-remove** — uncommitted work or an unmerged branch would be lost.
+1. **Commit** (or cherry-pick out) everything you want to keep.
+2. **`ExitWorktree action: "keep"`** — leave the session's pin first.
+3. Merge/land the branch the normal way.
+4. Only after merge: remove — `ExitWorktree action: "remove"` or
+   `git worktree remove <path>` **from outside the worktree, never while a
+   session is still inside it**.
+
+Never auto-remove: an unmerged branch or uncommitted tree dies with it.

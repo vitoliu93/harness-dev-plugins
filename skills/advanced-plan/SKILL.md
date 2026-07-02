@@ -49,17 +49,17 @@ $ROOT/docs/advanced-plans/<YYYY-MM-DD>-<slug>/
   .lock                                # optional — multi-agent only
 ```
 
-`<slug>` = 2-4 word kebab-case summary, matching the branch/worktree stem. **Commit the plan dir on its branch** (it's the audit trail and the cross-agent channel) — never gitignore `docs/advanced-plans/`. When the branch merges to main, the dir lands in history alongside the code it produced, as first-class project docs.
+`<slug>` = 2-4 word kebab-case summary, matching the branch/worktree stem. **Commit the plan dir on its branch** (it's the audit trail and the cross-agent channel) — never gitignore `docs/advanced-plans/`. When the branch merges to main, the dir lands in history alongside the code it produced, as first-class project docs. Closed plans get moved to `docs/advanced-plans/_archive/<date>-<slug>/` by the `debrief` skill.
 
 **Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. The discovery + cross-machine handoff mechanics are in the **`worktree`** skill.
 
 ## Templates
 
-Blank templates live in `assets/templates/` (one per file). **Creation = copy, then fill in** — never hand-retype the structure. Point `TPL` at wherever the skill is installed (usually `~/.claude/skills/advanced-plan`, possibly a plugin cache):
+Blank templates live in `assets/templates/` (one per file). **Creation = copy, then fill in** — never hand-retype the structure. `TPL` resolves for both install shapes (plugin cache via `CLAUDE_PLUGIN_ROOT`, or `~/.claude/skills`):
 
 ```bash
 ROOT=$(git rev-parse --show-toplevel)        # repo/worktree root — plans live with the code, on this branch
-TPL=~/.claude/skills/advanced-plan/assets/templates
+TPL="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude}/skills/advanced-plan/assets/templates"
 DIR="$ROOT/docs/advanced-plans/$(date +%F)-<slug>"
 mkdir -p "$DIR"
 cp "$TPL"/{goal,spec,todo}.md "$DIR"/        # light tier
@@ -107,7 +107,7 @@ Trigger: "continue advanced-plan", "恢复计划", "接着做 <slug>", or a `/ad
 1. No keyword at all? List the advanced-plan worktrees with each `todo.md` `Current State` one-liner; ask which. Use `find` (not a bare glob — zsh aborts on no-match):
    ```bash
    for wt in $(git worktree list --porcelain | awk '/^worktree /{print $2}'); do
-     td=$(find "$wt/docs/advanced-plans" -name todo.md 2>/dev/null | head -1)
+     td=$(find "$wt/docs/advanced-plans" -name todo.md -not -path "*/_archive/*" 2>/dev/null | head -1)
      [ -n "$td" ] && printf '%s — %s\n' "$wt" "$(grep -m1 'Status' "$td")"
    done
    ```
@@ -121,7 +121,8 @@ Trigger: task done, or "review advanced-plan", "复盘这个任务".
 
 1. Copy `review.md`'s template and run the retrospective (see semantics below).
 2. Commit the final plan state on the branch. Land the work the usual way (open a PR / merge the branch) — the committed `docs/advanced-plans/<slug>/` rides along as the audit trail.
-3. Leave the worktree only when the user asks (`ExitWorktree keep|remove`, see `worktree`) — `keep` to preserve, `remove` once merged. Don't auto-remove.
+3. Invoke the **`debrief`** skill for sedimentation — it archives the plan dir, writes the memory entry, and scans for skill candidates.
+4. Leave the worktree only when the user asks (`ExitWorktree keep|remove`, see `worktree`) — `keep` to preserve, `remove` once merged. Don't auto-remove.
 
 ---
 
