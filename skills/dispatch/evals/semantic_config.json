@@ -6,7 +6,7 @@
     },
     "engine_named": {
       "weight": 0.4,
-      "phrases": ["deepseek", "dscode", "droid", "cursor-agent", "codex", "gemini", "arkcode", "让 cursor", "引擎"]
+      "phrases": ["deepseek", "dscode", "droid", "cursor-agent", "arkcode", "让 cursor", "引擎"]
     },
     "execute_plan": {
       "weight": 0.2,

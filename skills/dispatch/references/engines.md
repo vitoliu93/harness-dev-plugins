@@ -46,25 +46,6 @@ cursor-agent -p "<brief>" --output-format json --model <model> --force
   planning pass using Cursor's workspace index. `--list-models` to enumerate.
 - Quota: Cursor subscription.
 
-## codex — OpenAI
-
-```bash
-codex exec -m <model> "<brief>"
-```
-
-- `codex exec review` is purpose-built for one-shot diff review — the go-to
-  cross-family reviewer. Config overrides via `-c key=value`.
-- Quota: OpenAI account.
-
-## gemini
-
-```bash
-gemini -p "<brief>" -m <model> -o json --approval-mode yolo
-```
-
-- Large context window; good for cheap long-document digestion.
-- Quota: Google account.
-
 ## claude — the real one (DO NOT use for bulk)
 
 ```bash

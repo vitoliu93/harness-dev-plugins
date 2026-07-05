@@ -2,8 +2,8 @@
 name: dispatch
 description: >-
   Outsource brief-able execution work to external headless engines —
-  dscode/arkcode (claude binary on DeepSeek/Ark quota), droid, cursor-agent,
-  codex, gemini — so the scarce Claude quota stays on planning and review.
+  dscode/arkcode (claude binary on DeepSeek/Ark quota), droid, cursor-agent —
+  so the scarce Claude quota stays on planning and review.
   Smart model plans, cheap engine executes, you verify the diff. Use when the
   user says "dispatch", "派活", "外包", "让 deepseek/droid/cursor 做", or when a
   plan contains bulk mechanical items worth offloading.
@@ -43,9 +43,7 @@ OUTPUT    where results land (worktree branch / file path / stdout)
 |---|---|---|
 | Bulk implementation from a settled plan | `dscode` (fallback `arkcode`) | Same claude binary → your skills/hooks/plugins work as-is; independent quota |
 | Autonomous subtask in its own branch | `droid exec --auto low -w` | Built-in worktree + autonomy levels |
-| Cross-family second opinion on a diff/plan | `codex exec` | Different model family = genuinely independent eyes. But if the ask is "review/second opinion" itself, prefer the `ask-ai` skill — it manages engine choice and briefing; dispatch is for execution offload |
 | Task benefiting from workspace indexing | `cursor-agent -p` | Cursor's index; `--mode plan` for read-only passes |
-| Cheap long-context summarize/translate | `gemini -p` | Large context, separate quota |
 
 Invocation templates and quirks per engine: `references/engines.md` (read the
 card before first use of an engine in a session).
@@ -72,6 +70,6 @@ precisely to avoid this.
 ## Roles by tier
 
 Plan/grill/review/verdict → main session (you). Mechanical execution →
-dscode/droid. Adversarial review → codex/cursor-agent. This mirrors the
+dscode/droid. This mirrors the
 subagent model-tier rule: the node doing the actual thinking gets the capable
 model; typing gets the cheap one.
