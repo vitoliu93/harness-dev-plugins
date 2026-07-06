@@ -2,22 +2,102 @@
   "positive_concepts": {
     "offload": {
       "weight": 0.4,
-      "phrases": ["派活", "外包", "dispatch", "offload", "便宜模型", "体力活", "别烧 claude", "省配额", "quota", "找别的引擎"]
+      "phrases": [
+        "派活",
+        "外包",
+        "dispatch",
+        "offload",
+        "便宜模型",
+        "体力活",
+        "别烧 claude",
+        "省配额",
+        "quota",
+        "找别的引擎"
+      ]
     },
     "engine_named": {
       "weight": 0.4,
-      "phrases": ["deepseek", "dscode", "droid", "cursor-agent", "arkcode", "让 cursor", "引擎"]
+      "phrases": [
+        "deepseek",
+        "dscode",
+        "droid",
+        "cursor-agent",
+        "arkcode",
+        "让 cursor",
+        "引擎"
+      ]
     },
     "execute_plan": {
       "weight": 0.2,
-      "phrases": ["执行这个", "批量重命名", "机械修改", "批量改动", "跑", "执行"]
+      "phrases": [
+        "执行这个",
+        "批量重命名",
+        "机械修改",
+        "批量改动",
+        "跑",
+        "执行"
+      ]
+    },
+    "read_layer": {
+      "weight": 0.5,
+      "phrases": [
+        "勘察",
+        "影响面",
+        "只读分析",
+        "只读",
+        "plan 模式",
+        "read-only",
+        "别费主会话",
+        "用 cursor"
+      ]
     }
   },
   "negative_concepts": {
-    "inline_work": { "weight": 0.3, "exclusive": true, "phrases": ["你自己来", "自己改", "就行"] },
-    "explain_only": { "weight": 0.3, "exclusive": true, "phrases": ["解释", "什么意思", "是什么"] },
-    "planning_work": { "weight": 0.3, "exclusive": true, "phrases": ["好好想想", "架构", "怎么设计"] },
-    "interactive_work": { "weight": 0.3, "exclusive": true, "phrases": ["边聊边改", "别外包"] },
-    "sibling_skills": { "weight": 0.28, "exclusive": true, "phrases": ["subagent", "搜一下代码库", "第二意见", "review 这个 diff", "并行开几个 agent"] }
+    "inline_work": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "你自己来",
+        "自己改",
+        "就行"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么意思",
+        "是什么"
+      ]
+    },
+    "planning_work": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "好好想想",
+        "架构",
+        "怎么设计"
+      ]
+    },
+    "interactive_work": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "边聊边改",
+        "别外包"
+      ]
+    },
+    "sibling_skills": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "subagent",
+        "搜一下代码库",
+        "第二意见",
+        "review 这个 diff",
+        "并行开几个 agent"
+      ]
+    }
   }
 }

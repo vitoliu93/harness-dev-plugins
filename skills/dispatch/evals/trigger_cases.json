@@ -7,7 +7,9 @@
     { "text": "让 cursor-agent 把这个组件批量重命名", "family": "engine_named" },
     { "text": "这种体力活外包给便宜模型跑", "family": "offload" },
     { "text": "用 dscode 执行这个已经定好的计划", "family": "engine_named" },
-    { "text": "计划我批了,执行别烧 claude 配额,找别的引擎", "family": "quota_saving" }
+    { "text": "计划我批了,执行别烧 claude 配额,找别的引擎", "family": "quota_saving" },
+    { "text": "用 cursor 的 plan 模式把这个模块的影响面勘察一遍", "family": "read_layer" },
+    { "text": "只读分析一下这个改动会波及哪些文件,别费主会话的量", "family": "read_layer" }
   ],
   "should_not_trigger": [
     { "text": "你自己来改这个 bug 就行", "family": "inline_work" },
