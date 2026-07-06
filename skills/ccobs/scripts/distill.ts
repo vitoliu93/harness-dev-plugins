@@ -26,7 +26,7 @@ const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf
 const DIGEST_CAP = 20_000; // chars; keep head+tail, endings decide `outcome`
 
 const PROVIDERS = [
-  { env: "DEEPSEEK_API_KEY", base_url: "https://api.deepseek.com/v1", model: "deepseek-chat" },
+  { env: "DEEPSEEK_API_KEY", base_url: "https://api.deepseek.com/v1", model: "deepseek-v4-flash" },
   { env: "GEMINI_API_KEY", base_url: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-3.1-flash-lite" },
   { env: "OPENROUTER_API_KEY", base_url: "https://openrouter.ai/api/v1", model: "openrouter/free" },
   { env: "LMSTUDIO_API_KEY", base_url: "http://localhost:1234/v1", model: "local" },
