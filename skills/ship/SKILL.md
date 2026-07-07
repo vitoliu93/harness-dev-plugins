@@ -3,7 +3,7 @@ name: ship
 description: >-
   Adaptive dev SOP: size the task (S/M/L), then requirement confirmation →
   planning → coding → review → 收盘. Small tasks skip ceremony; large tasks get
-  the full pipeline. Chains grill-me, advanced-plan, per-todo testing subagents,
+  the full pipeline. Chains blindspot, grill-me, advanced-plan, per-todo testing subagents,
   ponytail-review, project-level extension agents, and debrief. Trigger with
   /ship, a natural requirement, or a Gitee issue URL. Re-run in an existing
   plan worktree to resume mid-task.
@@ -49,11 +49,15 @@ Classify by observable facts, not vibes. Announce the size and what gets skipped
 
 **Extension point `issue-context`**: spawn the project's issue operator agent (e.g. kox plugin's `gitee-operator`) to fetch issue detail + comments. No such agent available → fetch via MCP tools or ask the user to paste the issue body. Merge into grilling context. Skip for plain-text requirements.
 
-### 1b. Grill until settled
+### 1b. Blind spot pass (M/L + 生疏信号 only)
+
+Before grilling, check for 生疏信号: the requirement names no concrete files/functions, touches domain knowledge outside the repo, or the user says 不熟/不懂. Any signal on an M/L task → invoke the **`blindspot`** skill on that territory and feed its ranked briefing into the grilling questions below. S tasks: never run it.
+
+### 1c. Grill until settled
 
 Invoke the **`grill-me`** skill with the requirement as topic — depth per size (S: one confirm question; M/L: until every branch resolves). If grill-me is unavailable, fall back inline: one question at a time, each with a recommended answer, covering goal / affected repos / constraints / unknowns. Then declare: **"Requirement settled."**
 
-### 1c. Create the plan (M/L only)
+### 1d. Create the plan (M/L only)
 
 Invoke `advanced-plan` with the settled requirement — light tier for M, full for L. It creates `docs/advanced-plans/<date>-<slug>/{goal,spec,todo}.md` (+ the rest for full).
 
@@ -63,7 +67,7 @@ Ship's own additions to the plan dir:
 - **`exploration.md`** bootstrap: spawn the `code-search` agent per affected repo ("recent history + modules touched by <requirement>") and append its digest under `## git-context` — don't burn main context on raw `git log`.
 - **`unexpected.md`** created now (template at the bottom of this file).
 
-### 1d. Generate design.html (L only)
+### 1e. Generate design.html (L only)
 
 Invoke `html-doc` with `spec.md` as source: component diagram, key API contracts, tech decisions with one-line rationale.
 
