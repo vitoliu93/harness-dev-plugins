@@ -1,6 +1,6 @@
 {
   "name": "vito-agent-plugins",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "description": "Vito's personal Claude Code skill collection. 13 skills: ship (adaptive dev SOP — size S/M/L → blindspot→grill→plan→code→review→收盘), debrief (收盘 sedimentation), dispatch (outsource to cheap headless engines), blindspot (unknown-unknowns territory briefing), advanced-plan, worktree, ask-ai, audit-context, exa-code, handoff, html-doc, skill-atlas, ccobs (SQLite observability ledger over session transcripts). 5 subagents: ship-tester, ship-analyst, general-skills-executor, ai-second-opinion, code-search. PreToolUse skill-guard redirects noisy inline skill usage to the right subagent.",
   "author": {
     "name": "vito",

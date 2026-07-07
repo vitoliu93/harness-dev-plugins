@@ -13,7 +13,7 @@ import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, ren
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, sep } from "node:path";
 
-const ROOT = join(homedir(), ".claude", "projects");
+const ROOT = process.env.CCOBS_ROOT ?? join(homedir(), ".claude", "projects");
 const OBS_DIR = process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability");
 const DB_PATH = join(OBS_DIR, "obs.db");
 const QUEUE = join(OBS_DIR, "queue.jsonl");
@@ -25,12 +25,20 @@ type Meta = {
   cwd: string | null;
   git_branch: string | null;
   cc_version: string | null;
+  subagent_type: string | null;
 };
 
 function connect(): Database {
   mkdirSync(OBS_DIR, { recursive: true });
   const db = new Database(DB_PATH);
   db.exec(readFileSync(join(import.meta.dir, "schema.sql"), "utf8"));
+  // migrations for pre-existing DBs; no-op (caught) when the column already exists
+  for (const ddl of [
+    "ALTER TABLE sessions ADD COLUMN subagent_type TEXT",
+    "ALTER TABLE tool_calls ADD COLUMN error_snippet TEXT",
+  ]) {
+    try { db.exec(ddl); } catch {}
+  }
   return db;
 }
 
@@ -53,21 +61,22 @@ const stmts = {
   tool: db.prepare(
     "INSERT OR IGNORE INTO tool_calls(id, session_id, ts, tool, skill, subagent_type, model_param, background) VALUES (?,?,?,?,?,?,?,?)",
   ),
-  toolErr: db.prepare("UPDATE tool_calls SET is_error = 1 WHERE id = ?"),
+  toolErr: db.prepare("UPDATE tool_calls SET is_error = 1, error_snippet = COALESCE(?, error_snippet) WHERE id = ?"),
   slash: db.prepare(
     "INSERT OR IGNORE INTO tool_calls(id, session_id, ts, tool, skill) VALUES (?,?,?,'SlashCommand',?)",
   ),
   hook: db.prepare("INSERT INTO hook_runs(session_id, ts, command, duration_ms) VALUES (?,?,?,?)"),
   hookErr: db.prepare("INSERT INTO hook_runs(session_id, ts, command, error) VALUES (?,?,?,?)"),
   session: db.prepare(
-    `INSERT INTO sessions(session_id, kind, parent_id, project, cwd, git_branch, cc_version, started_at, ended_at, file_path)
-     VALUES (?,?,?,?,?,?,?,?,?,?)
+    `INSERT INTO sessions(session_id, kind, parent_id, subagent_type, project, cwd, git_branch, cc_version, started_at, ended_at, file_path)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)
      ON CONFLICT(session_id) DO UPDATE SET
-       ended_at   = MAX(COALESCE(sessions.ended_at,''), COALESCE(excluded.ended_at,'')),
-       started_at = COALESCE(sessions.started_at, excluded.started_at),
-       cwd        = COALESCE(sessions.cwd, excluded.cwd),
-       git_branch = COALESCE(sessions.git_branch, excluded.git_branch),
-       cc_version = COALESCE(sessions.cc_version, excluded.cc_version)`,
+       ended_at      = MAX(COALESCE(sessions.ended_at,''), COALESCE(excluded.ended_at,'')),
+       started_at    = COALESCE(sessions.started_at, excluded.started_at),
+       subagent_type = COALESCE(sessions.subagent_type, excluded.subagent_type),
+       cwd           = COALESCE(sessions.cwd, excluded.cwd),
+       git_branch    = COALESCE(sessions.git_branch, excluded.git_branch),
+       cc_version    = COALESCE(sessions.cc_version, excluded.cc_version)`,
   ),
 };
 
@@ -80,6 +89,7 @@ function handleEvent(o: any, sid: string, meta: Meta) {
   meta.cwd ??= o.cwd ?? null;
   meta.git_branch ??= o.gitBranch ?? null;
   meta.cc_version ??= o.version ?? null;
+  meta.subagent_type ??= o.agentType ?? null; // present in newer CC subagent JSONL; older files get backfilled post-ingest
 
   for (const h of o.hookInfos ?? []) {
     stmts.hook.run(sid, ts, h.command ?? null, h.durationMs ?? null);
@@ -119,8 +129,12 @@ function handleEvent(o: any, sid: string, meta: Meta) {
     if (typeof content === "string") texts.push(content);
     else if (Array.isArray(content)) {
       for (const c of content) {
-        if (c?.type === "tool_result" && c.is_error) stmts.toolErr.run(c.tool_use_id);
-        else if (c?.type === "text" && c.text) texts.push(c.text);
+        if (c?.type === "tool_result" && c.is_error) {
+          const raw = typeof c.content === "string"
+            ? c.content
+            : (Array.isArray(c.content) ? c.content.filter((b: any) => b?.type === "text").map((b: any) => b.text).join(" ") : "");
+          stmts.toolErr.run(raw ? raw.slice(0, 300) : null, c.tool_use_id);
+        } else if (c?.type === "text" && c.text) texts.push(c.text);
       }
     }
     for (const text of texts) {
@@ -140,7 +154,7 @@ function ingestFile(path: string): number {
   if (size < offset) offset = 0; // file was rewritten; idempotent inserts absorb dups
   if (size === offset) return 0;
 
-  const meta: Meta = { started_at: null, ended_at: null, cwd: null, git_branch: null, cc_version: null };
+  const meta: Meta = { started_at: null, ended_at: null, cwd: null, git_branch: null, cc_version: null, subagent_type: null };
   // read only the unseen tail — a long-lived session's file otherwise gets fully re-read on every Stop
   const fd = openSync(path, "r");
   const buf = Buffer.allocUnsafe(size - offset);
@@ -160,7 +174,7 @@ function ingestFile(path: string): number {
     } catch {}
   }
 
-  stmts.session.run(sid, kind, parent, project, meta.cwd, meta.git_branch, meta.cc_version,
+  stmts.session.run(sid, kind, parent, meta.subagent_type, project, meta.cwd, meta.git_branch, meta.cc_version,
     meta.started_at, meta.ended_at, path);
   stmts.putState.run(path, offset + pos);
   return n;
@@ -204,5 +218,14 @@ for (const p of files) {
   }
 }
 db.exec("COMMIT");
+// Backfill subagent_type for sessions whose JSONL predates the agentType field:
+// nearest preceding Agent spawn in the parent session. Idempotent; NULL stays
+// NULL until the parent's tool_calls arrive on a later sweep.
+db.exec(`
+  UPDATE sessions SET subagent_type = (
+    SELECT tc.subagent_type FROM tool_calls tc
+    WHERE tc.session_id = sessions.parent_id AND tc.tool = 'Agent' AND tc.ts <= sessions.started_at
+    ORDER BY tc.ts DESC LIMIT 1
+  ) WHERE kind = 'subagent' AND subagent_type IS NULL AND parent_id IS NOT NULL`);
 db.close();
 console.log(`ccobs: ${touched}/${files.length} files had new data, ${total} events ingested → ${DB_PATH}`);

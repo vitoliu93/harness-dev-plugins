@@ -9,16 +9,17 @@ CREATE TABLE IF NOT EXISTS ingest_state (
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-  session_id  TEXT PRIMARY KEY,          -- filename stem; subagents: 'agent-xxxx'
-  kind        TEXT NOT NULL,             -- 'main' | 'subagent'
-  parent_id   TEXT,                      -- parent session_id for subagents
-  project     TEXT NOT NULL,             -- ~/.claude/projects/<project>/
-  cwd         TEXT,
-  git_branch  TEXT,
-  cc_version  TEXT,
-  started_at  TEXT,                      -- ISO8601, min event ts
-  ended_at    TEXT,                      -- ISO8601, max event ts
-  file_path   TEXT NOT NULL              -- pointer back to raw jsonl
+  session_id    TEXT PRIMARY KEY,        -- filename stem; subagents: 'agent-xxxx'
+  kind          TEXT NOT NULL,           -- 'main' | 'subagent'
+  parent_id     TEXT,                    -- parent session_id for subagents
+  subagent_type TEXT,                    -- for kind='subagent': agentType from JSONL, or backfilled from parent's Agent tool_call
+  project       TEXT NOT NULL,           -- ~/.claude/projects/<project>/
+  cwd           TEXT,
+  git_branch    TEXT,
+  cc_version    TEXT,
+  started_at    TEXT,                    -- ISO8601, min event ts
+  ended_at      TEXT,                    -- ISO8601, max event ts
+  file_path     TEXT NOT NULL            -- pointer back to raw jsonl
 );
 
 -- one row per assistant message (deduped by message_id; streaming emits
@@ -45,7 +46,8 @@ CREATE TABLE IF NOT EXISTS tool_calls (
   subagent_type TEXT,                    -- when tool = Agent
   model_param   TEXT,                    -- explicit model on Agent spawn (NULL = missing!)
   background    INTEGER,                 -- run_in_background
-  is_error      INTEGER DEFAULT 0        -- set from matching tool_result
+  is_error      INTEGER DEFAULT 0,       -- set from matching tool_result
+  error_snippet TEXT                     -- first 300 chars of the error tool_result — the one deliberate exception to "no bodies"
 );
 CREATE INDEX IF NOT EXISTS idx_tools_session ON tool_calls(session_id);
 CREATE INDEX IF NOT EXISTS idx_tools_tool ON tool_calls(tool);
