@@ -36,7 +36,9 @@ DELEGATE=(
   "ask-ai|ai-second-opinion||AI 第二意见/清洁上下文校审"
 )
 # Skills that match a glob above but must stay in the main context.
-EXEMPT=( "lark-skill-maker" )
+# lark-im is outbound messaging (a send/write) — the "写操作不下放" rule keeps it
+# in the main session for reviewable authorization, so it can't be delegated.
+EXEMPT=( "lark-skill-maker" "lark-im" )
 
 is_exempt() {
   local s="$1" e
