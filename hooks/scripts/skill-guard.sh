@@ -26,7 +26,7 @@ tool_name=$(jq -r '.tool_name // empty' <<<"$input")
 # Delegation table — the single source of truth. To delegate a new noisy skill,
 # add one row. Format: "skill_glob|target_agent|model|hint|extra"
 #   skill_glob   shell glob matched against the base skill name (namespace stripped)
-#   target_agent subagent to redirect to (resolved under vito-agent-plugins:)
+#   target_agent subagent to redirect to (resolved under dev-kit:)
 #   model        推荐 model for the spawn; empty = let the target agent pick its own tier
 #   hint         short label for the redirect message
 #   extra        optional clause appended to the redirect message (e.g. hard rules)
@@ -53,7 +53,7 @@ deny() {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: ("\($hint)（\($sk)）请委派给 \($ag) subagent 执行：Agent 工具，subagent_type \"vito-agent-plugins:\($ag)\"\($mc)。在 prompt 里写清楚要用的技能（\($sk)）、操作意图和关键参数；该技能体和中间输出会污染主上下文，subagent 只带回提炼后的结果。" + $extra)
+      permissionDecisionReason: ("\($hint)（\($sk)）请委派给 \($ag) subagent 执行：Agent 工具，subagent_type \"dev-kit:\($ag)\"\($mc)。在 prompt 里写清楚要用的技能（\($sk)）、操作意图和关键参数；该技能体和中间输出会污染主上下文，subagent 只带回提炼后的结果。" + $extra)
     }
   }'
 }

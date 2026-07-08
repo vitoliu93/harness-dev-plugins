@@ -1,4 +1,4 @@
-# vito-agent-plugins
+# dev-kit
 
 Vito's global skill collection, packaged as a Claude Code plugin. The repo root
 is the plugin root — all 11 skills under `skills/`, 5 subagents under
@@ -13,11 +13,11 @@ out (e.g. at `~/codebase/projects/agent-plugins`):
 
 ```
 /plugin marketplace add ~/codebase/projects/agent-plugins
-/plugin install vito-agent-plugins@vito-agents
+/plugin install dev-kit@vito-agents
 ```
 
-Then restart the session. Skills become available as `vito-agent-plugins:<skill>`
-(e.g. `/vito-agent-plugins:advanced-plan`).
+Then restart the session. Skills become available as `dev-kit:<skill>`
+(e.g. `/dev-kit:advanced-plan`).
 
 ## Skills
 
@@ -36,7 +36,7 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 
 ## Subagents
 
-Five subagents (spawnable via the Agent/Task tool as `vito-agent-plugins:<agent>`).
+Five subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
 Each runs noisy work in an isolated context so search dumps, engine transcripts,
 and upload logs never enter the main session; only a distilled answer comes back.
 
@@ -99,7 +99,7 @@ load at session start — restart the session after editing.
 
 ```
 .claude-plugin/
-  plugin.json        # plugin manifest (name: vito-agent-plugins)
+  plugin.json        # plugin manifest (name: dev-kit)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
 skills/              # 11 skills, auto-discovered
 agents/              # 5 subagents, auto-discovered

@@ -20,7 +20,7 @@ If the skill name is implicit, infer it from the task and your available-skills 
 
 ## Workflow
 
-1. **Load the skill with the Skill tool.** Prefer the fully-qualified name when the skill ships in this plugin (`vito-agent-plugins:exa-code`, `vito-agent-plugins:html-doc`), bare name for global skills (`lark-im`, `lark-doc`, …). Load ONLY what the task needs — skill bodies are large.
+1. **Load the skill with the Skill tool.** Prefer the fully-qualified name when the skill ships in this plugin (`dev-kit:exa-code`, `dev-kit:html-doc`), bare name for global skills (`lark-im`, `lark-doc`, …). Load ONLY what the task needs — skill bodies are large.
 2. **Follow the skill's own protocol exactly**, including its routing handoffs (e.g. lark-doc extracting a sheet token then switching to lark-sheets). The skill is the source of truth for command paths and defaults.
 3. **You cannot spawn nested subagents.** Where a skill describes fanning out per-item readers for main-session use, do that reading inline here with strict distillation discipline instead.
 4. **Verify writes before claiming success.** A search returns results; a send returns a message_id; a doc/file op returns a URL or path. No receipt, no success claim.
