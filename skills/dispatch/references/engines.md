@@ -81,5 +81,5 @@ claude -p "<brief>" --model sonnet --output-format json --bare
 
 - Shares the interactive 5h quota (verified: same stored credentials, no
   separate headless tier). Only when the task genuinely needs Anthropic
-  models AND the main session must stay free — e.g. ask-ai ultra mode.
+  models AND the main session must stay free — e.g. advisor ultra mode.
   `--bare` skips hooks/skills for reproducibility.

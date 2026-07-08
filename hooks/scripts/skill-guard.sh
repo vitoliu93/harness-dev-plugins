@@ -34,7 +34,6 @@ DELEGATE=(
   "exa-code|general-skills-executor|sonnet|Exa 网页搜索与代码查找|"
   "html-doc|general-skills-executor|sonnet|HTML 可视化/信息图/架构图|"
   "lark-*|general-skills-executor|haiku|飞书操作 通知/留档/日程/读取|硬规则：涉及内容创作（OKR 措辞、文档正文、评论文案等核心交付）时，主模型必须先拟好最终全文、逐字放进 prompt，executor 只执行 API 调用、不得代拟内容——判断密集的部分不外包。"
-  "ask-ai|ai-second-opinion||AI 第二意见/清洁上下文校审|"
 )
 # Skills that match a glob above but must stay in the main context.
 # lark-im is outbound messaging (a send/write) — the "写操作不下放" rule keeps it

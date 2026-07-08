@@ -36,7 +36,7 @@ Classify by observable facts, not vibes. Announce the size and what gets skipped
 | Plan artifacts | none | advanced-plan **light** (goal+spec+todo) | advanced-plan **full** + design.html |
 | Isolation | in-place edit, no worktree | worktree | worktree per affected repo |
 | Verification | self-verify (run the check yourself) | ship-tester on risky items | ship-tester per todo |
-| Review | self-review the diff | ponytail-review | ponytail-review loop + optional ask-ai |
+| Review | self-review the diff | ponytail-review | ponytail-review loop + optional advisor |
 | 收盘 | debrief-lite (memory only if non-obvious) | debrief | debrief |
 
 **Mid-flight escalation**: an S task that grows past 2 files or hits an unknown becomes M (create the light plan then); an M task that spawns a second repo or an architecture decision becomes L. Escalating from S: **commit the in-place edits first**, then `EnterWorktree` per advanced-plan and continue there — never leave uncommitted S edits behind. Escalate silently, note it in `unexpected.md`.
@@ -119,7 +119,7 @@ All items `[PASS]` (or S task verified) → review:
 
 1. Invoke `ponytail-review` on all files changed in this branch (S: self-review the diff instead).
 2. Findings → append as a new `## Review` phase in `todo.md` → loop back to Stage 2 for that phase.
-3. Exit when nothing new. L tasks touching money/security/data paths: consider `ask-ai` for a clean-context second opinion.
+3. Exit when nothing new. L tasks touching money/security/data paths: consider `advisor` for a clean-context second opinion.
 
 Commit + push:
 

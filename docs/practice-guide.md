@@ -20,7 +20,7 @@
 | 中活(单仓多文件) | 同上,自然描述 | **M 道**:轻量计划(goal/spec/todo)+ worktree + 风险项才派 ship-tester |
 | 大活(跨仓/架构/要发版) | 同上 | **L 道**:grill 到位 → 全量计划 + design.html → **暂停等你 `go`** |
 | 体力活外包 | "派活给 deepseek" / "让 droid 跑" | dispatch:零上下文简报 → 廉价引擎执行 → 我验 diff,不烧 Claude 配额 |
-| 要第二意见 | "第二意见 / 校审 / ultra review" | ask-ai(注意:找外部引擎**审**东西走这里,**做**东西才走 dispatch) |
+| 要第二意见 | "第二意见 / 校审 / ultra review" | advisor(注意:找外部引擎**审**东西走这里,**做**东西才走 dispatch) |
 | 干完了 | "收盘" | debrief 三件套:归档计划目录 → 至多一条带状态的 memory → 技能候选记账 |
 | 你纠正我 | 正常说就行 | 我打一行 `[LEARN] 类型: 规则` → Stop 钩子存进 `.claude/LEARNED.md` → 下次会话自动回放最近 5 条 |
 | 月度体检 | "skill 体检" | skill-atlas:路由重叠 / 陈旧度 / 触发评测 / token 预算,只报告不动手 |

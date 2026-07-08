@@ -29,7 +29,6 @@ Then restart the session. Skills become available as `vito-agent-plugins:<skill>
 | skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget — via yao-meta-skill upstream tools. |
 | advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
 | worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order; documents what Claude Code auto-isolates. |
-| ask-ai | Clean-context second opinion (当局者迷,旁观者清) via opus subagent / Codex gpt-5.5 / ultra (gpt-5.5 @ xhigh or opus-4.8 @ max). |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
 | handoff | Save / pick up task state for cross-session, cross-agent transfer. |
@@ -46,7 +45,7 @@ and upload logs never enter the main session; only a distilled answer comes back
 | ship-tester | sonnet | Per-todo verification for /ship — reads the item, designs a test, runs it, writes `[PASS]`/`[FAIL + reason]` back to `todo.md`. Never fixes code. |
 | ship-analyst | sonnet | Autonomous requirement analyst for /ship — resolves `unexpected.md` items against goal/spec without interrupting the user. |
 | general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `html-doc`, `lark-*`), runs it end-to-end, returns only the distilled result (answer + sources / file path / 链接·ID). Holds no skill-specific knowledge — the skill body carries the specifics. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
-| ai-second-opinion | opus | Clean-context second opinion (当局者迷,旁观者清). Not a thin wrapper — it picks engine/mode (opus self-review / Codex gpt-5.5 / ultra) and reasons itself. Backs the `ask-ai` skill. |
+| advisor | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
 | code-search | sonnet | Standalone token-efficient codebase explorer — wraps no skill. Prefers auggie-mcp semantic search, `rg`/`fd` for exact matches, gemini-cli for complex analysis; returns terse located results, not raw file dumps. |
 
 The other repo skills are deliberately *not* delegated: they either need the live
@@ -85,7 +84,6 @@ per-item readers its skills describe for main-session use.
   | `exa-code` | general-skills-executor | sonnet |
   | `html-doc` | general-skills-executor | sonnet |
   | `lark-*` | general-skills-executor | haiku |
-  | `ask-ai` | ai-second-opinion | (agent picks its own mode) |
 
   `lark-skill-maker` is exempt (skill development is a main-context task).
   The Read-guard's `*/skills/<name>/*` glob protects those skills' source files

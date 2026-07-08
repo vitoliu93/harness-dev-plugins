@@ -21,7 +21,7 @@
 
 ```
 编排层   ship(自适应 SOP,S/M/L 分级)· dispatch(跨引擎派活)
-战术层   advanced-plan · grill-me · ask-ai · worktree(约定+安全)
+战术层   advanced-plan · grill-me · advisor · worktree(约定+安全)
 执行层   ship-tester · ship-analyst · code-search · 外部引擎(dscode/droid/cursor-agent/codex)
 项目层   kox 等项目插件的 tester / deployer / finalizer —— 经 ship 扩展点挂接
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· yao-meta-skill(技能铸造)
