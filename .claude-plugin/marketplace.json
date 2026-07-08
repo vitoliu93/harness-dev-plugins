@@ -6,14 +6,26 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "1.19.0"
+    "version": "1.19.1"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
       "description": "12 skills: ship (adaptive dev SOP), debrief (收盘 sedimentation), dispatch (cheap-engine offload), blindspot (unknown-unknowns territory briefing), advanced-plan, worktree, audit-context, exa-code, handoff, html-doc, skill-atlas, ccobs. 5 subagents: ship-tester, ship-analyst, general-skills-executor, advisor, code-search. 1 PreToolUse hook: skill-guard.",
-      "version": "1.19.0",
+      "version": "1.19.1",
+      "author": {
+        "name": "vito"
+      }
+    },
+    {
+      "name": "study-kit",
+      "source": {
+        "source": "github",
+        "repo": "vitoliu93/study-kit"
+      },
+      "description": "自学工具包:resume-learning(存档/读档) + study-coach(第一性原理学习教练)。北极星:让下一次学习会话更容易发生。",
+      "version": "0.3.0",
       "author": {
         "name": "vito"
       }
