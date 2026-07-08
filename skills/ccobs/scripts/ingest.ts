@@ -18,6 +18,8 @@ const OBS_DIR = process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observabili
 const DB_PATH = join(OBS_DIR, "obs.db");
 const QUEUE = join(OBS_DIR, "queue.jsonl");
 const CMD_RE = /<command-name>\/?([\w:/-]+)<\/command-name>/g;
+// <synthetic> is CC's own compaction-summary marker, not a third-party model — keep it.
+const isClaudeModel = (model: string | null) => model == null || model.startsWith("claude-") || model === "<synthetic>";
 
 type Meta = {
   started_at: string | null;
@@ -54,6 +56,7 @@ function sessionMeta(path: string): [string, string, string | null] {
 const db = connect();
 const stmts = {
   getState: db.prepare("SELECT offset FROM ingest_state WHERE path = ?"),
+  getSession: db.prepare("SELECT session_id FROM sessions WHERE session_id = ?"),
   putState: db.prepare("INSERT OR REPLACE INTO ingest_state VALUES (?,?)"),
   turn: db.prepare(
     "INSERT OR IGNORE INTO turns(message_id, session_id, ts, model, input_tokens, output_tokens, cache_read, cache_create, stop_reason) VALUES (?,?,?,?,?,?,?,?,?)",
@@ -80,7 +83,16 @@ const stmts = {
   ),
 };
 
-function handleEvent(o: any, sid: string, meta: Meta) {
+type Buf = {
+  turns: any[][];
+  tools: any[][];
+  toolErrs: any[][];
+  slashes: any[][];
+  hooks: any[][];
+  hookErrs: any[][];
+};
+
+function handleEvent(o: any, sid: string, meta: Meta, buf: Buf) {
   const ts: string | null = o.timestamp ?? null;
   if (ts) {
     meta.started_at = meta.started_at && meta.started_at < ts ? meta.started_at : ts;
@@ -92,11 +104,11 @@ function handleEvent(o: any, sid: string, meta: Meta) {
   meta.subagent_type ??= o.agentType ?? null; // present in newer CC subagent JSONL; older files get backfilled post-ingest
 
   for (const h of o.hookInfos ?? []) {
-    stmts.hook.run(sid, ts, h.command ?? null, h.durationMs ?? null);
+    buf.hooks.push([sid, ts, h.command ?? null, h.durationMs ?? null]);
   }
   for (const e of o.hookErrors ?? []) {
     const cmd = typeof e === "object" && e !== null ? (e.command ?? null) : null;
-    stmts.hookErr.run(sid, ts, cmd && String(cmd).slice(0, 200), String(JSON.stringify(e)).slice(0, 500));
+    buf.hookErrs.push([sid, ts, cmd && String(cmd).slice(0, 200), String(JSON.stringify(e)).slice(0, 500)]);
   }
 
   const m = o.message ?? {};
@@ -104,24 +116,24 @@ function handleEvent(o: any, sid: string, meta: Meta) {
     const u = m.usage;
     const mid = m.id ?? o.messageId;
     if (mid && u) {
-      stmts.turn.run(
+      buf.turns.push([
         mid, sid, ts, m.model ?? null,
         u.input_tokens ?? null, u.output_tokens ?? null,
         u.cache_read_input_tokens ?? null, u.cache_creation_input_tokens ?? null,
         o.stopReason ?? null,
-      );
+      ]);
     }
     for (const c of Array.isArray(m.content) ? m.content : []) {
       if (c?.type !== "tool_use") continue;
       const inp = c.input ?? {};
       const isAgent = c.name === "Agent" || c.name === "Task"; // two historical names, one tool — normalize here so views stay plain equality
-      stmts.tool.run(
+      buf.tools.push([
         c.id ?? null, sid, ts, isAgent ? "Agent" : (c.name ?? null),
         c.name === "Skill" ? (inp.skill ?? null) : c.name === "SlashCommand" ? (inp.command ?? null) : null,
         isAgent ? (inp.subagent_type ?? null) : null,
         isAgent ? (inp.model ?? null) : null,
         inp.run_in_background ? 1 : 0,
-      );
+      ]);
     }
   } else if (o.type === "user") {
     const content = m.content;
@@ -133,13 +145,13 @@ function handleEvent(o: any, sid: string, meta: Meta) {
           const raw = typeof c.content === "string"
             ? c.content
             : (Array.isArray(c.content) ? c.content.filter((b: any) => b?.type === "text").map((b: any) => b.text).join(" ") : "");
-          stmts.toolErr.run(raw ? raw.slice(0, 300) : null, c.tool_use_id);
+          buf.toolErrs.push([raw ? raw.slice(0, 300) : null, c.tool_use_id]);
         } else if (c?.type === "text" && c.text) texts.push(c.text);
       }
     }
     for (const text of texts) {
       for (const match of text.matchAll(CMD_RE)) {
-        stmts.slash.run(`cmd-${sid}-${o.uuid}-${match[1]}`, sid, ts, match[1]);
+        buf.slashes.push([`cmd-${sid}-${o.uuid}-${match[1]}`, sid, ts, match[1]]);
       }
     }
   }
@@ -155,12 +167,13 @@ function ingestFile(path: string): number {
   if (size === offset) return 0;
 
   const meta: Meta = { started_at: null, ended_at: null, cwd: null, git_branch: null, cc_version: null, subagent_type: null };
+  const buf: Buf = { turns: [], tools: [], toolErrs: [], slashes: [], hooks: [], hookErrs: [] };
   // read only the unseen tail — a long-lived session's file otherwise gets fully re-read on every Stop
   const fd = openSync(path, "r");
-  const buf = Buffer.allocUnsafe(size - offset);
-  const bytesRead = readSync(fd, buf, 0, size - offset, offset);
+  const chunk = Buffer.allocUnsafe(size - offset);
+  const bytesRead = readSync(fd, chunk, 0, size - offset, offset);
   closeSync(fd);
-  const data = buf.subarray(0, bytesRead);
+  const data = chunk.subarray(0, bytesRead);
   let pos = 0;
   let n = 0;
   while (pos < data.length) {
@@ -169,10 +182,29 @@ function ingestFile(path: string): number {
     const line = data.toString("utf8", pos, nl);
     pos = nl + 1;
     try {
-      handleEvent(JSON.parse(line), sid, meta);
+      handleEvent(JSON.parse(line), sid, meta, buf);
       n++;
     } catch {}
   }
+
+  // A session is non-Claude if neither this chunk nor a prior sweep ever saw a Claude
+  // turn — skip persisting it entirely (turns/tools/hooks/session row), so third-party
+  // models (deepseek, glm, doubao, ...) routed through the same JSONL format never
+  // pollute the ledger. A session already on file (prior claude turn) keeps flowing;
+  // only its non-claude turn rows get dropped below.
+  const knownClaudeSession = !!stmts.getSession.get(sid);
+  const hasClaudeTurn = buf.turns.some((t) => isClaudeModel(t[3]));
+  if (!knownClaudeSession && !hasClaudeTurn) {
+    stmts.putState.run(path, offset + pos);
+    return 0;
+  }
+
+  for (const t of buf.turns) if (isClaudeModel(t[3])) stmts.turn.run(...t);
+  for (const t of buf.tools) stmts.tool.run(...t);
+  for (const t of buf.toolErrs) stmts.toolErr.run(...t);
+  for (const t of buf.slashes) stmts.slash.run(...t);
+  for (const t of buf.hooks) stmts.hook.run(...t);
+  for (const t of buf.hookErrs) stmts.hookErr.run(...t);
 
   stmts.session.run(sid, kind, parent, meta.subagent_type, project, meta.cwd, meta.git_branch, meta.cc_version,
     meta.started_at, meta.ended_at, path);
