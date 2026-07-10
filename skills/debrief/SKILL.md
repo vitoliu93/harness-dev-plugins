@@ -30,7 +30,9 @@ Only when a `docs/advanced-plans/<date>-<slug>/` dir belongs to this task:
    `review` command ran first) → leave it alone, say so.
 2. Set `todo.md` Current State to `Status: closed`.
 3. Move the dir to `docs/advanced-plans/_archive/<date>-<slug>/` and commit on
-   the task branch: `chore(<slug>): archive plan`.
+   the task branch: `chore(<slug>): archive plan`. Multi-repo workspace plan
+   (dir lives in a non-git workspace root, per advanced-plan's Location rule) →
+   same move, no commit.
 
 No plan dir → skip, say nothing.
 

@@ -34,7 +34,7 @@ If the task is genuinely trivial (one obvious edit), say so and skip the skill �
 
 advanced-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch. The worktree/branch mechanics live in the **`worktree`** skill; advanced-plan adds only the naming convention below.
 
-Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop. See `worktree` for nesting, baseRef, and resume.)
+Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop — unless it's a multi-repo workspace task, see Location below. See `worktree` for nesting, baseRef, and resume.)
 
 ## Location & layout
 
@@ -51,7 +51,9 @@ $ROOT/docs/advanced-plans/<YYYY-MM-DD>-<slug>/
 
 `<slug>` = 2-4 word kebab-case summary, matching the branch/worktree stem. **Commit the plan dir on its branch** (it's the audit trail and the cross-agent channel) — never gitignore `docs/advanced-plans/`. When the branch merges to main, the dir lands in history alongside the code it produced, as first-class project docs. Closed plans get moved to `docs/advanced-plans/_archive/<date>-<slug>/` by the `debrief` skill.
 
-**Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. The discovery + cross-machine handoff mechanics are in the **`worktree`** skill.
+**Multi-repo tasks**: when the task spans multiple git repos and the CWD is their common parent workspace directory (a non-git dir holding the repos), there is no single branch that can carry the plan — putting it inside one of the repos hides it from the others' worktrees. In that case `$ROOT` = the workspace dir itself: the plan lives at `<workspace>/docs/advanced-plans/<date>-<slug>/`, outside git and unaffected by any worktree, physically shared by all sessions (`.lock` applies as usual). Two compensations for what's lost: (1) no git audit trail — on close, `debrief` moves the dir to `<workspace>/docs/advanced-plans/_archive/` instead of relying on a merge; (2) no branch-as-discovery — keep naming discipline: every sub-repo's branch/worktree uses the same `<date>-<slug>` stem as the plan dir, so one keyword greps all of them. A task touching only one repo keeps the normal rule even if launched from the workspace dir: the plan goes in that repo, on its branch.
+
+**Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. The discovery + cross-machine handoff mechanics are in the **`worktree`** skill. (Multi-repo plans are the exception: discovery is by the shared slug stem, per above.)
 
 ## Templates
 
@@ -59,6 +61,7 @@ Blank templates live in `assets/templates/` (one per file). **Creation = copy, t
 
 ```bash
 ROOT=$(git rev-parse --show-toplevel)        # repo/worktree root — plans live with the code, on this branch
+                                             # multi-repo workspace task: ROOT=<workspace dir> instead (see Location)
 TPL="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude}/skills/advanced-plan/assets/templates"
 DIR="$ROOT/docs/advanced-plans/$(date +%F)-<slug>"
 mkdir -p "$DIR"
