@@ -38,6 +38,15 @@
     });
   </script>
 
+  <!-- ECharts v5 — first choice for data charts (bar/line/pie/scatter/…).
+       Delete this script if no charts are used. -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+  <!-- plantuml-encoder — first choice for architecture/UML diagrams. Encodes
+       embedded PlantUML source into a plantuml.com/svg URL at view time (the
+       browser has no full PlantUML engine). Delete if no PlantUML blocks. -->
+  <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+
   <style type="text/tailwindcss">
     @theme {
       --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -97,6 +106,9 @@
     <!-- Replace the example SVG with the real diagram for this       -->
     <!-- content. Three nodes + arrows is the simplest worked example;-->
     <!-- swap in whatever shape the information actually has.         -->
+    <!--                                                              -->
+    <!-- Architecture/UML hero? Use the PlantUML section below as the -->
+    <!-- hero instead and delete this hand-SVG one.                   -->
     <!-- ============================================================ -->
     <section class="mb-10 rounded-xl border border-line bg-surface p-6">
       <svg viewBox="0 0 800 320" class="w-full h-auto text-ink"
@@ -166,9 +178,41 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- SECONDARY DIAGRAM (Mermaid). Use Mermaid for standard         -->
-    <!-- diagram types — sequence, state, ER, Gantt, mindmap, etc.    -->
-    <!-- Delete this section if no secondary diagram is needed.       -->
+    <!-- ARCHITECTURE DIAGRAM (PlantUML). First choice for            -->
+    <!-- architecture & UML — component, deployment, sequence, class, -->
+    <!-- ER, state, C4. Source embedded below in a text/plain script; -->
+    <!-- the mount loop at the bottom renders it via plantuml.com.    -->
+    <!-- Delete this section (and the head script) if unused.         -->
+    <!-- ============================================================ -->
+    <section class="mb-10 rounded-xl border border-line bg-surface p-6">
+      <p class="mb-2 text-xs uppercase tracking-widest text-muted">
+        Architecture — component view
+      </p>
+      <div data-diagram="puml-arch">Rendering…</div>
+      <details class="mt-3 text-sm text-muted">
+        <summary class="cursor-pointer">PlantUML source (offline fallback)</summary>
+        <pre class="mt-2 overflow-x-auto" data-mirror="puml-arch"></pre>
+      </details>
+    </section>
+    <script type="text/plain" id="puml-arch" class="puml">
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontName Inter
+skinparam ArrowColor #141413
+skinparam componentStyle rectangle
+component "Producer" as P #fbeee7;line:6a9bcc
+component "Queue"    as Q #fbeee7;line:d97757
+component "Consumer" as C #fbeee7;line:788c5d
+P --> Q : emit
+Q --> C : deliver
+@enduml
+    </script>
+
+    <!-- ============================================================ -->
+    <!-- SECONDARY DIAGRAM (Mermaid). Use Mermaid for the sketches it -->
+    <!-- owns — gitGraph, mindmap, timeline, journey, quadrant — or   -->
+    <!-- as fallback when the artifact must render without            -->
+    <!-- plantuml.com. Delete this section if not needed.             -->
     <!-- ============================================================ -->
     <section class="mb-10 rounded-xl border border-line bg-surface p-6">
       <p class="mb-2 text-xs uppercase tracking-widest text-muted">
@@ -185,6 +229,44 @@ sequenceDiagram
   C-->>Q: ack
   Q->>Q: retry on missing ack
       </pre>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- CHART (ECharts): first choice for any real data series.      -->
+    <!-- The div needs an explicit inline height — Tailwind classes   -->
+    <!-- may not be processed yet when the init script runs.          -->
+    <!-- Delete this section (and the head script) if no charts.      -->
+    <!-- ============================================================ -->
+    <section class="mb-10 rounded-xl border border-line bg-surface p-6">
+      <p class="mb-2 text-xs uppercase tracking-widest text-muted">
+        Throughput — events/min by stage
+      </p>
+      <div id="chart-main" style="height:320px"></div>
+      <script>
+        const chartMain = echarts.init(document.getElementById('chart-main'));
+        chartMain.setOption({
+          color: ['#6a9bcc', '#d97757', '#788c5d', '#c46686'], // sys palette
+          backgroundColor: 'transparent',
+          textStyle: { fontFamily: 'inherit', color: '#141413' },
+          tooltip: { trigger: 'axis' },
+          grid: { left: 48, right: 16, top: 24, bottom: 32 },
+          xAxis: {
+            type: 'category', data: ['t-4', 't-3', 't-2', 't-1', 'now'],
+            axisLine: { lineStyle: { color: '#e8e6dc' } },
+            axisLabel: { color: '#5e5d59' },
+          },
+          yAxis: {
+            type: 'value',
+            splitLine: { lineStyle: { color: '#e8e6dc' } },
+            axisLabel: { color: '#5e5d59' },
+          },
+          series: [
+            { name: 'Producer', type: 'line', smooth: true, data: [120, 132, 101, 134, 90] },
+            { name: 'Consumer', type: 'line', smooth: true, data: [110, 128, 99, 130, 88] },
+          ],
+        });
+        addEventListener('resize', () => chartMain.resize());
+      </script>
     </section>
 
     <!-- ============================================================ -->
@@ -247,6 +329,30 @@ sequenceDiagram
         <p class="text-xs uppercase tracking-wider text-muted">Annotated points</p>
       </div>
     </section>
+
+    <!-- PlantUML mount loop: encodes each script.puml block into a
+         plantuml.com/svg URL, mounts it as <img>, mirrors the source into
+         its <details> fallback. Delete along with the PlantUML section. -->
+    <script>
+      document.querySelectorAll('script.puml').forEach((src) => {
+        const mount = document.querySelector(`[data-diagram="${src.id}"]`);
+        const text = src.textContent.trim();
+        const mirror = document.querySelector(`[data-mirror="${src.id}"]`);
+        if (mirror) mirror.textContent = text;
+        if (typeof plantumlEncoder === 'undefined') {
+          mount.textContent = 'plantuml-encoder CDN unreachable — see source below.';
+          return;
+        }
+        const img = document.createElement('img');
+        img.className = 'max-w-full h-auto';
+        img.alt = src.id;
+        img.src = 'https://www.plantuml.com/plantuml/svg/' + plantumlEncoder.encode(text);
+        img.onerror = () => {
+          mount.textContent = 'plantuml.com unreachable — see source below.';
+        };
+        mount.replaceChildren(img);
+      });
+    </script>
 
     <!-- Footer / provenance. Keep small — this is a visual artifact, not a paper. -->
     <footer class="border-t border-line pt-4 text-xs text-muted">

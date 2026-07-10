@@ -53,10 +53,12 @@ clean version-control diffs (HTML diffs are noisy — a real tradeoff).
 Each pattern below describes the *shape* of the artifact, not its content.
 Pick one (or compose two) based on what the information actually is.
 
-**System / architecture explainer.** A primary SVG diagram dominates the
+**System / architecture explainer.** A primary diagram dominates the
 canvas; small annotated cards arranged around it carry detail. Subsystems are
 color-coded with a consistent palette. Static is fine if labeling is good —
-interactivity isn't the point.
+interactivity isn't the point. Architecture diagrams default to **PlantUML**
+(see engines below); hand-roll the SVG only when custom shapes or in-place
+annotations are central.
 
 **Option comparison (exploration / brainstorm).** A grid of N option cards
 laid out side by side, each with a tiny mockup or sketch and a one-line
@@ -73,7 +75,8 @@ moments that matter; the rest stays as low-contrast scaffolding.
 
 **Dashboard / report.** Big headline numbers up top, supporting metrics and
 sparklines in a 2- or 3-column grid below. The reader's eye should land on the
-hero metric first.
+hero metric first. Any real data series is an **ECharts** chart, not
+hand-drawn SVG bars.
 
 **PR / code explainer.** Annotated diff alongside a small SVG flow of the
 affected subsystem, with 2–3 numbered callouts pointing at the lines that
@@ -87,7 +90,7 @@ as JSON / prompt / diff so the result is paste-able into Claude Code.
 
 - **SVG for diagrams, not raster images.** Inline SVG is editable, scalable,
   and themable via CSS. Use `<marker>` for arrowheads, `<g transform>` to group
-  + place nodes. (Mermaid emits SVG too — see below.)
+  + place nodes. (PlantUML and Mermaid emit SVG too — see engines below.)
   **⚠ CSS variables inside SVG pitfall:** `var(--color-*)` works for `fill`
   and `stroke` on direct SVG shapes (`<rect>`, `<circle>`, `<text>`) but
   **fails silently** on `<line>` strokes and inside `<defs>`/`<marker>`
@@ -124,54 +127,108 @@ as JSON / prompt / diff so the result is paste-able into Claude Code.
   history, MCP results — not placeholder lorem. This is the reason to do it
   here rather than in a web UI.
 - **Self-contained.** Inline CSS and JS so the file opens standalone in a
-  browser, no build step, no network dependencies beyond the Tailwind CDN.
+  browser, no build step, no network dependencies beyond the CDN scripts
+  (Tailwind / Mermaid / ECharts / plantuml-encoder) and plantuml.com for
+  PlantUML diagrams.
 - **Match house style.** If a design-system reference exists, point at it
   before inventing colors and type.
 - **Always-export for interactive artifacts.** Any tool the user manipulates
   must round-trip its state back out as a paste-able artifact.
 
-## Mermaid for standard diagram types
+## Diagram & chart engines
 
-The starter template pre-loads Mermaid v11 — reach for it when the picture
-fits a known diagram type. Mermaid is fast to write, the text is the source
-of truth for later edits, and the output is themeable SVG. The cost: less
-control over layout and visual emphasis than hand-rolled SVG.
+Route by what the picture is; don't hand-roll what an engine draws well.
 
-**Use Mermaid for:** flowcharts (`flowchart` / `graph`), sequence diagrams
-(`sequenceDiagram`), state machines (`stateDiagram-v2`), class & ER diagrams
-(`classDiagram`, `erDiagram`), Gantt and timelines (`gantt`, `timeline`),
-mind maps (`mindmap`), git graphs (`gitGraph`), user journeys (`journey`),
-2×2 quadrants (`quadrantChart`), block diagrams (`block-beta`).
+| Content | First choice |
+|---|---|
+| Architecture & UML — component, deployment, sequence, class, ER, state, C4 | **PlantUML** |
+| Data charts — bar, line, pie, scatter, radar, heatmap, sankey, candlestick | **ECharts** |
+| Sketches Mermaid owns — gitGraph, mindmap, timeline, journey, quadrant | **Mermaid** |
+| Hero picture with custom shapes, pixel-perfect layout, in-place annotations | Hand-rolled SVG |
 
-**Use hand-rolled SVG for:** the headline picture when its shape doesn't
-match a standard type, when pixel-perfect layout matters, when custom shapes
-or annotations are central, or when the diagram must precisely match the
-house palette in ways Mermaid's themer can't reach.
+A mixed approach is often best — PlantUML for the architecture hero, ECharts
+for the stats band, hand-SVG when the shape is custom.
 
-A mixed approach is often best — hand-SVG for the hero diagram (full
-control), Mermaid for secondary diagrams (sequence flow, state machine,
-mindmap of options) where the standard form is enough.
+### PlantUML — architecture diagrams
 
-Any `<pre class="mermaid">` block auto-renders on page load:
+First choice for architecture and UML. Works like Mermaid: the source lives
+in the file, and a tiny CDN encoder (`plantuml-encoder`, a few KB) turns it
+into a `plantuml.com/plantuml/svg/…` image URL in the reader's browser — no
+local install, no build step. Three parts, all in the template:
+
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+
+    <script type="text/plain" id="puml-arch" class="puml">
+    @startuml
+    skinparam backgroundColor transparent
+    skinparam defaultFontName Inter
+    skinparam ArrowColor #141413
+    skinparam componentStyle rectangle
+    component "Producer" as P #fbeee7;line:6a9bcc
+    component "Queue"    as Q #fbeee7;line:d97757
+    P --> Q : emit
+    @enduml
+    </script>
+    <div data-diagram="puml-arch"></div>
+
+The template's mount loop encodes every `script.puml` block, mounts it as an
+`<img>` into the matching `data-diagram` div, mirrors the source into a
+`<details>` block, and shows a readable error if the CDN or plantuml.com is
+unreachable. Theme in the source (skinparam + `#hex;line:hex` per element) to
+match the page palette.
+
+**Caveats.** Rendering needs network at **view time** (plantuml.com) — a
+heavier dependency than the CDN scripts, so always keep the embedded source +
+`<details>` fallback in place. For a strictly offline artifact, pre-render to
+SVG and inline it instead:
+`curl -fsSL "https://www.plantuml.com/plantuml/svg/~h$(xxd -p d.puml | tr -d '\n')" -o d.svg`
+(strip the SVG's fixed `width`/`height`, keep `viewBox`).
+
+### ECharts — data charts
+
+First choice for any real data series. The template pre-loads ECharts v5 from
+jsdelivr (same CDN model as Tailwind/Mermaid). A chart needs a div with an
+**explicit inline height** (Tailwind classes may not be processed when the
+init script runs), an init call, and a resize hook:
+
+    <div id="chart-x" style="height:320px"></div>
+    <script>
+      const c = echarts.init(document.getElementById('chart-x'));
+      c.setOption({
+        color: ['#6a9bcc', '#d97757', '#788c5d', '#c46686'],  // sys palette
+        backgroundColor: 'transparent',
+        textStyle: { fontFamily: 'inherit', color: '#141413' },
+        tooltip: { trigger: 'axis' },
+        /* xAxis / yAxis / series … */
+      });
+      addEventListener('resize', () => c.resize());
+    </script>
+
+Transparent background so the card surface shows through; series colors from
+the sys palette; axis/split lines in `#e8e6dc`, labels in `#5e5d59`. Keep
+tooltips on — that's the interactivity a static image can't give. One hero
+chart beats a wall of thumbnails; tiny per-card inits for sparklines are fine.
+
+### Mermaid — quick sketches & fallback
+
+Still pre-loaded (v11) and still the fastest path for gitGraph, mindmap,
+timeline, journey, quadrantChart, block-beta — and the fallback when the
+artifact must render without plantuml.com. Any `<pre class="mermaid">` block
+auto-renders on page load:
 
     <pre class="mermaid">
-    sequenceDiagram
-      participant P as Producer
-      participant Q as Queue
-      participant C as Consumer
-      P->>Q: emit event
-      Q->>C: deliver (at-least-once)
-      C-->>Q: ack
+    gitGraph
+      commit
+      branch feature
+      commit
+      checkout main
+      merge feature
     </pre>
 
-**Theme integration.** The template initializes Mermaid with `theme: 'base'`
-and `themeVariables` mapped to the page's `--color-sys-*` palette so diagrams
-look native to the artifact. Swap the variables when re-skinning.
-
-**Caveats.** Mermaid loads from a CDN — works locally over `file://` and is
-cached after first fetch, but needs network on first open (same as the
-Tailwind dependency). Switching system theme after page load won't re-render
-already-rendered diagrams without a reload.
+The template initializes Mermaid with `theme: 'base'` and `themeVariables`
+mapped to the page palette — swap the variables when re-skinning. Mermaid and
+ECharts load from a CDN: cached after first fetch, but need network on first
+open (same as the Tailwind dependency).
 
 ## Starter template
 
@@ -180,7 +237,9 @@ canvas with a hero SVG diagram region, a colour-coded card grid, and a stats
 band. It uses Tailwind CSS v4 via the browser build with an `@theme` token
 block (Anthropic official palette — clay primary `#d97757` on cream `#faf9f5`,
 with sky / olive / fig functional accents), and pre-loads Mermaid v11 themed
-to match. Palette source: `anthropics/skills/brand-guidelines`. Clay accent
+to match, ECharts v5, and plantuml-encoder (delete unused scripts). Palette
+source:
+`anthropics/skills/brand-guidelines`. Clay accent
 is restricted to interactive states (links, primary buttons) and at most one
 hero element per artifact — it's a signal, not a decoration.
 
