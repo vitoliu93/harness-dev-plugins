@@ -1,0 +1,27 @@
+{
+  "recommended_threshold": 0.27,
+  "negative_patterns": ["解释", "explain", "什么意思"],
+  "should_trigger": [
+    { "text": "write-plan 这个任务", "family": "explicit_en" },
+    { "text": "立项：给知识库加文件夹排序", "family": "explicit_zh" },
+    { "text": "这个需求先写个开发计划再动手", "family": "plan_first" },
+    { "text": "plan this task before coding", "family": "plan_first" },
+    { "text": "advanced-plan 这个重构", "family": "legacy_alias" },
+    { "text": "continue plan 上次那个迁移", "family": "resume" },
+    { "text": "恢复计划 dark-mode", "family": "resume" },
+    { "text": "接着做 blog-migration", "family": "resume" },
+    { "text": "这个功能跨好几步，立个项跟踪起来", "family": "tracked_project" }
+  ],
+  "should_not_trigger": [
+    { "text": "解释一下这个计划是什么意思", "family": "explain_only" },
+    { "text": "直接改这个 typo 就行", "family": "trivial" },
+    { "text": "查一下线上报错日志", "family": "ops_query" },
+    { "text": "帮我把这段翻译成英文", "family": "unrelated" }
+  ],
+  "near_neighbor": [
+    { "text": "收盘吧，复盘一下这个任务", "family": "debrief" },
+    { "text": "开个 worktree 隔离干活", "family": "worktree" },
+    { "text": "派活给 deepseek 批量改", "family": "dispatch" },
+    { "text": "盲区扫描一下这个模块", "family": "blindspot" }
+  ]
+}

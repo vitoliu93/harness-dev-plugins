@@ -24,7 +24,7 @@ argument-hint: "[audit | adopt]"
 
 ## Placement 约定（adopt 落地的内容）
 
-`$ROOT` 解析同 advanced-plan：git 仓 → 仓根；multi-repo workspace（CWD 是各仓的非 git 公共父目录）→ workspace 目录本身。
+`$ROOT` 解析同 write-plan：git 仓 → 仓根；multi-repo workspace（CWD 是各仓的非 git 公共父目录）→ workspace 目录本身。
 
 ```
 $ROOT/docs/
@@ -32,7 +32,7 @@ $ROOT/docs/
   *.md / *.html        # 活文档 + 快照类，平铺——索引即导航，不建主题目录树
   references/          # pdf/pptx/厂商参考资料
   _archive/            # 被取代的快照类
-  advanced-plans/      # advanced-plan/debrief 所有，本 skill 不碰内部
+  advanced-plans/      # write-plan/debrief 所有（目录名是历史约定），本 skill 不碰内部
   incidents/           # 事故记录（若有）
 ```
 
@@ -60,7 +60,7 @@ dscode -p "<核验 brief>" --model deepseek-v4-flash --output-format json
 
 核验 brief 模板（主会话拟定，worker 只取证不裁决内容去留）：
 
-> 读 <doc 路径>。抽出其中可实证的声明（文件路径/表名/字段/端点/配置键/命令/流程顺序），每条用 grep/ls 在 <相关代码目录> 实证。若文档引用 issue 编号，报告编号原文。返回 JSON：{claims: [{claim, probe, hit: true|false, evidence: "file:line"}], summary}。只取证，不评价。
+> 读 <doc 路径>。**实证前先 `git -C <相关代码目录> fetch` 并与 origin/<集成分支> 比对**——本地检出可能落后，落后时以 origin 内容为准（2026-07-11 首跑因此产生假阳性失真判定）。然后抽出其中可实证的声明（文件路径/表名/字段/端点/配置键/命令/流程顺序），每条用 grep/ls 在 <相关代码目录> 实证。若文档引用 issue 编号，报告编号原文。返回 JSON：{claims: [{claim, probe, hit: true|false, evidence: "file:line"}], summary}。只取证，不评价。
 
 主会话汇总各 worker 结果 → 逐份定 verdict：
 - **代码锚点**：命中率高 + 个别失真 → fix（列出改哪几处）；骨架性失真 → delete/重写。
@@ -92,7 +92,7 @@ dscode -p "<核验 brief>" --model deepseek-v4-flash --output-format json
 
 ## 边界（不越界）
 
-- `docs/advanced-plans/` 内部：advanced-plan + debrief 所有。
+- `docs/advanced-plans/` 内部：write-plan + debrief 所有。
 - auto-memory / CLAUDE.md 常驻上下文本体：audit-context 所有（本 skill 只动它的 docs 索引段）。
 - 子仓内部文档：不进 v1 audit 范围，单独跑时以该仓为 `$ROOT` 再来一次。
 - 远端团队仓的过时内容：报告里标注，不代改。

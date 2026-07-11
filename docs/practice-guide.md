@@ -16,9 +16,8 @@
 
 | 场景 | 你说 | 发生什么 |
 |---|---|---|
-| 小修(改个 issue、两个文件以内) | 直接说需求,或贴 issue URL | ship 走 **S 道**:不建 worktree、不写计划文档、自验证、一句话收盘 |
-| 中活(单仓多文件) | 同上,自然描述 | **M 道**:轻量计划(goal/spec/todo)+ worktree + 风险项才派 ship-tester |
-| 大活(跨仓/架构/要发版) | 同上 | **L 道**:grill 到位 → 全量计划 + design.html → **暂停等你 `go`** |
+| 开发任务(kox 项目) | 直接说需求,或贴 issue URL | **kox ship 五段**:上下文收集 → 可验收计划 → 实施 → E2E 验收 → finalize 收尾(S 号快道免计划文档) |
+| 非 kox 的多步任务 | "立项 / write-plan" | write-plan:goal/spec/todo + worktree 隔离,每 phase 带验收字段 |
 | 体力活外包 | "派活给 deepseek" / "让 droid 跑" | dispatch:零上下文简报 → 廉价引擎执行 → 我验 diff,不烧 Claude 配额 |
 | 要第二意见 | "第二意见 / 校审 / ultra review" | advisor(注意:找外部引擎**审**东西走这里,**做**东西才走 dispatch) |
 | 干完了 | "收盘" | debrief 三件套:归档计划目录 → 至多一条带状态的 memory → 技能候选记账 |
@@ -36,12 +35,12 @@
 2. **debrief 产出质量**:memory 是"下次会话没它会错"的干货,还是又滑回事故日记?归档动作烦不烦?
 3. **dispatch 一次成功率**:哪类活简报写不清(说明不可派)?哪个引擎最靠谱?失败重派值不值?
 4. **LEARNED.md 会不会积垃圾**:回放 5 条够不够,标记打得勤不勤,debrief 毕业及不及时。
-5. **扩展点真接上了吗**:在 kox 修 issue,收盘时 kox-frontend-tester / k8s-deployer / kox-finalize 有没有被正确解析调用。
+5. **kox ship 五段跑得顺吗**:收尾是否正确接到 gitee-issue-finalize,E2E 是否按场景(前端/后端/agent/ops)选对了验收方式。
 6. **北极星三指标**(粗感即可,不用记账):收盘时有没有东西可沉淀?执行 token 有多少跑在外部引擎?一个任务纠正了我几次?
 
 ## 维护节律
 
-- **改任何 description** → 立刻跑该技能的 trigger eval(skill-atlas §3 有命令);没夹具的技能改完描述,顺手补一份(抄 `skills/ship/evals/`)。
+- **改任何 description** → 立刻跑该技能的 trigger eval(skill-atlas §3 有命令);没夹具的技能改完描述,顺手补一份(抄 `skills/dispatch/evals/`)。
 - **月度**一次 "skill 体检"。
 - **第 3 次手动重复同一件事** → 它自己会从 SKILL-CANDIDATES.md 里毕业,我会提议铸造。
 - 上游 yao-meta-skill 更新:`cd ~/codebase/github/yao-meta-skill && git pull`(安装是软链,拉完即生效)。

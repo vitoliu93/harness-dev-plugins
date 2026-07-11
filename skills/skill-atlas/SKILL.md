@@ -61,7 +61,7 @@ done
 
 Gate: precision = recall = 1.0. Any FP/FN → fix the description wording (or a
 genuinely wrong case) before shipping. New skill → copy the fixture shape from
-`skills/ship/evals/` (cases: should / should-not / near-neighbor buckets;
+`skills/dispatch/evals/` (cases: should / should-not / near-neighbor buckets;
 config: 3-5 concept buckets whose phrases must appear in the description —
 coverage is computed against description-anchored concepts).
 

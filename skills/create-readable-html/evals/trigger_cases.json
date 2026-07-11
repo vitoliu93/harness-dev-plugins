@@ -1,0 +1,24 @@
+{
+  "recommended_threshold": 0.24,
+  "negative_patterns": ["部署", "deploy", "翻译"],
+  "should_trigger": [
+    { "text": "make an HTML file showing the architecture", "family": "explicit_en" },
+    { "text": "把这个方案可视化成一页 HTML", "family": "visualize_zh" },
+    { "text": "visualize this data flow", "family": "visualize_en" },
+    { "text": "diagram this pipeline end to end", "family": "diagram" },
+    { "text": "做个 dashboard 展示这些指标对比", "family": "dashboard" },
+    { "text": "html-doc 这个 PR", "family": "legacy_alias" },
+    { "text": "review this PR 给我个可视化", "family": "pr_visual" },
+    { "text": "生成一个信息图解释这个系统架构", "family": "infographic" }
+  ],
+  "should_not_trigger": [
+    { "text": "写个 React 组件渲染列表", "family": "frontend_dev" },
+    { "text": "部署这个网页到测试环境", "family": "deploy" },
+    { "text": "修一下这个页面的 css bug", "family": "css_fix" },
+    { "text": "把这段文档翻译成英文", "family": "unrelated" }
+  ],
+  "near_neighbor": [
+    { "text": "发布一个页面到妙搭拿分享链接", "family": "lark_apps" },
+    { "text": "在 markdown 里画个 mermaid 小图", "family": "markdown_diagram" }
+  ]
+}

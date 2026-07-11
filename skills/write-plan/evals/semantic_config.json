@@ -1,0 +1,37 @@
+{
+  "positive_concepts": {
+    "planning": {
+      "weight": 0.5,
+      "phrases": ["write-plan", "plan", "立项", "立个项", "开发计划", "计划"]
+    },
+    "tracked_project": {
+      "weight": 0.35,
+      "phrases": ["tracked", "跟踪", "mini-project", "survives", "context resets", "cross-agent"]
+    },
+    "resume": {
+      "weight": 0.5,
+      "phrases": ["resume", "continue", "恢复", "接着做"]
+    },
+    "acceptance": {
+      "weight": 0.3,
+      "phrases": ["acceptance", "deterministic"]
+    }
+  },
+  "negative_concepts": {
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": ["解释", "什么意思", "explain"]
+    },
+    "trivial_fix": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": ["就行", "typo"]
+    },
+    "sibling_skills": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": ["收盘", "复盘", "worktree", "隔离干活", "派活", "盲区"]
+    }
+  }
+}

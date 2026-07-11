@@ -33,4 +33,16 @@ for (const skill of skills) {
   existing ? updated++ : created++;
 }
 
-console.log(`\n${created} created, ${updated} updated, ${skipped} already up-to-date`);
+// prune: links into this repo's skills/ whose source dir no longer exists (renamed/archived)
+let pruned = 0;
+for (const entry of readdirSync(targetDir, { withFileTypes: true })) {
+  if (!entry.isSymbolicLink()) continue;
+  const dest = join(targetDir, entry.name);
+  if (readlinkSync(dest).startsWith(repoSkillsDir + "/") && !skills.includes(entry.name)) {
+    unlinkSync(dest);
+    console.log(`✗  ${entry.name} (stale link pruned)`);
+    pruned++;
+  }
+}
+
+console.log(`\n${created} created, ${updated} updated, ${skipped} already up-to-date, ${pruned} pruned`);

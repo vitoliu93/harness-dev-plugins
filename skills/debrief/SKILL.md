@@ -26,12 +26,12 @@ Only when a `docs/advanced-plans/<date>-<slug>/` dir belongs to this task:
 
 1. Full-tier plan and `review.md` is missing or still template placeholders →
    fill it: 3–6 honest bullets on the agent×user process (what caused rework,
-   what to do differently), not a diary. Already filled (e.g. advanced-plan's
+   what to do differently), not a diary. Already filled (e.g. write-plan's
    `review` command ran first) → leave it alone, say so.
 2. Set `todo.md` Current State to `Status: closed`.
 3. Move the dir to `docs/advanced-plans/_archive/<date>-<slug>/` and commit on
    the task branch: `chore(<slug>): archive plan`. Multi-repo workspace plan
-   (dir lives in a non-git workspace root, per advanced-plan's Location rule) →
+   (dir lives in a non-git workspace root, per write-plan's Location rule) →
    same move, no commit.
 
 No plan dir → skip, say nothing.

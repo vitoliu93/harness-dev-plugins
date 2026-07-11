@@ -13,8 +13,8 @@ argument-hint: "[new <slug> | enter <branch-or-path> | exit keep|remove]"
 # worktree
 
 The **branch is the identity** of the work; the worktree is just a checkout of
-it you can edit. Higher-level skills (`advanced-plan`, `ship`) layer artifacts
-on top of this model.
+it you can edit. Higher-level skills (`write-plan`, project ship SOPs) layer
+artifacts on top of this model.
 
 ## What's already built in (don't re-do it)
 

@@ -1,10 +1,18 @@
 # dev-kit
 
-Vito's global skill collection, packaged as a Claude Code plugin. The repo root
-is the plugin root — all 11 skills under `skills/`, 5 subagents under
-`agents/`, and the hooks under `hooks/` are auto-discovered. Retired skills and
-their companion subagents are parked under `archive/` (out of auto-discovery,
-kept for reference). North star + roadmap: `docs/north-star.md`.
+Vito's **atom library** for Claude Code, packaged as a plugin. The repo root is
+the plugin root — 14 skills under `skills/`, 3 subagents under `agents/`, hooks
+under `hooks/` are auto-discovered. Retired skills and their companion subagents
+are parked under `archive/` (out of auto-discovery, kept for reference).
+North star + roadmap: `docs/north-star.md`.
+
+**Design principle (v2.0)**: every entry here is a project-agnostic atom whose
+audience is the *agent* — it binds to no project infra. Workflow orchestration
+(the `ship` SOP) lives in the project plugin that owns the infra it binds to
+(currently `kox-agent-plugins`); it composes these atoms cross-plugin. Content
+written *for the user* (plans' goal.md, reports, HTML explainers) follows the
+audience rule: plain language, goal-aligned, no code archaeology — verification
+detail stays in the agent-facing layer.
 
 ## Install
 
@@ -17,40 +25,49 @@ out (e.g. at `~/codebase/projects/agent-plugins`):
 ```
 
 Then restart the session. Skills become available as `dev-kit:<skill>`
-(e.g. `/dev-kit:advanced-plan`).
+(e.g. `/dev-kit:write-plan`).
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| ship | Adaptive dev SOP: size (S/M/L) → grill → plan → code → review → 收盘. Chains grill-me, advanced-plan, test subagents, ponytail-review, project extension agents, debrief. |
+| write-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). 原 advanced-plan — the word still routes here. Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
-| dispatch | Outsource brief-able execution to external headless engines (dscode/arkcode/droid/cursor-agent/codex) — smart model plans, cheap engine types, you verify the diff. |
-| skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget — via yao-meta-skill upstream tools. |
-| advanced-plan | Track a non-trivial dev task as a mini-project that survives context resets and handoff. |
-| worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order; documents what Claude Code auto-isolates. |
-| audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
+| dispatch | Outsource brief-able execution to external headless engines (dscode/arkcode/droid/cursor-agent) — smart model plans, cheap engine types, machine checks verify. |
+| blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
+| worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order. |
+| handoff | Save / pick up task state in global `~/tmp/` for cross-session, cross-agent transfer. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
-| handoff | Save / pick up task state for cross-session, cross-agent transfer. |
-| html-doc | Produce a single self-contained, infographic-style HTML explainer. |
+| create-readable-html | Single self-contained, infographic-style HTML explainer — output for readers far from the code. 原 html-doc. |
+| agent-reach | Platform reach wrapper — YouTube subtitle/transcript extraction (yt-dlp). |
+| media-understanding | Local audio/video → Gemini transcription + digest; agent-reach's no-subtitle fallback. |
+| docs-organize | 文档—事实—代码锚点体检 + docs/ placement 约定落地. |
+| audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
+| skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget. |
+| ccobs | SQLite observability ledger over session transcripts: skill usage, spawn model discipline, token economy, hook health. |
+
+Moved out (v2.0): `ship` — now a five-stage lifecycle skill in
+`kox-agent-plugins` (context collection → acceptance-bearing plan →
+implementation → E2E acceptance → finalize), where the issue tracker, E2E
+tester, and deploy pipeline it binds to actually live. Its companion agents
+`ship-tester` / `ship-analyst` retired to `archive/` — verification now rides
+on plan acceptance clauses + the project's E2E stage.
 
 ## Subagents
 
-Five subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
+Three subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
 Each runs noisy work in an isolated context so search dumps, engine transcripts,
 and upload logs never enter the main session; only a distilled answer comes back.
 
 | Agent | Model | Role |
 |---|---|---|
-| ship-tester | sonnet | Per-todo verification for /ship — reads the item, designs a test, runs it, writes `[PASS]`/`[FAIL + reason]` back to `todo.md`. Never fixes code. |
-| ship-analyst | sonnet | Autonomous requirement analyst for /ship — resolves `unexpected.md` items against goal/spec without interrupting the user. |
-| general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `html-doc`, `lark-*`), runs it end-to-end, returns only the distilled result (answer + sources / file path / 链接·ID). Holds no skill-specific knowledge — the skill body carries the specifics. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
+| general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `create-readable-html`, `lark-*`), runs it end-to-end, returns only the distilled result. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
 | advisor | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
-| code-search | sonnet | Standalone token-efficient codebase explorer — wraps no skill. Prefers auggie-mcp semantic search, `rg`/`fd` for exact matches, gemini-cli for complex analysis; returns terse located results, not raw file dumps. |
+| code-search | sonnet | Token-efficient codebase explorer — prefers auggie-mcp semantic search, `rg`/`fd` for exact matches; returns terse located results, not raw file dumps. |
 
-The other repo skills are deliberately *not* delegated: they either need the live
-session conversation (handoff), are interactive end-to-end (audit-context), or are
-methodologies the main agent itself must drive (advanced-plan).
+The other skills are deliberately *not* delegated: they either need the live
+session conversation (handoff), are interactive end-to-end (audit-context), or
+are methodologies the main agent itself must drive (write-plan).
 
 Note: Claude Code subagents cannot spawn nested subagents, so the executor reads
 content inline with strict distillation discipline instead of fanning out the
@@ -71,24 +88,22 @@ per-item readers its skills describe for main-session use.
   on `git worktree remove`: denies removal from inside the worktree, and
   removal of a dirty worktree without `--force`.
 - **`skill-guard.sh`** (PreToolUse, `Skill|Read`) — exempt inside **any
-  subagent** (the hook input carries `agent_id` there) so delegation itself is
-  never blocked:
-
-- **`skill-guard.sh`** — in the main context, denies inline use of the noisy
-  delegated skills (and reading their source files) and redirects each to its
-  subagent. A single `DELEGATE` table is the source of truth — `skill_glob |
-  target_agent | model | hint` per row, so delegating a new skill is one line:
+  subagent** (the hook input carries `agent_id` there); in the main context it
+  denies inline use of the noisy delegated skills (and reading their source
+  files) and redirects each to its subagent. A single `DELEGATE` table is the
+  source of truth — `skill_glob | target_agent | model | hint` per row:
 
   | skill | target | model |
   |---|---|---|
   | `exa-code` | general-skills-executor | sonnet |
-  | `html-doc` | general-skills-executor | sonnet |
+  | `create-readable-html` | general-skills-executor | sonnet |
   | `lark-*` | general-skills-executor | haiku |
+  | `agent-reach` | general-skills-executor | sonnet |
+  | `media-understanding` | general-skills-executor | sonnet |
 
-  `lark-skill-maker` is exempt (skill development is a main-context task).
-  The Read-guard's `*/skills/<name>/*` glob protects those skills' source files
-  wherever they live — the global `~/.agents/skills/` store, `$PWD/skills/`, or
-  the installed plugin cache.
+  `lark-skill-maker` and `lark-im` are exempt (skill development and outbound
+  writes stay in the main context). The Read-guard's `*/skills/<name>/*` glob
+  protects those skills' source files wherever they live.
 
 Editing a skill's *source* inside the current working tree (developing this repo)
 is exempt from the guard. Typing a `/<skill>` slash command directly also
@@ -101,17 +116,18 @@ load at session start — restart the session after editing.
 .claude-plugin/
   plugin.json        # plugin manifest (name: dev-kit)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 11 skills, auto-discovered
-agents/              # 5 subagents, auto-discovered
+skills/              # 14 skills, auto-discovered
+agents/              # 3 subagents, auto-discovered
 hooks/
-  hooks.json         # PreToolUse: skill-guard
-  scripts/skill-guard.sh
-archive/             # retired skills/ + agents/, not auto-discovered
+  hooks.json         # hook registration
+  scripts/           # skill-guard.sh, worktree-guard.sh, learn-capture.py, session-replay.py
+archive/             # retired skills/ + agents/ (incl. ship, ship-tester, ship-analyst, cto-audit), not auto-discovered
+sync-agent-skills.ts # symlinks skills/* into ~/.agents/skills for other agent CLIs; prunes stale links (bun run sync-agent-skills)
 ```
 
 ## Note on portability
 
-`advanced-plan` now resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
+`write-plan` resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
 `~/.claude/skills` fallback. `exa-code` still references its scripts via
 hardcoded paths — fix those if you hit a missing-file error when it tries to
 read its own assets under a plugin-cache install.

@@ -20,10 +20,10 @@
 ## 分层架构(组件映射)
 
 ```
-编排层   ship(自适应 SOP,S/M/L 分级)· dispatch(跨引擎派活)
-战术层   advanced-plan · grill-me · advisor · worktree(约定+安全)
-执行层   ship-tester · ship-analyst · code-search · 外部引擎(dscode/droid/cursor-agent/codex)
-项目层   kox 等项目插件的 tester / deployer / finalizer —— 经 ship 扩展点挂接
+编排层   ship(五段生命周期 SOP)—— v2.0 起迁居 kox-agent-plugins,贴着它绑定的项目基建长
+战术层   write-plan(原 advanced-plan)· dispatch(跨引擎派活)· grill-me · advisor · worktree(约定+安全)
+执行层   code-search · 外部引擎(dscode/droid/cursor-agent/codex)
+项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize —— ship 原生编排,扩展点机制退役
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· yao-meta-skill(技能铸造)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
@@ -39,6 +39,8 @@
    kox 的 gitee-operator(未声明,出了 kox 环境即静默断裂)——需求真实存在,只差显式化:
    ship 定义 issue-context / verify / deploy / finalize 四个扩展点,按角色关键词解析到
    项目级 agent,缺省回退内置行为。
+   (v2.0 更新:ship 迁居 kox 插件后,粘连问题被彻底消解而非桥接——编排层直接持有项目
+   基建,扩展点机制随之退役;dev-kit 只留零绑定原子。)
 4. **跨引擎编排第一步是"引擎卡片 + 简报契约",不是调度系统**。dscode/arkcode 就是 claude
    二进制换后端——整个插件生态原样可用、配额独立,这是独有优势。hermes 的铁律直接采纳:
    子代理零上下文,一切事实写进简报。完成判定看退出码和 git diff,永不信引擎自述(Trellis)。
@@ -64,6 +66,13 @@
   已建并全绿(P=R=1.0);首次全舰扫描 153 对 0 冲突。
   **刻意推迟**(按 debrief 自己的 3 次规则):skill bundles、dispatch workflow 模板
   ——等真实场景重复出现 3 次再固化,先进入实战期。
+- **v2.0(受众分层 + 减法)✅ 2026-07-12**:ship 重构为五段生命周期(上下文收集 →
+  可验收计划 → 实施 → E2E 验收 → finalize 收尾)并迁居 kox-agent-plugins——编排层归
+  项目插件,dev-kit 收敛为零绑定原子库(14 skills / 3 agents)。ship-tester/ship-analyst/
+  cto-audit 归档:逐项验证改由计划内机检验收条款 + 项目 E2E 段承担。改名立受众原则:
+  advanced-plan→write-plan、html-doc→create-readable-html(名字说动作;领域词名字如
+  worktree/dispatch/debrief 不动)。计划文档立两层规矩:goal.md 人话对齐目标(用户可读),
+  验证细节只进 todo.md 的 Verify 字段(agent 层)。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。
 

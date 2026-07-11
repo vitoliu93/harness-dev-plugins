@@ -1,0 +1,19 @@
+skill: cto-audit
+mode: scaffold        # 个人跨项目复用；升 production 需补 trigger_eval + 输出评测
+owner: liujiaxi
+inputs:
+  - name: target
+    desc: 目标项目目录（默认当前会话所在项目/用户 @ 提及的子项目）
+  - name: phase
+    desc: engineering（默认）| algorithm（二阶段追加）| delivery（HTML/飞书/advanced-plan，用户点名才做）
+output_contract:
+  - name: audit-report
+    desc: 对话内八段骨架报告；每个论断带数字或 file:line；含「值得肯定」区块与 P0/P1/P2 行动表
+  - name: html-report (optional)
+    desc: 自包含单文件 HTML，经 general-skills-executor(opus)+html-doc 产出
+  - name: lark-delivery (optional)
+    desc: 云盘上传+组织内链接可读+群发链接（不走文件消息）
+  - name: advanced-plan (optional)
+    desc: goal/spec/todo/exploration 四件套，record-only 落 <项目>/docs/advanced-plans/
+weighting_policy: 能力>性能>架构>robustness≫安全；安全仅重大敞口时一条以内列入 P0（阶段函数，public 化后由用户显式上调）
+exclusions: [单 diff 代码评审, 单 bug 排查, 渗透/合规安全审计, 过度工程专项扫描→ponytail-audit, 审计会话内执行整改]
