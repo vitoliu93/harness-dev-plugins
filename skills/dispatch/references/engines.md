@@ -21,13 +21,16 @@ Above rung 3 there is no engine — take the task back inline.
 ## dscode — claude binary, DeepSeek backend
 
 ```bash
-dscode -p "<brief>" --output-format json
+dscode -p "<brief>" --model deepseek-v4-flash --output-format json
 dscode -p -r <session-id> "<consolidated fix list>"   # resume for the fix round
 ```
 
-- **model: fixed** — zsh function (`~/.config/zsh/utils.sh`) wrapping
+- **model: slot-remapped** — zsh function (`~/.config/zsh/utils.sh`) wrapping
   `openclaude`; slots remapped opus→`deepseek-v4-pro[1m]`,
-  sonnet/haiku→`deepseek-v4-flash[1m]`. Don't pass `--model`.
+  sonnet/haiku→`deepseek-v4-flash[1m]`. The claude binary inherits the
+  settings default model (currently opus → pro slot = the expensive one), so
+  **always pass `--model deepseek-v4-flash` explicitly** for cheap bulk runs;
+  omit it only when you deliberately want pro.
 - resume: full claude-binary flags — `-r/--resume <session-id>`,
   `--fork-session`; session id is in the `--output-format json` result.
 - The wrapper already sets `--permission-mode bypassPermissions`. Do NOT pass

@@ -16,13 +16,10 @@ Trigger: user says **"handoff"**, **"交接"**, **"save progress"**
 
 Steps:
 
-1. Create `tmp/` directory in project root if it doesn't exist.
-2. Generate a short 2-4 word kebab-case title summarizing the task.
-3. Write the handoff document to: `tmp/handoff-<YYYY-MM-DD>-<short-title>.md`
-   - **Background sessions**: if `Write` to `tmp/...` is blocked with `This background session hasn't isolated its changes yet`, **do NOT call `EnterWorktree`** — the handoff is meant to live in the main checkout (worktrees get deleted). Instead:
-     1. `Write` to `$CLAUDE_JOB_DIR/handoff-<YYYY-MM-DD>-<short-title>.md`
-     2. `Bash`: `cp "$CLAUDE_JOB_DIR/handoff-<filename>.md" tmp/handoff-<filename>.md`
-   - `tmp/` is typically gitignored, so the file persists locally without polluting commits.
+1. Create `~/tmp/` if it doesn't exist. Handoffs live in the **global** `~/tmp/` — not the project's `tmp/` — so they survive worktree removal, don't pollute any repo, and one directory holds all in-flight handoffs across projects and agent CLIs.
+2. Generate a short 2-4 word kebab-case title summarizing the task, and take `<project>` = last path segment of the project root.
+3. Write the handoff document to: `~/tmp/handoff-<YYYY-MM-DD>-<project>-<short-title>.md`
+   - `~/tmp/` is outside any repo, so background sessions can write it directly — no worktree isolation issues, no `$CLAUDE_JOB_DIR` detour.
 4. The document MUST follow this structure:
 
 ```markdown
@@ -98,7 +95,7 @@ Non-obvious things the next session MUST know:
 5. After writing, output:
 
 ```
-Handoff saved: tmp/handoff-<YYYY-MM-DD>-<short-title>.md
+Handoff saved: ~/tmp/handoff-<YYYY-MM-DD>-<project>-<short-title>.md
 Take over with: handoff pick up <short-title>
 ```
 
@@ -108,11 +105,11 @@ Trigger: user says **"take over"**, **"pick up"**, **"continue"**, **"接手"**
 
 Steps:
 
-1. If no keyword provided, list the 5 most recent files matching `tmp/handoff-*.md` (sorted by name descending) and ask the user which one.
-2. If a keyword is provided, glob `tmp/handoff-*<keyword>*.md`.
+1. If no keyword provided, list the 5 most recent files matching `~/tmp/handoff-*.md` — prefer those whose `<project>` segment matches the current project root's basename, fall back to all — and ask the user which one.
+2. If a keyword is provided, glob `~/tmp/handoff-*<keyword>*.md`.
    - Single match: use it.
    - Multiple matches: show the list and ask the user to pick.
-   - No match: show `ls tmp/handoff-*.md` output and ask for correction.
+   - No match: also try the legacy location `tmp/handoff-*<keyword>*.md` in the project root (pre-global convention); still nothing → show `ls ~/tmp/handoff-*.md` output and ask for correction.
 3. Read the handoff document thoroughly.
 4. Print a brief summary:
    - Task goal (1-2 sentences)
