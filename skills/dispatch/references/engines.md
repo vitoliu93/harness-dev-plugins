@@ -2,7 +2,7 @@
 
 **Single source of truth** for the dispatch fleet. SKILL.md names no engines —
 when the fleet changes (new CLI, model swap, quota shift), edit only this
-file. Flags and model ids below verified on this machine 2026-07-06 via
+file. Flags and model ids below verified on this machine 2026-07-11 via
 `--help` / `--list-models`.
 
 ## Routing & escalation ladder
@@ -11,8 +11,9 @@ file. Flags and model ids below verified on this machine 2026-07-06 via
 |---|---|---|
 | — | `cursor-agent --mode plan` (composer-2.5) | read-only 勘察 / 影响面分析 / codebase understanding — not execution |
 | 1 | `dscode` (failover `arkcode`) | bulk implementation from a settled plan — cheapest typist |
+| 1 | `opencode` kimi-k2.7-code or glm-5.2 | bulk implementation alternative — model diversity when the claude-binary wrappers stumble |
 | 2 | `cursor-agent` composer-2.5 | standard execution; benefits from Cursor's workspace index |
-| 3 | `cursor-agent` gpt-5.5-high or claude-opus-4-8-thinking-high | hard tasks worth premium cursor quota |
+| 3 | `cursor-agent` grok-4.5-xhigh, gpt-5.5-high, or claude-opus-4-8-thinking-high | hard tasks worth premium cursor quota |
 | alt | `droid` | autonomous subtask wanting built-in worktree + autonomy levels (fixed model, sits ~rung 3) |
 
 `BLOCKED` / verify-FAIL escalation moves one rung up (consumes retry budget).
@@ -45,6 +46,24 @@ Same mechanism, flags, and resume story as dscode; Ark-hosted models
 (**model: fixed**), third independent quota pool. Failover when DeepSeek
 throttles.
 
+## opencode — volcengine coding plan backend
+
+```bash
+source ~/.zshenv && opencode run "<brief>" -m volcengine-plan/kimi-k2.7-code --format json --auto
+source ~/.zshenv && opencode run -s <session-id> "<consolidated fix list>"   # resume for the fix round
+```
+
+- **Always prefix `source ~/.zshenv &&`** — API keys live there and must be
+  injected into the invocation env. Provider/model config lives in
+  `~/.config/opencode/opencode.json`.
+- **model: selectable** — prefer `volcengine-plan/kimi-k2.7-code` or
+  `volcengine-plan/glm-5.2` (same provider also carries deepseek/doubao/minimax
+  ids if those two throttle).
+- resume: `-s/--session <id>` (or `-c` for the latest, `--fork` to branch);
+  the id is the `sessionID` field on every `--format json` event line.
+- `--auto` required for unattended edits (auto-approves permissions).
+- Quota: Volcengine Ark coding plan — independent of Anthropic and DeepSeek.
+
 ## cursor-agent
 
 ```bash
@@ -54,8 +73,9 @@ cursor-agent -p --resume <chatId> "<consolidated fix list>"        # fix round
 ```
 
 - **model: selectable** — daily default `composer-2.5`; hard tasks
-  `gpt-5.5-high` or `claude-opus-4-8-thinking-high`. Re-check ids with
-  `--list-models` when escalating (names rotate as Cursor ships models).
+  `grok-4.5-xhigh` (fast variant `grok-4.5-fast-xhigh`), `gpt-5.5-high`, or
+  `claude-opus-4-8-thinking-high`. Re-check ids with `--list-models` when
+  escalating (names rotate as Cursor ships models).
 - resume: `--resume <chatId>` (or `--continue` for the latest); chat id
   appears in the JSON output.
 - `--force`/`--yolo` required for unattended edits; `--mode plan` is

@@ -1,26 +1,94 @@
 {
-  "recommended_threshold": 0.33,
-  "negative_patterns": ["explain", "解释", "自己来"],
+  "recommended_threshold": 0.28,
+  "negative_patterns": [
+    "explain",
+    "解释",
+    "自己来"
+  ],
   "should_trigger": [
-    { "text": "把这批机械修改派活给 deepseek", "family": "explicit_zh" },
-    { "text": "dispatch this refactor to droid", "family": "explicit_en" },
-    { "text": "让 cursor-agent 把这个组件批量重命名", "family": "engine_named" },
-    { "text": "这种体力活外包给便宜模型跑", "family": "offload" },
-    { "text": "用 dscode 执行这个已经定好的计划", "family": "engine_named" },
-    { "text": "计划我批了,执行别烧 claude 配额,找别的引擎", "family": "quota_saving" },
-    { "text": "用 cursor 的 plan 模式把这个模块的影响面勘察一遍", "family": "read_layer" },
-    { "text": "只读分析一下这个改动会波及哪些文件,别费主会话的量", "family": "read_layer" }
+    {
+      "text": "把这批机械修改派活给 deepseek",
+      "family": "explicit_zh"
+    },
+    {
+      "text": "dispatch this refactor to droid",
+      "family": "explicit_en"
+    },
+    {
+      "text": "让 cursor-agent 把这个组件批量重命名",
+      "family": "engine_named"
+    },
+    {
+      "text": "这种体力活外包给便宜模型跑",
+      "family": "offload"
+    },
+    {
+      "text": "用 dscode 执行这个已经定好的计划",
+      "family": "engine_named"
+    },
+    {
+      "text": "计划我批了,执行别烧 claude 配额,找别的引擎",
+      "family": "quota_saving"
+    },
+    {
+      "text": "用 cursor 的 plan 模式把这个模块的影响面勘察一遍",
+      "family": "read_layer"
+    },
+    {
+      "text": "只读分析一下这个改动会波及哪些文件,别费主会话的量",
+      "family": "read_layer"
+    },
+    {
+      "text": "把这 30 个文件的 import 路径全部换成新包名",
+      "family": "bulk_mechanical"
+    },
+    {
+      "text": "给每个 handler 文件套用同一个错误处理模板",
+      "family": "bulk_mechanical"
+    },
+    {
+      "text": "按这个配方把所有旧式组件批量迁移到新写法",
+      "family": "bulk_mechanical"
+    },
+    {
+      "text": "让 opencode 用 kimi 把这批文件跑掉",
+      "family": "engine_named"
+    }
   ],
   "should_not_trigger": [
-    { "text": "你自己来改这个 bug 就行", "family": "inline_work" },
-    { "text": "解释一下 dispatch 模式是什么意思", "family": "explain_only" },
-    { "text": "用 opus 好好想想这个架构该怎么设计", "family": "planning" },
-    { "text": "这个任务需要跟我边聊边改,别外包", "family": "interactive" }
+    {
+      "text": "你自己来改这个 bug 就行",
+      "family": "inline_work"
+    },
+    {
+      "text": "解释一下 dispatch 模式是什么意思",
+      "family": "explain_only"
+    },
+    {
+      "text": "用 opus 好好想想这个架构该怎么设计",
+      "family": "planning"
+    },
+    {
+      "text": "这个任务需要跟我边聊边改,别外包",
+      "family": "interactive"
+    }
   ],
   "near_neighbor": [
-    { "text": "spawn 个 subagent 去搜一下代码库", "family": "normal_subagent" },
-    { "text": "找 codex 要个第二意见看看这个方案", "family": "ask_ai" },
-    { "text": "并行开几个 agent 各干各的", "family": "parallel_worktree" },
-    { "text": "帮我 review 这个 diff 有没有问题", "family": "review_only" }
+    {
+      "text": "spawn 个 subagent 去搜一下代码库",
+      "family": "normal_subagent"
+    },
+    {
+      "text": "找 codex 要个第二意见看看这个方案",
+      "family": "ask_ai"
+    },
+    {
+      "text": "并行开几个 agent 各干各的",
+      "family": "parallel_worktree"
+    },
+    {
+      "text": "帮我 review 这个 diff 有没有问题",
+      "family": "review_only"
+    }
   ]
 }

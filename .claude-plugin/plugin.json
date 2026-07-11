@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "1.22.0",
+  "version": "1.22.1",
   "description": "Vito's personal Claude Code skill collection. 15 skills: ship (adaptive dev SOP — size S/M/L → blindspot→grill→plan→code→review→收盘), debrief (收盘 sedimentation), dispatch (outsource to cheap headless engines), blindspot (unknown-unknowns territory briefing), agent-reach (platform reach wrapper — YouTube subtitle/transcript extraction; Bilibili/Twitter placeholders), media-understanding (audio/video file → Gemini transcription + digest; agent-reach's no-subtitle fallback), docs-organize (开发文档体检：文档—事实—代码锚点核验 + placement 约定落地), advanced-plan, worktree, audit-context, exa-code, handoff (global ~/tmp handoffs), html-doc, skill-atlas, ccobs (SQLite observability ledger over session transcripts). 5 subagents: ship-tester, ship-analyst, general-skills-executor, advisor (mid-task strategic guidance / second opinion from a stronger model), code-search. PreToolUse skill-guard redirects noisy inline skill usage to the right subagent.",
   "author": {
     "name": "vito",

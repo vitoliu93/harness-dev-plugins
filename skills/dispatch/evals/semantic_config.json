@@ -1,7 +1,7 @@
 {
   "positive_concepts": {
     "offload": {
-      "weight": 0.4,
+      "weight": 0.35,
       "phrases": [
         "派活",
         "外包",
@@ -16,7 +16,7 @@
       ]
     },
     "engine_named": {
-      "weight": 0.4,
+      "weight": 0.35,
       "phrases": [
         "deepseek",
         "dscode",
@@ -24,22 +24,37 @@
         "cursor-agent",
         "arkcode",
         "让 cursor",
-        "引擎"
+        "引擎",
+        "opencode",
+        "kimi",
+        "glm"
       ]
     },
-    "execute_plan": {
-      "weight": 0.2,
+    "bulk_mechanical": {
+      "weight": 0.6,
       "phrases": [
         "执行这个",
-        "批量重命名",
-        "机械修改",
-        "批量改动",
+        "批量",
+        "机械",
         "跑",
-        "执行"
+        "执行",
+        "全部换成",
+        "每个",
+        "所有",
+        "import 路径",
+        "重命名",
+        "rename",
+        "样板",
+        "套用同一个",
+        "同一个模板",
+        "配方",
+        "recipe",
+        "迁移",
+        "migration"
       ]
     },
     "read_layer": {
-      "weight": 0.5,
+      "weight": 0.6,
       "phrases": [
         "勘察",
         "影响面",
