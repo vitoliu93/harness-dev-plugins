@@ -6,3 +6,5 @@
 - 2026-07-06 [project] ccobs distill provider 顺序 deepseek > gemini(gemini-3.1-flash-lite) > openrouter(openrouter/free) > lmstudio，key 走环境变量，llm.json 显式覆盖
 - 2026-07-08 [project] 用户工作流是任务直接进 /ship、极少先聊再干——新的 pre-work 类技巧（盲区扫描等）必须接线到 ship 阶段内自动触发，不能只做 standalone skill 等用户手动调用
 - 2026-07-08 [feedback] grill-me 的目的是对齐认知而非收集投票——先摆出经数据验证的完整立场再请用户指出出入；用户自述的摩擦感受可能有记忆偏差，委派/成本类判断以 ccobs SQLite 数据为准。
+- 2026-07-11 [project] dscode/arkcode 会继承 claude settings 的默认 model（当前 opus→deepseek-v4-pro）；跑便宜批量任务必须显式 `--model deepseek-v4-flash`，engines.md 的 "don't pass --model" 已过时待修
+- 2026-07-11 [project] docs-organize 核验 worker 的 brief 必须包含"先 git fetch 并与 origin/<branch> 比对"——2026-07-11 首跑因 worker 探落后本地 checkout 产生 2 条假阳性失真判定

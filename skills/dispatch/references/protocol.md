@@ -18,6 +18,20 @@ OUTPUT    worktree branch / file paths, PLUS the report contract:
           STATUS: DONE | DONE_WITH_CONCERNS | NEEDS_CONTEXT | BLOCKED
 ```
 
+**Copy/naming specs get exact text, then a grep assertion**: any 文案/命名/
+措辞 spec item must carry the planner's verbatim final text in the brief
+(never an intent description like "文案表明…"), and become a `grep` assertion
+in ACCEPTANCE. Only truly semantic items (tone, style) stay un-assertable —
+each such item makes the Tier 2 check unconditional (see SKILL.md pyramid).
+
+**Baseline pre-flight**: run the ACCEPTANCE command once on the base sha
+*before* dispatching. If it already fails there, the baseline is dirty and an
+absolute pass is unreachable — rewrite the acceptance baseline-relative:
+scope it to the changed files (e.g. `eslint <files>`), or write a delta
+script (base run vs HEAD run, normalized diff) and pass *that* as the
+acceptance command. verify.sh only reads exit codes; normalization lives in
+the command.
+
 **Test-first variant** (repos with a test harness): you write the failing
 tests and commit them to the branch first; GOAL becomes "make these tests
 pass"; CONSTRAINTS forbids touching the test paths (enforced by verify.sh).

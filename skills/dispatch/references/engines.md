@@ -34,10 +34,20 @@ dscode -p -r <session-id> "<consolidated fix list>"   # resume for the fix round
   omit it only when you deliberately want pro.
 - resume: full claude-binary flags — `-r/--resume <session-id>`,
   `--fork-session`; session id is in the `--output-format json` result.
+- **`--output-format json` stdout is clean JSON** (session_id in the init
+  message); warnings go to stderr. Capture with stderr separate — `> out.json
+  2> err.log`, never `2>&1` (merging is what mangles the JSON). Last-resort
+  recovery: claude-binary sessions land in `~/.claude/projects/<cwd-slug>/`,
+  newest `.jsonl` filename = session id.
 - The wrapper already sets `--permission-mode bypassPermissions`. Do NOT pass
   `--permission-mode` yourself — last flag wins and silently downgrades to a
   mode where non-edit tool calls get denied (no TTY in `-p` mode).
 - Full Claude Code semantics — tools, hooks, skills, plugins all load.
+  Includes **user-level hooks** (e.g. an RTK Bash-intercept layer), which can
+  shape the engine's internal tool calls — unlike cursor-agent/opencode/droid,
+  which are standalone CLIs with no Claude Code hook stack. So: don't
+  extrapolate dscode output quirks to other engines, and when chasing
+  dscode/arkcode noise, the user hook stack is a suspect unique to them.
 - Quota: DeepSeek billing, independent of the Anthropic 5h window.
 
 ## arkcode — claude binary, Volcengine Ark backend

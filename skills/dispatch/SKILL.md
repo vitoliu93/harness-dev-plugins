@@ -38,7 +38,9 @@ Two registries to read before the first dispatch of a session:
 
 **ACCEPTANCE comes first**: write the machine-runnable acceptance command
 *before* the brief. Can't write one → the task fails rule 3 → do it yourself
-or spawn a normal subagent.
+or spawn a normal subagent. Then **pre-flight it on the base sha**: if it
+already fails there the baseline is dirty — rewrite it baseline-relative per
+`references/protocol.md` before dispatching.
 
 ## Execution pattern
 
@@ -53,9 +55,12 @@ or spawn a normal subagent.
 
 | Tier | What | When | Cost |
 |---|---|---|---|
-| 0/1 | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p allowed-paths] [-t test-path]` | **every dispatch** | zero tokens |
-| 2 | haiku subagent: diff vs brief, spec compliance only | **only** on verify.sh WARN or `STATUS: DONE_WITH_CONCERNS` (a missing/malformed STATUS counts as that) | ~cheap |
+| 0/1 | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p <globs-file>] [-t test-path]` | **every dispatch** | zero tokens |
+| 2 | haiku subagent: diff vs brief, spec compliance only | verify.sh WARN, `STATUS: DONE_WITH_CONCERNS` (a missing/malformed STATUS counts as that), or the brief has ≥1 spec item that couldn't be turned into a machine assertion (unconditional) | ~cheap |
 | 3 | you read the diff | only on Tier 2 flags, or the change touches money/security/data/migrations (unconditional) | expensive |
+
+`-p` takes a *file* of glob patterns (one per line, `#` comments ok), not a
+space-separated path list.
 
 All green + `STATUS: DONE` → accept and log. Other STATUS codes → follow the
 bounded-retry rules in `references/protocol.md`: budget 2 re-dispatches per
