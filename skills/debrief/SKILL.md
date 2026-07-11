@@ -107,6 +107,12 @@ Two checks against this task's experience:
    agent-plugins) → offer to edit directly; npx-managed → note it in the
    memory from Move 2 instead.
 
+   Special case when this task used `dispatch`: read
+   `~/.claude/dispatch/ledger.md` and check the terminal-tier column. Cheap
+   tiers (0/1) settling most dispatches → healthy. Repeatedly tier-3 with
+   inline fixups → the routing admits too much judgment-work; propose
+   tightening dispatch's litmus or trigger list as the drift fix.
+
 ## Output
 
 End with a compact 收盘报告:

@@ -94,7 +94,7 @@ S: edit in place, verify, jump to Stage 3.
 
 For each `todo` item (phase by phase, in order):
 
-1. **Route, then implement.** Run the item through the `dispatch` litmus first: all three pass → **dispatch by default** (write acceptance + brief, launch in background, continue with the next parallelizable item while it runs); any fail → implement inline yourself. A dispatched item that exhausts its retry budget comes back as `[blocked: dispatch]` in todo.md — take it inline or leave it for the wrap-up blocked summary.
+1. **Route, then implement** — script > dispatch > inline. First ask: can a deterministic tool do this item (`sed`/`ast-grep`/codemod/short script)? → run it directly, no engine. Otherwise run the `dispatch` litmus: all three pass → **dispatch by default** (write acceptance + brief, launch in background, continue with the next parallelizable item while it runs); any fail → implement inline yourself. A dispatched item that exhausts its retry budget comes back as `[blocked: dispatch]` in todo.md — take it inline or leave it for the wrap-up blocked summary.
 2. **Verify** — L: spawn `ship-tester` for every item. M: self-verify routine items (record the evidence in `todo.md` yourself); spawn `ship-tester` only when the item is risky — touches money/security/data/migrations/external state. ship-tester writes `[PASS]` or `[FAIL + reason]` back to `todo.md`.
 3. On `[FAIL]`: fix → mark `[needs-retest]` → ship-tester re-runs. No cap.
 4. **`[blocked: reason]`** → only this surfaces to the user.

@@ -9,9 +9,10 @@ description: >-
   Use PROACTIVELY, without being asked, whenever the task at hand is 批量机械
   work: bulk edits across many files, rename / import-path sweeps, 批量重命名,
   样板代码 generation, applying one fixed recipe (同一个模板/配方) to N files
-  or modules, mass migration of a repeated pattern. Also use when the user
-  says "dispatch", "派活", "外包", "让 deepseek/droid/cursor/opencode/kimi/glm
-  做", "用 cursor 勘察/只读分析".
+  or modules, mass migration of a repeated pattern — the skill itself first
+  routes truly scriptable work to deterministic tools (sed/ast-grep/codemod),
+  no engine. Also use when the user says "dispatch", "派活", "外包", "让
+  deepseek/droid/cursor/opencode/kimi/glm 做", "用 cursor 勘察/只读分析".
 argument-hint: "[task brief | engine name + task]"
 ---
 
@@ -28,6 +29,16 @@ Two registries to read before the first dispatch of a session:
   ladder. This file names no engines, so fleet changes touch only the registry.
 - **`references/protocol.md`** — the brief contract (zero-context rule),
   test-first variant, report STATUS codes, retry/escalation rules.
+
+## Rung 0: script before engine
+
+Before the litmus, ask: **can a deterministic tool do this?** `sed`,
+`ast-grep` (installed), `jq`, a codemod, a 20-line script — if the recipe is
+truly fixed, run it directly: instant, zero tokens, nothing to verify beyond
+the tool's own output. A utility that closes the gap is fair game to install
+(homebrew / uv tool / bun — no approval needed). Only what survives this rung
+— brief-able but **not** script-able — is dispatch material. An engine is for
+the middle band: too fuzzy for sed, too mechanical for you.
 
 ## Dispatchability litmus (all three, or don't dispatch)
 
@@ -46,6 +57,11 @@ already fails there the baseline is dirty — rewrite it baseline-relative per
 
 1. Record the base sha, give the engine its own worktree (parallel edits never
    share one). Pick the engine per the registry's routing table.
+1.5. **Pilot first on fan-outs** (same recipe × N≥5 files/modules): dispatch
+   ONE representative item, run tier-0 verify on it, and only then fan out the
+   remaining N−1 with the proven brief. A brief defect costs 1/N instead of a
+   full run + a retry — the retry budget is for surprises, not for debugging
+   the brief at scale.
 2. Run via Bash `run_in_background: true`; capture stdout to the scratchpad.
    Note the engine's **session id** from its output (resume flags per
    registry) — you'll want it for the fix round.
@@ -67,11 +83,19 @@ bounded-retry rules in `references/protocol.md`: budget 2 re-dispatches per
 item, same engine + same brief never runs twice, budget exhausted → mark
 `[blocked: dispatch]` and move on.
 
-## Ledger (observation log, drives nothing)
+## Ledger
 
 Append one line per finished dispatch to `~/.claude/dispatch/ledger.md`
-(`mkdir -p` on first use):
+(`mkdir -p` on first use). `tier` = the **terminal** tier (the one that
+actually settled it); note inline fixups honestly — they are the cost the
+pyramid failed to catch:
 
 ```
 2026-07-06 | dscode | mech-migration | tier0 | pass | retries:0
+2026-07-11 | dscode | kb-rename | tier3 | pass(+1 inline fixup) | retries:0
 ```
+
+Consumer: `debrief` reads it at 收盘. If the terminal tier is repeatedly 3
+with inline fixups, the routing is mis-calibrated — the tasks being dispatched
+carry more judgment than the litmus admits; tighten the litmus or route those
+inline, don't keep paying tier-3 tax and calling it savings.
