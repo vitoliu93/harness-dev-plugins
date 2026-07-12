@@ -17,9 +17,15 @@ argument-hint: "[task + the territory you're blind on]"
 
 # /blindspot
 
-The map is the prompt; the territory is the code and its domain. This skill reports
-the gap — what the territory knows that the prompt doesn't. (After Thariq's
-"A Field Guide to Fable: Finding Your Unknowns".)
+The prompt is a map; the code and its domain are the territory. Every gap
+between them is an **unknown** the executing agent will fill with a best
+guess — and accumulated wrong guesses are how long tasks derail. Of the four
+kinds of unknowns (known knowns are in the prompt; known unknowns the user
+can just ask about; unknown knowns surface when reacting to a draft), this
+pass hunts the last and worst: **unknown unknowns — things absent from the
+prompt that the user wouldn't think to ask**. Finding them now is cheap;
+finding them after the plan commits to a wrong guess is rework. (Distilled
+from Thariq's "A Field Guide to Fable: Finding Your Unknowns".)
 
 ## 1. Frame the map
 
@@ -54,7 +60,8 @@ all scans in one message:
 
 Merge the digests into **5–10 items max**. An item qualifies only if it is
 absent from the user's prompt — if they already mentioned it, it's a known,
-not a blind spot. Rank by plan impact:
+not a blind spot. Rank by plan impact — i.e. how expensive the wrong guess
+would be if nobody flagged it:
 
 1. constraints that change the data model or architecture
 2. prior art that changes the whole approach ("this half-exists already")
