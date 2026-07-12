@@ -1,13 +1,11 @@
 ---
 name: agent-reach
 description: >-
-  This skill should be used when the agent needs to reach content on video/social
-  platforms — YouTube, Bilibili, Twitter/X — as a unified wrapper layer. Current
-  capability: YouTube subtitle/transcript extraction (yt-dlp based), e.g. "提取这个
-  YouTube 视频的字幕", "总结/做学习大纲 this YouTube video", "what does this video
-  say", "transcribe this video". Trigger on YouTube URLs, "字幕", "transcript",
-  "油管". Heavy transcript reading runs inside a subagent (skill-guard redirects to
-  general-skills-executor) so raw text never fills the main context.
+  Unified reach layer for video/social platforms (YouTube, Bilibili,
+  Twitter/X); current capability: YouTube subtitle/transcript extraction via
+  yt-dlp. Trigger: YouTube URLs, "提取字幕", "transcript", "油管", "总结/做
+  学习大纲 this YouTube video". Transcript reading runs in a subagent so raw
+  text stays out of the main context.
 allowed-tools: Bash(yt-dlp:*), Bash(python3:*)
 ---
 

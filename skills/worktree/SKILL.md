@@ -2,11 +2,10 @@
 name: worktree
 description: >-
   Conventions on top of git worktrees: the branch is a unit of work's durable,
-  shareable identity — any agent or machine picks it up by entering the worktree
-  or checking out the branch. Covers what Claude Code already isolates
-  automatically, naming, attach/resume, cross-machine handoff, parallel agents,
-  and the exit-safety order. Use when the user says "开个 worktree", "隔离干活",
-  "并行 agent", "按分支交接", or mentions EnterWorktree / ExitWorktree.
+  shareable identity — any agent or machine picks it up by entering the
+  worktree. Covers naming, attach/resume, cross-machine handoff, parallel
+  agents, exit-safety order. Trigger: "开个 worktree", "隔离干活", "并行
+  agent", "按分支交接", EnterWorktree/ExitWorktree.
 argument-hint: "[new <slug> | enter <branch-or-path> | exit keep|remove]"
 ---
 

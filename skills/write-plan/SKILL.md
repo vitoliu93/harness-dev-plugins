@@ -2,12 +2,11 @@
 name: write-plan
 description: >-
   Write the deterministic, acceptance-bearing plan for a non-trivial dev task
-  (feature, bug fix, refactor) and track it as a mini-project that survives
-  context resets and cross-agent handoff. Use when the user says "write-plan",
-  "立项/立个项", "开发计划", "plan this task", or kicks off multi-step dev work
-  worth tracking (跟踪); also to
-  RESUME: "continue plan", "恢复计划", "接着做 <slug>". Formerly named
-  advanced-plan — that word still routes here. Requires a git repo.
+  and track it as a mini-project that survives context resets and handoff.
+  Trigger: "write-plan", "立项/立个项", "开发计划", "plan this task", or
+  multi-step dev work worth tracking (跟踪); resume via "continue plan",
+  "恢复计划", "接着做 <slug>". Formerly advanced-plan — that word still
+  routes here. Requires a git repo.
 argument-hint: "[new <task> | resume <slug> | review <slug>]"
 ---
 

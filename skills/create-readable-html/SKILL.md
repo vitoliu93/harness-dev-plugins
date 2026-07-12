@@ -4,9 +4,8 @@ description: >-
   Produce a single self-contained HTML file as a visual explainer —
   infographic-style with diagrams and spatial layout, not restyled prose. Use
   when output should be grasped at a glance: architecture, comparisons, flows,
-  timelines, dashboards, PR/code visualizations, quick interactive tools. Trigger
-  on "make an HTML file", "visualize this", "diagram this", "explain this",
-  "review this PR", "可视化", "信息图", "画个架构图". Formerly named html-doc —
+  dashboards, PR/code visualizations. Trigger: "make an HTML file", "visualize
+  this", "diagram this", "可视化", "信息图", "画个架构图". Formerly html-doc —
   that word still routes here.
 argument-hint: [what the artifact should show]
 ---

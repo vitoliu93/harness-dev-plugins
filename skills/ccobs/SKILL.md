@@ -1,13 +1,11 @@
 ---
 name: ccobs
 description: >-
-  Claude Code 可观测账本：把 ~/.claude/projects 的原始 session JSONL 增量灌入
-  SQLite（事实+指针，不存正文），提供 6 个观测视图——skill 使用率、agent spawn
-  模型纪律、token 经济（按引擎/主链-子链分账）、hook 健康度、项目周活、语义质量
-  （便宜模型蒸馏）。当用户说「观测报告」「usage report」「哪些 skill 没人用」
-  「token 花在哪了」「agent 有没有带 model」「ccobs」，或 skill-atlas 体检需要
-  使用率数据、debrief 收盘要会话统计时使用。不负责语义记忆检索（qmd/claude-mem
-  的事）、也不负责实时监控。
+  Claude Code 可观测账本：session JSONL 增量灌入 SQLite，出 6 个观测视图
+  （skill 使用率、agent 模型纪律、token 经济、hook 健康度、项目周活、语义
+  质量）。触发：「观测报告」「usage report」「哪些 skill 没人用」「token
+  花在哪了」「agent 有没有带 model」「ccobs」，或 skill-atlas/debrief 要
+  使用率与会话统计。不负责语义记忆检索和实时监控。
 ---
 
 # ccobs — Claude Code observability ledger

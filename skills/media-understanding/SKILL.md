@@ -1,14 +1,12 @@
 ---
 name: media-understanding
 description: >-
-  Base skill: understand any local audio or video file by sending it to Gemini
-  Flash-Lite (native multimodal — transcribes speech, reads on-screen text/slides,
-  summarizes) cheaply and dependency-free. Trigger on "理解这个视频/音频文件",
-  "转写这个视频/录音", "用 gemini 看/听这个文件", "transcribe this video/audio",
-  "summarize this media file", "what is said in this recording", or whenever a
-  media file needs to become text. Also the designated **no-subtitle fallback**
-  for the agent-reach skill. Heavy media reading happens inside
-  Gemini, so the raw audio/transcript never fills the main context.
+  Understand any local audio/video via Gemini Flash-Lite (native multimodal:
+  transcribes speech, reads on-screen text/slides, summarizes) — cheap,
+  dependency-free, raw media never enters the main context. Trigger:
+  "理解/转写这个视频/音频", "用 gemini 看/听这个文件", "transcribe this
+  video/audio", "summarize this media file", or any media file that needs to
+  become text. Also agent-reach's no-subtitle fallback.
 allowed-tools: Bash(python3:*), Bash(yt-dlp:*), Bash(bili:*), Bash(ffmpeg:*)
 ---
 

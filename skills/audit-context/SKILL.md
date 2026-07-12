@@ -1,6 +1,6 @@
 ---
 name: audit-context
-description: Audit, prune, and lean-refactor the context that loads every session — CLAUDE.md at every scope (user/project/local), @-imported docs, AGENTS.md, and auto-memory. Classify each entry keep/merge/drop/update/relocate against the litmus test "would removing this make Claude err?", verify assumptions before showing the table, then apply. Trigger on "audit CLAUDE", "prune memory", "clean context", "CLAUDE.md too verbose", "make CLAUDE lean", "审计 CLAUDE", "清理记忆", "精简 CLAUDE", or periodic maintenance sweeps.
+description: Audit and prune the context that loads every session — CLAUDE.md (all scopes), @-imported docs, AGENTS.md, auto-memory. Classify each entry keep/merge/drop/update/relocate by "would removing this make Claude err?", verify, then apply. Trigger: "audit CLAUDE", "prune memory", "clean context", "CLAUDE.md too verbose", "审计 CLAUDE", "清理记忆", "精简 CLAUDE", or periodic sweeps.
 ---
 
 # Audit Context

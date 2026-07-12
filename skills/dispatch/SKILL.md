@@ -1,17 +1,12 @@
 ---
 name: dispatch
 description: >-
-  Outsource brief-able execution work to external headless engines — the
-  current fleet lives in references/engines.md (claude-binary wrappers on
-  DeepSeek/Ark quota, droid, cursor-agent) — so the scarce Claude quota stays
-  on planning and review. Also routes read-only 勘察/影响面分析 to cursor's
-  plan mode. Smart model plans, cheap engine executes, machine checks verify.
-  Use PROACTIVELY, without being asked, whenever the task at hand is 批量机械
-  work: bulk edits across many files, rename / import-path sweeps, 批量重命名,
-  样板代码 generation, applying one fixed recipe (同一个模板/配方) to N files
-  or modules, mass migration of a repeated pattern — the skill itself first
-  routes truly scriptable work to deterministic tools (sed/ast-grep/codemod),
-  no engine. Also use when the user says "dispatch", "派活", "外包", "让
+  Outsource brief-able execution to cheap headless engines (fleet in
+  references/engines.md) so Claude quota stays on planning and review; truly
+  scriptable work routes to sed/ast-grep/codemod first, read-only 勘察/影响面
+  分析 to cursor plan mode. Use PROACTIVELY on 批量机械 work: bulk edits,
+  rename/import-path sweeps, 批量重命名, 样板代码, one fixed recipe applied
+  to N files, mass migration. Also on "dispatch", "派活", "外包", "让
   deepseek/droid/cursor/opencode/kimi/glm 做", "用 cursor 勘察/只读分析".
 argument-hint: "[task brief | engine name + task]"
 ---
