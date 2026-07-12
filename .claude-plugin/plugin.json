@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Vito's atom library for Claude Code — project-agnostic, agent-facing capability atoms. Workflow orchestration (the ship SOP) moved to the project plugin that owns the infra it binds to (kox-agent-plugins). 14 skills: write-plan (deterministic, acceptance-bearing plan as a tracked mini-project; 原 advanced-plan), debrief (收盘 sedimentation), dispatch (outsource brief-able work to cheap headless engines), blindspot (unknown-unknowns territory briefing), worktree (branch-as-identity conventions + exit safety), handoff (global ~/tmp 交接), exa-code (web/code search), create-readable-html (self-contained visual explainer, 受众=离代码远的读者; 原 html-doc), agent-reach (YouTube 字幕等平台触达封装), media-understanding (音视频 → Gemini 转写理解), docs-organize (文档—事实—代码锚点体检 + placement 约定), audit-context (常驻上下文审计精简), skill-atlas (skill 舰队体检), ccobs (SQLite observability ledger over session transcripts). 3 subagents: general-skills-executor, advisor (mid-task strategic guidance / second opinion), code-search. PreToolUse skill-guard redirects noisy inline skill usage to the right subagent.",
   "author": {
     "name": "vito",

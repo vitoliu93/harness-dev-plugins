@@ -22,10 +22,12 @@ between them is an **unknown** the executing agent will fill with a best
 guess — and accumulated wrong guesses are how long tasks derail. Of the four
 kinds of unknowns (known knowns are in the prompt; known unknowns the user
 can just ask about; unknown knowns surface when reacting to a draft), this
-pass hunts the last and worst: **unknown unknowns — things absent from the
-prompt that the user wouldn't think to ask**. Finding them now is cheap;
-finding them after the plan commits to a wrong guess is rework. (Distilled
-from Thariq's "A Field Guide to Fable: Finding Your Unknowns".)
+pass hunts the last and worst: **unknown unknowns — the questions the user
+wouldn't think to ask, the potholes, the prior art, and what "good" even
+looks like here**. Finding them now is cheap; finding them after the plan
+commits to a wrong guess is rework. The briefing exists so the user can
+prompt and plan better. (Distilled from Thariq's "A Field Guide to Fable:
+Finding Your Unknowns".)
 
 ## 1. Frame the map
 
@@ -33,7 +35,9 @@ One line, no interview: restate what the prompt already establishes (the known
 knowns), then name the lenses to scan — which repo modules, and which domain
 topics outside the repo (protocols, formats, third-party APIs, regulations).
 Domain lens only exists when the task actually leans on knowledge the repo
-doesn't contain.
+doesn't contain. What the user discloses about their own experience
+calibrates the pass: what they say they know is off the list; what they
+admit they don't know widens where to scan.
 
 ## 2. Scan the territory (delegated, parallel)
 
@@ -52,9 +56,11 @@ all scans in one message:
 - **Domain lens** — `general-skills-executor` (model: sonnet) running exa-code,
   one per domain topic:
 
-  > Task context: <task>. Report the pitfalls, spec constraints, and
+  > Task context: <task>. Report the pitfalls, spec constraints,
   > commonly-missed edge cases of <topic> that a non-specialist implementing
-  > this would not think to ask about. Digest + sources only.
+  > this would not think to ask about — and what "good" looks like: the
+  > quality ceiling a non-specialist wouldn't know to aim for. Digest +
+  > sources only.
 
 ## 3. Rank and brief
 
