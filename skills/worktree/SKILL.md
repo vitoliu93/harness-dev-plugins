@@ -4,8 +4,7 @@ description: >-
   Conventions on top of git worktrees: the branch is a unit of work's durable,
   shareable identity — any agent or machine picks it up by entering the
   worktree. Covers naming, attach/resume, cross-machine handoff, parallel
-  agents, exit-safety order. Trigger: "开个 worktree", "隔离干活", "并行
-  agent", "按分支交接", EnterWorktree/ExitWorktree.
+  agents, exit-safety order.
 argument-hint: "[new <slug> | enter <branch-or-path> | exit keep|remove]"
 ---
 
@@ -25,7 +24,7 @@ Verified against current Claude Code behavior:
 - **Main interactive sessions and plain subagents do NOT auto-isolate** — the
   main session only via explicit `EnterWorktree`/`--worktree`; a subagent only
   via `isolation: worktree`.
-- Auto-cleanup only sweeps worktrees that are old *and* clean (no uncommitted
+- Auto-cleanup only sweeps worktrees that are old _and_ clean (no uncommitted
   changes / unpushed commits); a running agent's worktree is locked.
 
 So this skill's job is the **conventions**, not the mechanics.

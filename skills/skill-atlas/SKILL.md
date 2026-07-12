@@ -3,10 +3,7 @@ name: skill-atlas
 description: >-
   Fleet health check for the skill collection: route-overlap matrix, staleness
   signal, per-skill trigger eval, and context budget — powered by the
-  yao-meta-skill upstream tools (stdlib-only, offline). Use when the user says
-  "skill 体检", "保鲜度", "skill atlas", "route overlap", "触发评测", after
-  editing any skill description, or before authoring a new skill
-  (near-neighbor check). One-shot report; proposes fixes, applies nothing.
+  yao-meta-skill upstream tools (stdlib-only, offline).
 argument-hint: "[optional: skill name to focus on]"
 ---
 

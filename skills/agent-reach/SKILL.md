@@ -2,10 +2,7 @@
 name: agent-reach
 description: >-
   Unified reach layer for video/social platforms (YouTube, Bilibili,
-  Twitter/X); current capability: YouTube subtitle/transcript extraction via
-  yt-dlp. Trigger: YouTube URLs, "提取字幕", "transcript", "油管", "总结/做
-  学习大纲 this YouTube video". Transcript reading runs in a subagent so raw
-  text stays out of the main context.
+  Twitter/X);
 allowed-tools: Bash(yt-dlp:*), Bash(python3:*)
 ---
 

@@ -3,11 +3,7 @@ name: blindspot
 description: >-
   Blind spot pass before any plan exists: scan the repo modules and domain
   knowledge a task touches, return a ranked briefing of 5-10 unknown unknowns
-  — hidden couplings, conventions, landmines, prior art. Trigger: "blind spot
-  pass", "盲区扫描", "扫一下盲区", "这块我不熟 / 我不懂 X", or a task in
-  unfamiliar territory; ship SOPs chain it for M/L tasks with 生疏信号.
-  Briefing only — no plans, no edits. Stress-testing an existing plan is
-  grill-me, not this.
+  — hidden couplings, conventions, landmines, prior art.
 argument-hint: "[task + the territory you're blind on]"
 ---
 

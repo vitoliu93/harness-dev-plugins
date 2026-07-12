@@ -1,7 +1,7 @@
 ---
 name: ccobs
 description: >-
-  Claude Code 可观测账本：session JSONL 增量灌入 SQLite，出 6 个观测视图
+  记录 Claude Code 可观测账本：session JSONL 增量灌入 SQLite，出 6 个观测视图
   （skill 使用率、agent 模型纪律、token 经济、hook 健康度、项目周活、语义
   质量）。触发：「观测报告」「usage report」「哪些 skill 没人用」「token
   花在哪了」「agent 有没有带 model」「ccobs」，或 skill-atlas/debrief 要
@@ -56,14 +56,14 @@ bun scripts/distill.ts --session <id>   # 换模型/改 prompt 后重蒸某个 s
 
 六个视图 → practice-guide 观察清单的映射：
 
-| 视图 | 回答的问题 |
-|---|---|
-| `v_skill_usage` | 哪些 skill 是死的、哪些是热的（体检第 4 象限） |
-| `v_agent_spawns` | spawn 带没带显式 model（CLAUDE.md 模型纪律） |
-| `v_token_economy` | 执行 token 多少跑在便宜引擎上（北极星指标） |
-| `v_hook_health` | 钩子火了几次、多慢、报没报错 |
-| `v_weekly_activity` | 项目 × 周的会话量与子代理量 |
-| `v_session_quality` | 任务类型 × 结局 × 纠正次数（需蒸馏层） |
+| 视图                | 回答的问题                                     |
+| ------------------- | ---------------------------------------------- |
+| `v_skill_usage`     | 哪些 skill 是死的、哪些是热的（体检第 4 象限） |
+| `v_agent_spawns`    | spawn 带没带显式 model（CLAUDE.md 模型纪律）   |
+| `v_token_economy`   | 执行 token 多少跑在便宜引擎上（北极星指标）    |
+| `v_hook_health`     | 钩子火了几次、多慢、报没报错                   |
+| `v_weekly_activity` | 项目 × 周的会话量与子代理量                    |
+| `v_session_quality` | 任务类型 × 结局 × 纠正次数（需蒸馏层）         |
 
 ## 已知数据毛刺
 

@@ -2,12 +2,7 @@
 name: dispatch
 description: >-
   Outsource brief-able execution to cheap headless engines (fleet in
-  references/engines.md) so Claude quota stays on planning and review; truly
-  scriptable work routes to sed/ast-grep/codemod first, read-only 勘察/影响面
-  分析 to cursor plan mode. Use PROACTIVELY on 批量机械 work: bulk edits,
-  rename/import-path sweeps, 批量重命名, 样板代码, one fixed recipe applied
-  to N files, mass migration. Also on "dispatch", "派活", "外包", "让
-  deepseek/droid/cursor/opencode/kimi/glm 做", "用 cursor 勘察/只读分析".
+  references/engines.md);
 argument-hint: "[task brief | engine name + task]"
 ---
 
@@ -43,7 +38,7 @@ the middle band: too fuzzy for sed, too mechanical for you.
    result; you never need to re-derive the work to trust it.
 
 **ACCEPTANCE comes first**: write the machine-runnable acceptance command
-*before* the brief. Can't write one → the task fails rule 3 → do it yourself
+_before_ the brief. Can't write one → the task fails rule 3 → do it yourself
 or spawn a normal subagent. Then **pre-flight it on the base sha**: if it
 already fails there the baseline is dirty — rewrite it baseline-relative per
 `references/protocol.md` before dispatching.
@@ -52,7 +47,7 @@ already fails there the baseline is dirty — rewrite it baseline-relative per
 
 1. Record the base sha, give the engine its own worktree (parallel edits never
    share one). Pick the engine per the registry's routing table.
-1.5. **Pilot first on fan-outs** (same recipe × N≥5 files/modules): dispatch
+   1.5. **Pilot first on fan-outs** (same recipe × N≥5 files/modules): dispatch
    ONE representative item, run tier-0 verify on it, and only then fan out the
    remaining N−1 with the proven brief. A brief defect costs 1/N instead of a
    full run + a retry — the retry budget is for surprises, not for debugging
@@ -64,13 +59,13 @@ already fails there the baseline is dirty — rewrite it baseline-relative per
 
 ## Verification pyramid
 
-| Tier | What | When | Cost |
-|---|---|---|---|
-| 0/1 | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p <globs-file>] [-t test-path]` | **every dispatch** | zero tokens |
-| 2 | haiku subagent: diff vs brief, spec compliance only | verify.sh WARN, `STATUS: DONE_WITH_CONCERNS` (a missing/malformed STATUS counts as that), or the brief has ≥1 spec item that couldn't be turned into a machine assertion (unconditional) | ~cheap |
-| 3 | you read the diff | only on Tier 2 flags, or the change touches money/security/data/migrations (unconditional) | expensive |
+| Tier | What                                                                                       | When                                                                                                                                                                                     | Cost        |
+| ---- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| 0/1  | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p <globs-file>] [-t test-path]` | **every dispatch**                                                                                                                                                                       | zero tokens |
+| 2    | haiku subagent: diff vs brief, spec compliance only                                        | verify.sh WARN, `STATUS: DONE_WITH_CONCERNS` (a missing/malformed STATUS counts as that), or the brief has ≥1 spec item that couldn't be turned into a machine assertion (unconditional) | ~cheap      |
+| 3    | you read the diff                                                                          | only on Tier 2 flags, or the change touches money/security/data/migrations (unconditional)                                                                                               | expensive   |
 
-`-p` takes a *file* of glob patterns (one per line, `#` comments ok), not a
+`-p` takes a _file_ of glob patterns (one per line, `#` comments ok), not a
 space-separated path list.
 
 All green + `STATUS: DONE` → accept and log. Other STATUS codes → follow the

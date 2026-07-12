@@ -1,12 +1,7 @@
 ---
 name: media-understanding
 description: >-
-  Understand any local audio/video via Gemini Flash-Lite (native multimodal:
-  transcribes speech, reads on-screen text/slides, summarizes) — cheap,
-  dependency-free, raw media never enters the main context. Trigger:
-  "理解/转写这个视频/音频", "用 gemini 看/听这个文件", "transcribe this
-  video/audio", "summarize this media file", or any media file that needs to
-  become text. Also agent-reach's no-subtitle fallback.
+  Understand any local audio/video content.
 allowed-tools: Bash(python3:*), Bash(yt-dlp:*), Bash(bili:*), Bash(ffmpeg:*)
 ---
 
@@ -14,10 +9,11 @@ allowed-tools: Bash(python3:*), Bash(yt-dlp:*), Bash(bili:*), Bash(ffmpeg:*)
 
 A base capability for turning a media **file** into text: transcription + a
 structured understanding of what is said and shown. Gemini Flash-Lite is natively
-multimodal and cheap — it reads speech *and* on-screen content (slides, code,
+multimodal and cheap — it reads speech _and_ on-screen content (slides, code,
 demos) that a pure ASR transcript would miss.
 
 Two roles:
+
 1. **Direct** — the user hands over a recording/screencast/video file to understand.
 2. **Fallback** — when [[agent-reach]] hits a video with no
    usable subtitles, download the media and route it here instead of giving up.
@@ -38,12 +34,12 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/media-understanding/scripts/gemini_media.py
 It uploads the file via the Gemini File API, waits for processing, asks the model
 to transcribe + digest, and prints the result. Dependency-free (stdlib `urllib`).
 
-| Option | Effect |
-|---|---|
-| `--audio-only` | Transcode to 16k mono mp3 first. **The cheap default for "what does it say".** ~8× fewer tokens than video, and it makes *any* container (opus/webm/m4a) acceptable. |
-| `--question "Q"` | Focus the digest on the user's question. |
-| `--model M` | Default `gemini-3.1-flash-lite`. Use `gemini-2.5-flash-lite` for ~2.5× cheaper, slightly weaker. |
-| `--prompt P` | Fully override the instruction sent to Gemini. |
+| Option           | Effect                                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--audio-only`   | Transcode to 16k mono mp3 first. **The cheap default for "what does it say".** ~8× fewer tokens than video, and it makes _any_ container (opus/webm/m4a) acceptable. |
+| `--question "Q"` | Focus the digest on the user's question.                                                                                                                             |
+| `--model M`      | Default `gemini-3.1-flash-lite`. Use `gemini-2.5-flash-lite` for ~2.5× cheaper, slightly weaker.                                                                     |
+| `--prompt P`     | Fully override the instruction sent to Gemini.                                                                                                                       |
 
 ## Choosing the mode
 
@@ -51,7 +47,7 @@ to transcribe + digest, and prints the result. Dependency-free (stdlib `urllib`)
   aloud, podcasts, interviews). Cheapest and robust. ~$0.007 for a 19-minute
   video on `gemini-3.1-flash-lite`.
 - **Full video** (omit `--audio-only`, pass an actual video file like mp4/webm) —
-  when the *screen* carries meaning the narration doesn't: unspoken on-screen
+  when the _screen_ carries meaning the narration doesn't: unspoken on-screen
   code, UI walkthroughs where the speaker says "click here", chart-heavy talks.
   ~8× the audio cost; use deliberately.
 
