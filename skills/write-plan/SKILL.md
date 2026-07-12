@@ -94,6 +94,8 @@ Trigger: "write-plan", "立项", "plan this task", or any non-trivial task kicko
 
 Follow `todo.md` phase by phase. The Enforcement rules below are non-negotiable — they're what makes resume actually work. Append discoveries to `exploration.md` as you go (lazy-copy its template the first time you need it).
 
+**Route each item before touching it**: ① deterministic script covers it (`sed`/`ast-grep`/codemod/short script) → run the script, no engine; ② 批量机械 and brief-able → outsource via the `dispatch` skill; ③ judgment-dense (design trade-offs, sequential probing) → implement inline in the main context. Multi-agent `Workflow` fan-out is not a function of complexity — only for genuinely parallel work the user opted into.
+
 ### Routing `/write-plan <args>` — new or resume?
 
 A bare `/write-plan <args>` is ambiguous (is `<args>` a new task or a keyword for an existing plan?). **Always discover before creating** — never silently start a duplicate plan. Discovery keys off the **branch/worktree**, not a loose file glob:

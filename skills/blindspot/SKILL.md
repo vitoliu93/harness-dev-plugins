@@ -6,8 +6,9 @@ description: >-
   knowledge a task touches, return a ranked briefing of the 5-10 things you'd
   never think to ask — hidden couplings, existing conventions, landmines,
   prior art. Use when the user says "blind spot pass", "盲区扫描", "扫一下盲区",
-  "这块我不熟 / 我不懂 X", or hands over a task in unfamiliar territory. ship
-  chains this in Stage 1 for M/L tasks with 生疏信号. Briefing only — never
+  "这块我不熟 / 我不懂 X", or hands over a task in unfamiliar territory. Project
+  ship SOPs chain this in their context-gathering stage for M/L tasks with
+  生疏信号. Briefing only — never
   plans, never edits. Not for stress-testing an existing plan (that's grill-me,
   the inverse direction: it questions YOUR plan; blindspot questions the
   territory FOR you).
@@ -66,5 +67,5 @@ would change your plan. Cite file:line or source.
 ## 4. Stop
 
 Briefing delivered, turn ends. No plan, no edits, no follow-up interview —
-the user reacts, then chains `/grill-me` or `/ship` themselves (or ship
-called us and takes the briefing back into its grilling).
+the user reacts, then chains `/grill-me` or their project ship SOP themselves
+(or a ship SOP called us and takes the briefing back into its grilling).

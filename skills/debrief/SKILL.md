@@ -5,7 +5,7 @@ description: >-
   distill at most ONE lifecycle-tagged memory, and promote recurring patterns
   into skill candidates. Use when a task/issue/plan wraps up, after merge or
   deploy, or when the user says "收盘", "复盘", "debrief", "settle", "沉淀一下".
-  Works standalone on any session — ship chains it as its final stage.
+  Works standalone on any session — project ship SOPs chain it as their final stage.
 argument-hint: "[optional: task slug or一句话说明收的是哪个盘]"
 ---
 

@@ -20,15 +20,15 @@
 ## 分层架构(组件映射)
 
 ```
-编排层   ship(五段生命周期 SOP)—— v2.0 起迁居 kox-agent-plugins,贴着它绑定的项目基建长
+编排层   归项目插件所有(项目生命周期 SOP,贴着各自绑定的基建长)—— dev-kit 零编排绑定
 战术层   write-plan(原 advanced-plan)· dispatch(跨引擎派活)· grill-me · advisor · worktree(约定+安全)
-执行层   code-search · 外部引擎(dscode/droid/cursor-agent/codex)
-项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize —— ship 原生编排,扩展点机制退役
+执行层   code-search · 外部引擎(注册表见 dispatch 的 references/engines.md)
+项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· yao-meta-skill(技能铸造)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
 
-## 调研核心结论(设计依据)
+## 调研核心结论(2026-07-02 快照,当时的设计依据)
 
 1. **ship 的病不是"重",是"单体"**。S 任务(6/17)根本不该走全流程,但 4/6 的 L 任务
    也没走——因为启动成本吓退了使用。解法是 motus/Trellis 式的:同一技能内做尺寸门控

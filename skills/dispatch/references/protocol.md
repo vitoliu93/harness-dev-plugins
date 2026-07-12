@@ -52,5 +52,5 @@ escalation). Iron rule: same engine + same brief never runs twice.
   session** (resume flag) with the consolidated fix list — one batch fix, not
   one dispatch per finding.
 - **Budget exhausted → park it**: mark the item `[blocked: dispatch]` (in
-  todo.md when inside /ship), move on to other items, and surface the blocked
+  todo.md when a plan is tracking the work), move on to other items, and surface the blocked
   list to the user at wrap-up. Never stall waiting, never keep burning.
