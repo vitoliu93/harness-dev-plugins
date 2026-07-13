@@ -1,11 +1,12 @@
--- ccobs schema — derived, rebuildable index over ~/.claude/projects JSONL.
+-- ccobs schema — derived, rebuildable index over agent observability JSONL/SQLite.
 -- Facts + pointers only: no message bodies, no secrets. Drop the DB and re-ingest at will.
+-- Five sources: claude-code, codex, droid, grok, opencode.
 
 PRAGMA journal_mode = WAL;
 
 CREATE TABLE IF NOT EXISTS ingest_state (
-  path    TEXT PRIMARY KEY,   -- absolute jsonl path
-  offset  INTEGER NOT NULL    -- byte offset of next unread line
+  path    TEXT PRIMARY KEY,   -- absolute jsonl path (or opencode.db for opencode adapter)
+  offset  INTEGER NOT NULL    -- byte offset (or epoch-ms watermark for opencode)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -13,13 +14,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   kind          TEXT NOT NULL,           -- 'main' | 'subagent'
   parent_id     TEXT,                    -- parent session_id for subagents
   subagent_type TEXT,                    -- for kind='subagent': agentType from JSONL, or backfilled from parent's Agent tool_call
-  project       TEXT NOT NULL,           -- ~/.claude/projects/<project>/
+  project       TEXT NOT NULL,           -- CC-encoded directory: cwd.replaceAll('/', '-')
   cwd           TEXT,
   git_branch    TEXT,
-  cc_version    TEXT,
+  cc_version    TEXT,                    -- the tool's own version (e.g. cli_version, model version string)
   started_at    TEXT,                    -- ISO8601, min event ts
   ended_at      TEXT,                    -- ISO8601, max event ts
-  file_path     TEXT NOT NULL            -- pointer back to raw jsonl
+  file_path     TEXT NOT NULL,           -- pointer back to raw source
+  source        TEXT NOT NULL DEFAULT 'claude-code'   -- one of claude-code|codex|droid|grok|opencode
 );
 
 -- one row per assistant message (deduped by message_id; streaming emits
@@ -77,37 +79,48 @@ CREATE TABLE IF NOT EXISTS observations (
 
 -- ============ the six observability views ============
 
+DROP VIEW IF EXISTS v_skill_usage;
+DROP VIEW IF EXISTS v_agent_spawns;
+DROP VIEW IF EXISTS v_token_economy;
+DROP VIEW IF EXISTS v_weekly_activity;
+DROP VIEW IF EXISTS v_tool_overview;
+
 -- 1. skill usage: dead skills vs hot skills (practice-guide §体检)
-CREATE VIEW IF NOT EXISTS v_skill_usage AS
-SELECT skill,
+CREATE VIEW v_skill_usage AS
+SELECT s.source,
+       tc.skill,
        COUNT(*)                    AS calls,
-       COUNT(DISTINCT session_id)  AS sessions,
-       MAX(ts)                     AS last_used
-FROM tool_calls
-WHERE tool IN ('Skill','SlashCommand') AND skill IS NOT NULL
-GROUP BY skill ORDER BY calls DESC;
+       COUNT(DISTINCT tc.session_id)  AS sessions,
+       MAX(tc.ts)                     AS last_used
+FROM tool_calls tc
+JOIN sessions s ON s.session_id = tc.session_id
+WHERE tc.tool IN ('Skill','SlashCommand') AND tc.skill IS NOT NULL
+GROUP BY s.source, tc.skill ORDER BY calls DESC;
 
 -- 2. agent-spawn model discipline (CLAUDE.md: always pass model explicitly)
-CREATE VIEW IF NOT EXISTS v_agent_spawns AS
-SELECT subagent_type,
+CREATE VIEW v_agent_spawns AS
+SELECT s.source,
+       tc.subagent_type,
        COUNT(*)                                        AS spawns,
-       SUM(model_param IS NULL)                        AS missing_model,
-       GROUP_CONCAT(DISTINCT model_param)              AS models_used,
-       MAX(ts)                                         AS last_spawn
-FROM tool_calls
-WHERE tool = 'Agent'
-GROUP BY subagent_type ORDER BY spawns DESC;
+       SUM(tc.model_param IS NULL)                     AS missing_model,
+       GROUP_CONCAT(DISTINCT tc.model_param)           AS models_used,
+       MAX(tc.ts)                                      AS last_spawn
+FROM tool_calls tc
+JOIN sessions s ON s.session_id = tc.session_id
+WHERE tc.tool = 'Agent'
+GROUP BY s.source, tc.subagent_type ORDER BY spawns DESC;
 
--- 3. token economy: spend by model × main/subagent (north-star: 执行 token 外包率)
-CREATE VIEW IF NOT EXISTS v_token_economy AS
+-- 3. token economy: spend by model × main/subagent × source
+CREATE VIEW v_token_economy AS
 SELECT t.model,
        s.kind,
+       s.source,
        COUNT(DISTINCT t.session_id)      AS sessions,
        SUM(t.input_tokens)               AS in_tok,
        SUM(t.output_tokens)              AS out_tok,
        SUM(t.cache_read)                 AS cache_read_tok
 FROM turns t JOIN sessions s ON s.session_id = t.session_id
-GROUP BY t.model, s.kind ORDER BY out_tok DESC;
+GROUP BY t.model, s.kind, s.source ORDER BY out_tok DESC;
 
 -- 4. hook health: fire counts, latency, errors
 CREATE VIEW IF NOT EXISTS v_hook_health AS
@@ -118,13 +131,14 @@ SELECT command,
        SUM(error IS NOT NULL)   AS errors
 FROM hook_runs GROUP BY command ORDER BY fires DESC;
 
--- 5. activity by project × week
-CREATE VIEW IF NOT EXISTS v_weekly_activity AS
-SELECT project,
-       strftime('%Y-W%W', started_at)    AS week,
+-- 5. activity by project × week × source
+CREATE VIEW v_weekly_activity AS
+SELECT s.project,
+       s.source,
+       strftime('%Y-W%W', s.started_at)    AS week,
        COUNT(*)                          AS sessions,
-       SUM(kind = 'subagent')            AS subagent_runs
-FROM sessions GROUP BY project, week ORDER BY week DESC, sessions DESC;
+       SUM(s.kind = 'subagent')            AS subagent_runs
+FROM sessions s GROUP BY s.project, s.source, week ORDER BY week DESC, sessions DESC;
 
 -- 6. semantic rollup: task mix, outcomes, correction rate (needs distiller)
 CREATE VIEW IF NOT EXISTS v_session_quality AS
@@ -134,3 +148,17 @@ SELECT task_type,
        ROUND(AVG(corrections),2) AS avg_corrections,
        SUM(dispatch_result = 'blocked') AS dispatch_blocked
 FROM observations GROUP BY task_type, outcome ORDER BY sessions DESC;
+
+-- 7. per-source overview: counts and first/last activity
+CREATE VIEW v_tool_overview AS
+SELECT s.source,
+       COUNT(DISTINCT s.session_id)                                        AS sessions,
+       COUNT(DISTINCT t.message_id)                                        AS turns,
+       COUNT(DISTINCT tc.id)                                               AS tool_calls,
+       COUNT(DISTINCT CASE WHEN t.input_tokens IS NOT NULL THEN t.message_id END) AS turns_with_tokens,
+       MIN(s.started_at)                                                   AS first_seen,
+       MAX(s.ended_at)                                                     AS last_seen
+FROM sessions s
+LEFT JOIN turns t ON t.session_id = s.session_id
+LEFT JOIN tool_calls tc ON tc.session_id = s.session_id
+GROUP BY s.source ORDER BY sessions DESC;
