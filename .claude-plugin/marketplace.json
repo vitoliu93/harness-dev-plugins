@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.0.4"
+    "version": "2.1.0"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
       "description": "Atom library — 14 project-agnostic skills: write-plan (可验收计划立项, 原 advanced-plan), debrief (收盘 sedimentation), dispatch (cheap-engine offload), blindspot (unknown-unknowns territory briefing), worktree, handoff (全局 ~/tmp 交接), exa-code, create-readable-html (可读 HTML 交付物, 原 html-doc), agent-reach (YouTube 字幕等平台触达封装), media-understanding (音视频 → Gemini 转写理解), docs-organize (文档—事实—代码锚点体检), audit-context, skill-atlas, ccobs. 3 subagents: general-skills-executor, advisor, code-search. 1 PreToolUse hook: skill-guard. ship SOP 已迁居 kox-agent-plugins（编排层贴项目基建）.",
-      "version": "2.0.4",
+      "version": "2.1.0",
       "author": {
         "name": "vito"
       }
