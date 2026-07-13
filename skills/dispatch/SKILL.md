@@ -56,6 +56,8 @@ already fails there the baseline is dirty — rewrite it baseline-relative per
    Note the engine's **session id** from its output (resume flags per
    registry) — you'll want it for the fix round.
 3. **Completion = verify.sh + artifact, never the engine's self-report.**
+   Re-run acceptance yourself, and first check the gate itself is unmodified
+   (per protocol: acceptance is read-only to engines; an edited gate voids DONE).
 
 ## Verification pyramid
 

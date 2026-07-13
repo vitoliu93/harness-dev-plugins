@@ -24,6 +24,28 @@ OUTPUT    worktree branch / file paths, PLUS the report contract:
 in ACCEPTANCE. Only truly semantic items (tone, style) stay un-assertable —
 each such item makes the Tier 2 check unconditional (see SKILL.md pyramid).
 
+**The gate is read-only**: the brief must declare the acceptance script/assets
+untouchable — "if you believe ACCEPTANCE is wrong, report STATUS: NEEDS_CONTEXT
+with your evidence; never edit the gate". Snapshot the acceptance (hash or
+copy) at dispatch time; at verify, check it's unmodified before trusting any
+result — a modified gate invalidates the engine's DONE even when the edit
+looks reasonable (it may be right! but then the fix flows through you, not
+around you).
+
+**Enforce mechanically what can be enforced mechanically**: a constraint the
+invocation can make physically impossible (env var injection like
+`CCOBS_DIR=$(mktemp -d)`, readonly perms, worktree isolation) goes into the
+dispatch command, not the brief. Prose constraints are only for what the
+environment can't enforce — engines under long debug loops forget prose.
+
+**Acceptance QA**: every assertion needs a verified source of truth — count
+what's *rebuildable now*, not what a ledger accumulated (retention windows
+skew them apart). Data-pipeline tasks get invariant assertions (date ranges,
+NULL ratios), not just row counts — unit bugs ship silently through
+count-only gates. Ambiguous spec words ("position", "offset", "id") get
+pinned to exact expressions in the brief; a typist resolves ambiguity by
+coin-flip, not by intent.
+
 **Baseline pre-flight**: run the ACCEPTANCE command once on the base sha
 *before* dispatching. If it already fails there, the baseline is dirty and an
 absolute pass is unreachable — rewrite the acceptance baseline-relative:
@@ -45,7 +67,9 @@ escalation). Iron rule: same engine + same brief never runs twice.
 - `DONE` → verification pyramid.
 - `DONE_WITH_CONCERNS` (or missing STATUS) → Tier 2 check. A missing or
   malformed STATUS line counts as `DONE_WITH_CONCERNS` (engines that ignore
-  the protocol get the extra check, not a pass).
+  the protocol get the extra check, not a pass). Same downgrade applies when
+  the report *discloses* a known deviation, left-in defect, or gate edit but
+  still says DONE — read the report body, not just the STATUS line.
 - `NEEDS_CONTEXT` → the brief is buggy: fix the brief, same engine (budget −1).
 - `BLOCKED` or verify FAIL → escalate one rung up the registry ladder with the
   findings folded in (budget −1). Prefer re-dispatching into the **same engine
