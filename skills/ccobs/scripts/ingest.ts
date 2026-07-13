@@ -40,7 +40,7 @@ type Buf = {
   hookErrs: any[][]
 }
 
-function connect(bunDb: typeof Database): Database {
+function connect(): Database {
   mkdirSync(OBS_DIR, { recursive: true })
   const db = new Database(DB_PATH)
   db.exec(readFileSync(join(import.meta.dir, "schema.sql"), "utf8"))
@@ -326,7 +326,7 @@ function ingestCodexFile(path: string, stmts: Stmts): number {
       const p = o.payload ?? {}
       if (p.type === "token_count") {
         const last = p.info?.last_token_usage ?? {}
-        const mid = `cx-${sid}-${pos}`
+        const mid = `cx-${sid}-${offset + pos}` // absolute byte position — chunk-relative pos collides across incremental sweeps
         buf.turns.push([
           mid, sid, ts, currentModel,
           last.input_tokens ?? null, last.output_tokens ?? null,
@@ -336,15 +336,19 @@ function ingestCodexFile(path: string, stmts: Stmts): number {
     } else if (o.type === "response_item") {
       const p = o.payload ?? {}
       if (p.type === "function_call") {
-        const callId = p.call_id ?? `cx-${sid}-${pos}`
+        const callId = p.call_id ?? `cx-${sid}-${offset + pos}`
         const toolName = p.name ?? null
         const isAgent = toolName === "spawn_agent"
+        let spawnArgs: any = {}
+        if (isAgent) {
+          try { spawnArgs = typeof p.arguments === "string" ? JSON.parse(p.arguments) : (p.arguments ?? {}) } catch {}
+        }
         buf.tools.push([
           callId, sid, ts, isAgent ? "Agent" : (toolName ?? null),
           null, // skill always NULL for codex
-          isAgent ? (p.arguments?.subagent_type ?? null) : null,
-          isAgent ? (p.arguments?.model ?? null) : null,
-          p.arguments?.run_in_background ? 1 : 0,
+          isAgent ? (spawnArgs.subagent_type ?? spawnArgs.agent_type ?? null) : null,
+          isAgent ? (spawnArgs.model ?? null) : null,
+          spawnArgs.run_in_background ? 1 : 0,
         ])
       }
     }
@@ -428,13 +432,13 @@ function ingestDroidFile(path: string, stmts: Stmts): number {
       }
       const msg = o.message ?? {}
       if (msg.role === "assistant") {
-        const mid = o.id ?? `dr-${sid}-${pos}`
+        const mid = o.id ?? `dr-${sid}-${offset + pos}`
         buf.turns.push([mid, sid, ts, sessionModel, null, null, null, null, null])
         for (const c of Array.isArray(msg.content) ? msg.content : []) {
           if (c?.type !== "tool_use") continue
           const inp = c.input ?? {}
           // Prefix id with sid to avoid collision across sessions (ids like "Execute_0")
-          const tcId = `${sid}-${c.id ?? `dr-${pos}`}`
+          const tcId = `${sid}-${c.id ?? `dr-${offset + pos}`}`
           const name = c.name ?? null
           const isAgent = name === "Agent" || name === "Task"
           buf.tools.push([
@@ -546,11 +550,11 @@ function ingestGrokSession(sessionDir: string, stmts: Stmts): number {
       }
 
       if (o.type === "turn_started") {
-        const mid = `gk-${sid}-${pos}`
+        const mid = `gk-${sid}-${offset + pos}`
         buf.turns.push([mid, sid, ts, model, null, null, null, null, null])
         eventsRead++
       } else if (o.type === "tool_started") {
-        const tcId = `gk-${sid}-${pos}`
+        const tcId = `gk-${sid}-${offset + pos}`
         const toolName = o.tool_name ?? null
         const isAgent = toolName === "spawn_subagent"
         buf.tools.push([
@@ -617,8 +621,8 @@ function ingestOpencode(stmts: Stmts): number {
       }
       const project = encodeProject(cwd)
       const ccVersion = s.version ?? null
-      const startedAt = s.time_created ? new Date(s.time_created / 1000).toISOString() : null
-      const endedAt = s.time_updated ? new Date(s.time_updated / 1000).toISOString() : null
+      const startedAt = s.time_created ? new Date(s.time_created).toISOString() : null
+      const endedAt = s.time_updated ? new Date(s.time_updated).toISOString() : null
       stmts.session.run(sid, kind, parent, null, project, cwd, null, ccVersion,
         startedAt, endedAt, OPENCODE_DB, "opencode")
       total++
@@ -636,7 +640,7 @@ function ingestOpencode(stmts: Stmts): number {
         if (m.time_updated > maxWatermark) maxWatermark = m.time_updated
         continue
       }
-      const ts = data.time?.created ? new Date(data.time.created / 1000).toISOString() : null
+      const ts = data.time?.created ? new Date(data.time.created).toISOString() : null
       const model = data.modelID ?? null
       const tokens = data.tokens ?? {}
       const inputT = tokens.input ?? null
@@ -660,7 +664,7 @@ function ingestOpencode(stmts: Stmts): number {
         if (p.time_updated > maxWatermark) maxWatermark = p.time_updated
         continue
       }
-      const ts = p.time_created ? new Date(p.time_created / 1000).toISOString() : null
+      const ts = p.time_created ? new Date(p.time_created).toISOString() : null
       const rawTool = data.tool ?? null
       let tool: string, skill: string | null, subagentType: string | null
       if (rawTool === "skill") {
@@ -710,12 +714,14 @@ const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode]
 // ===================== main =====================
 
 const args = process.argv.slice(2)
-const db = connect(Database)
+const db = connect()
 const stmts = prepStmts(db)
 
-// Source filter (if --source given, only run that adapter)
+// Source filter (if --source given, only run that adapter).
+// --project and --queue are claude-code concepts — they imply that source.
 const sourceIdx = args.indexOf("--source")
-const sourceFilter = sourceIdx !== -1 ? args[sourceIdx + 1] : null
+const sourceFilter = sourceIdx !== -1 ? args[sourceIdx + 1]
+  : (args.includes("--project") || args.includes("--queue")) ? "claude-code" : null
 
 // Collect files for each adapter
 for (const a of ADAPTERS) {
