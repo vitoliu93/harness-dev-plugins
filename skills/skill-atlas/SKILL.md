@@ -71,6 +71,17 @@ python3 $YAO/scripts/context_sizer.py $PLUGIN/skills/<name> --json
 SKILL.md body over ~700 tokens → move detail into `references/` (progressive
 disclosure), like `dispatch/references/engines.md`.
 
+## 5. Call sites (judgment, not computed)
+
+Read `call-site.md` — one row per atom, hand-maintained (call site is a
+judgment, not a computable property, so it stays out of `build_skill_atlas.py`).
+Every atom needs an honest call site: ① a workflow stage, ② a hook/timer, or
+③ trigger-word muscle memory. List rows typed `orphan` or flagged ⚠: for each,
+either propose a wiring point or confirm the "低频按需是天性,非病" exemption
+(monthly-hygiene atoms — audit-context/docs-organize/skill-atlas — are exempt).
+A new atom whose call site you can't fill shouldn't have shipped — flag it;
+every added/renamed atom is one row in this table, part of its own diff.
+
 ## Report
 
 ```
@@ -79,5 +90,6 @@ overlap : N pairs, M collisions (list pairs ≥0.42 | none)
 stale   : <skills >90d untouched | none>
 triggers: <per-skill P/R | which skills lack fixtures>
 budget  : <skills over 700 tokens | all within>
+callsite: <orphans/⚠ wanting a wiring point | all wired or exempt>
 proposed: <merge/tighten/refresh/retire actions → feed debrief Move 3>
 ```
