@@ -9,3 +9,5 @@
 - 2026-07-11 [project] dscode/arkcode 会继承 claude settings 的默认 model（当前 opus→deepseek-v4-pro）；跑便宜批量任务必须显式 `--model deepseek-v4-flash`，engines.md 的 "don't pass --model" 已过时待修
 - 2026-07-11 [project] docs-organize 核验 worker 的 brief 必须包含"先 git fetch 并与 origin/<branch> 比对"——2026-07-11 首跑因 worker 探落后本地 checkout 产生 2 条假阳性失真判定
 - 2026-07-12 [feedback] 引用外部文章/资料改 skill 时，先 `qmd query` 查用户知识库拿原文，不要靠 web 二手镜像蒸馏——用户常已把源文收录。
+- 2026-07-13 [project] dispatch 的验收脚本必须对引擎只读——brief 里明写"不得修改 ACCEPTANCE 脚本，阈值不符时报 NEEDS_CONTEXT"；本次引擎直接改阈值虽碰巧合理，但验收门被受验者改写后 DONE 自报即失效，全靠 tier-3 兜底。
+- 2026-07-14 [feedback] 给原子接"可靠触发"时,确定性触发门(如"skills/ 改了必先跑 skill-atlas")用 PreToolUse hook 强制,别塞进判断型 skill(debrief)当 Move——判断型 skill 自身触发就稀疏(debrief 仅 8 次),把 gate 挂上去=孤儿问题递归。分工:hook 拦确定性触发/守门,skill 只做判断(解读发现、提议 merge/retire)。
