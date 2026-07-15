@@ -1,0 +1,86 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": [
+    "diff",
+    "这个 bug",
+    "安全"
+  ],
+  "should_trigger": [
+    {
+      "text": "cto-audit 这个项目",
+      "family": "explicit_en"
+    },
+    {
+      "text": "跑一下 cto-audit",
+      "family": "explicit_en"
+    },
+    {
+      "text": "CTO 审计一下这个仓库",
+      "family": "explicit_zh"
+    },
+    {
+      "text": "审计这个项目",
+      "family": "explicit_zh"
+    },
+    {
+      "text": "给这个项目做个体检",
+      "family": "checkup"
+    },
+    {
+      "text": "项目体检,看看整体健康度",
+      "family": "checkup"
+    },
+    {
+      "text": "站在 CTO 角度看看这个仓库有哪些结构性缺陷",
+      "family": "perspective"
+    },
+    {
+      "text": "tech audit this repo",
+      "family": "explicit_en"
+    },
+    {
+      "text": "代码堆了几个月感觉架构在漂移,全面审一下",
+      "family": "drift"
+    },
+    {
+      "text": "审一下这个项目的领域模型和模块边界还对不对",
+      "family": "drift"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "review 这个 diff 有没有 bug",
+      "family": "diff_review"
+    },
+    {
+      "text": "帮我查一下这个 bug 为什么会复现",
+      "family": "single_bug"
+    },
+    {
+      "text": "做个安全审计,查查有没有漏洞",
+      "family": "security_only"
+    },
+    {
+      "text": "简化这段代码,重复逻辑合并一下",
+      "family": "line_level"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "扫一下这个仓库有哪些过度工程可以删",
+      "family": "ponytail_audit"
+    },
+    {
+      "text": "审计一下 CLAUDE.md,记忆太啰嗦了清理清理",
+      "family": "audit_context"
+    },
+    {
+      "text": "文档体检,整理一下 docs 目录",
+      "family": "docs_organize"
+    },
+    {
+      "text": "这次改动会不会绕开原来的架构约束,你写的时候注意点",
+      "family": "inline_caution"
+    }
+  ]
+}

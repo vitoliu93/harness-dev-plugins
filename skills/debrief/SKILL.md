@@ -76,7 +76,7 @@ suffix only for postmortem/decision entries, omitted for the rest.
 
 ## Move 3 — Promote(技能固化)
 
-Two checks against this task's experience:
+Three checks against this task's experience:
 
 1. **Recurrence** — did we hand-do something for roughly the third time across
    sessions? Track candidates in `<memory-dir>/SKILL-CANDIDATES.md`:
@@ -112,6 +112,14 @@ Two checks against this task's experience:
    tiers (0/1) settling most dispatches → healthy. Repeatedly tier-3 with
    inline fixups → the routing admits too much judgment-work; propose
    tightening dispatch's litmus or trigger list as the drift fix.
+
+3. **审计信号**(cto-audit 的信号层——只提醒,不发动):两个便宜指标,任一命中
+   就在收盘报告末尾加一句「建议召集 cto-audit:<原因>」:
+   - 本项目 LEARNED.md / SKILL-CANDIDATES.md 里同一结构性主题(分层/重复实现/
+     临时兼容/概念混名)第 ≥3 次出现;
+   - 项目有 `docs/audit/` 但最新宪法断言已超过一季未动,或复发 bug 主题命中
+     其某条已立规则(守卫可能已烂)。
+   两项都不命中 → 跳过,不产生输出。
 
 ## Output
 

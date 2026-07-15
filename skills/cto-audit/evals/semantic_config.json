@@ -1,0 +1,90 @@
+{
+  "positive_concepts": {
+    "audit_verb": {
+      "weight": 0.5,
+      "phrases": [
+        "cto-audit",
+        "CTO 审计",
+        "审计这个项目",
+        "审计",
+        "tech audit",
+        "audit",
+        "这个项目",
+        "审一下"
+      ]
+    },
+    "checkup": {
+      "weight": 0.5,
+      "phrases": [
+        "项目体检",
+        "体检",
+        "健康度"
+      ]
+    },
+    "scope_three_layers": {
+      "weight": 0.4,
+      "phrases": [
+        "架构",
+        "领域模型",
+        "模块边界",
+        "结构性",
+        "整体"
+      ]
+    },
+    "drift": {
+      "weight": 0.4,
+      "phrases": [
+        "漂移",
+        "收敛",
+        "CTO 角度",
+        "CTO 视角"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "diff_review": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "review 这个 diff",
+        "diff"
+      ]
+    },
+    "single_bug": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "这个 bug",
+        "复现"
+      ]
+    },
+    "security_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "安全审计",
+        "漏洞"
+      ]
+    },
+    "line_level": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "简化这段代码",
+        "重复逻辑合并"
+      ]
+    },
+    "sibling_skills": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "过度工程",
+        "CLAUDE.md",
+        "记忆",
+        "文档体检",
+        "docs 目录",
+        "注意点"
+      ]
+    }
+  }
+}

@@ -23,6 +23,7 @@
 | agent-reach | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
 | media-understanding | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
 | dispatch | "派活/dispatch" | ③ ⚠ orphan:强能力·1 次·被裸开引擎绕过 |
+| cto-audit | "cto-audit/审计这个项目/项目体检"(仅用户召集)· debrief Move 3 审计信号层提醒 | ①③ ⚠新增,观察 debrief 提醒是否真发生 |
 | audit-context | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
 | docs-organize | "整理文档/docs organize" | orphan · 月度卫生(豁免:低频天性) |
 
@@ -35,5 +36,8 @@
   "settled plan 后的机械批量改"阶段,要么承认触发词是它唯一的路。
 - **recall** — 本次新增,call site 合法但仅 ③(触发词)。观察期:若"以前查过吗"没长成
   肌肉记忆,它就是下一个 dispatch。采纳/证伪的闸门见蓝图图纸 1(手动裸跑三次那条 SQL)。
+- **cto-audit** — 2026-07-15 新增。发动权刻意只给用户(③),debrief Move 3 的审计信号层
+  是它的提醒线(①)。观察期:两次收盘后看提醒是否真的触发过;若从未触发且用户也从未召集,
+  按其自己的"有生有灭"律处理。
 
 新增/改名任何原子 → 本表补一行(**接线点 = 新原子的准入证**)。空格子就是待接线清单。
