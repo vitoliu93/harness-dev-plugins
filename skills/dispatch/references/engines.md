@@ -5,6 +5,10 @@ when the fleet changes (new CLI, model swap, quota shift), edit only this
 file. Flags and model ids below verified on this machine 2026-07-11 via
 `--help` / `--list-models`.
 
+**Default: prefix every engine invocation with `source ~/.zshenv &&`** — all
+API keys live in `~/.zshenv` and must be injected into the invocation env; the
+prefix is harmless for engines that don't need it.
+
 ## Routing & escalation ladder
 
 | Rung | Engine | Use for |
@@ -63,9 +67,7 @@ source ~/.zshenv && opencode run "<brief>" -m volcengine-plan/kimi-k2.7-code --f
 source ~/.zshenv && opencode run -s <session-id> "<consolidated fix list>"   # resume for the fix round
 ```
 
-- **Always prefix `source ~/.zshenv &&`** — API keys live there and must be
-  injected into the invocation env. Provider/model config lives in
-  `~/.config/opencode/opencode.json`.
+- Provider/model config lives in `~/.config/opencode/opencode.json`.
 - **model: selectable** — prefer `volcengine-plan/kimi-k2.7-code` or
   `volcengine-plan/glm-5.2` (same provider also carries deepseek/doubao/minimax
   ids if those two throttle).
