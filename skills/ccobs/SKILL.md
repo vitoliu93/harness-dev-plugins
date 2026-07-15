@@ -78,6 +78,26 @@ sqlite3 -header -column ~/.claude/observability/obs.db "SELECT * FROM v_tool_ove
 bun scripts/distill.ts --dry-run / --limit 5 / --session <id>
 ```
 
+## 主动同步（model 按需触发）
+
+launchd 每小时兜底、Stop hook 每会话入队——但**很近的会话**（今天刚结束、还没到下一个
+整点）可能尚未灌库。要立刻确认某会话已收录（recall 前、或核对一次刚结束的任务），model
+可直接触发一次增量灌库：**安全、幂等、秒级、随时可重复跑**，不必等那一小时。
+
+脚本路径用 `${CLAUDE_SKILL_DIR}`——Claude Code 在 skill 载入时把它替换成本 skill 的真实
+绝对目录（个人/项目/plugin cache 都对），跟 CWD 无关。ingest.ts 内部全程 homedir 锚定
+（DB、五源原始库），从任何目录跑都对：
+
+```bash
+# 全量增量，最稳（五源都扫，只读新字节）
+bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts
+# 只消费 Stop hook 队列（最便宜的准实时路径）
+bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
+# 找不到脚本（没装 ccobs）= 当作没数据，别报错
+```
+
+跑完核对是否已收录：`sqlite3 ~/.claude/observability/obs.db "SELECT ended_at FROM sessions WHERE session_id LIKE '%<id>%'"`。
+
 七个视图 → 回答的问题：
 
 | 视图                | 回答的问题                                       |

@@ -1,5 +1,5 @@
 {
-  "description": "skill-guard: redirect noisy inline skills to subagents. worktree-guard: enforce exit-safety order on git worktree remove. skill-atlas-guard: block a plugin-repo commit that edits a SKILL.md until skill-atlas re-runs (stale fleet-health gate). learn-capture (Stop) + session-replay (SessionStart): the [LEARN] sedimentation loop — capture markers into .claude/LEARNED.md, replay last 5 at session start.",
+  "description": "skill-guard: redirect noisy inline skills to subagents. worktree-guard: enforce exit-safety order on git worktree remove. skill-atlas-guard: block a plugin-repo commit that edits a SKILL.md until skill-atlas re-runs (stale fleet-health gate). skill-path-fallback: deny a Bash command with an unexpanded ${CLAUDE_SKILL_DIR}/${CLAUDE_PLUGIN_ROOT} and tell the model how to resolve the real script path. learn-capture (Stop) + session-replay (SessionStart): the [LEARN] sedimentation loop — capture markers into .claude/LEARNED.md, replay last 5 at session start.",
   "hooks": {
     "PreToolUse": [
       {
@@ -23,6 +23,11 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/skill-atlas-guard.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/skill-path-fallback.sh",
             "timeout": 10
           }
         ]

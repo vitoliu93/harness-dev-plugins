@@ -38,6 +38,10 @@ argument-hint: "[主题关键词]"
   codex/droid/grok/opencode 只是 2026-07-13 的一次性回填(ccobs 自动蒸馏仅 cc),之后的
   非-cc 会话不入库。故不按 source 过滤(回填先例照样有用),但"无先例"对非-cc 工作是弱
   信号——可能只是没蒸馏,不是没发生。库不存在(没装 ccobs/没首次灌库)也按无先例处理,别报错。
+- **很近的会话查不到**:今天刚结束、还没到下个整点的会话可能尚未灌库。查这类先例前先跑
+  一次增量灌库(安全幂等秒级),再查:`bun ${CLAUDE_PLUGIN_ROOT}/skills/ccobs/scripts/ingest.ts`
+  (载入本 skill 时 `${CLAUDE_PLUGIN_ROOT}` 已替换成字面路径)。注意:灌库只补事实层,
+  observations 蒸馏仍等 launchd 夜跑——刚结束的会话能查到 session 元数据,但 summary 可能还没有。
 
 ## 输出
 
