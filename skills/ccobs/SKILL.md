@@ -1,12 +1,9 @@
 ---
 name: ccobs
 description: >-
-  agent 工具可观测账本：Claude Code / codex / droid / grok / opencode 五源
-  session 统一灌入 SQLite，出 7 个观测视图（工具分布、skill 使用率、agent
-  模型纪律、token 经济、hook 健康度、项目周活、语义质量）。触发：「观测报告」
-  「usage report」「各工具用量」「工具分布」「codex 用量」「哪些 skill 没人用」
-  「token 花在哪了」「agent 有没有带 model」「ccobs」，或 skill-atlas/debrief
-  要使用率与会话统计。不负责语义记忆检索和实时监控。
+  agent 工具可观测账本:五源 session 灌入 SQLite,出用量/技能使用率/token
+  经济等观测视图。Use when "观测报告/usage report/ccobs",
+  或 skill-atlas/debrief 要会话统计。
 ---
 
 # ccobs — agent observability ledger

@@ -1,13 +1,9 @@
 ---
 name: recall
 description: >-
-  开工前查"过去的会话是否碰过这个问题":对 ccobs 观测账本(obs.db observations 的
-  机器蒸馏 summary)做关键词/项目/时间三路检索,返回至多 5 条先例线索(每条 = 结论
-  一句话 + 日期 + session 定位),不搬运原文。触发:"以前查过吗"、"有没有先例"、
-  "recall <主题>"、"我是不是研究过 xxx",或查证/选型/比较/可行性这类 research 任务开工时主动跑一次。
-  负例:查沉淀过的知识走 qmd(那是核实过的结论,这里是未核实的机器摘要);查持久
-  事实走 auto-memory;恢复任务现场走 handoff / write-plan resume / ship Stage 0;
-  要观测报告/使用统计走 ccobs——同一个 obs.db,ccobs 出报表,这里只做开工前的先例召回。
+  开工前查先例:检索 ccobs 观测账本,返回至多 5 条"过去会话碰过这个问题"的
+  线索,不搬运原文。Use when "以前查过吗/有没有先例/recall <主题>",
+  或 research 任务开工时主动跑一次。
 argument-hint: "[主题关键词]"
 ---
 

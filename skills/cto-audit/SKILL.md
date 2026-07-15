@@ -1,14 +1,7 @@
 ---
 name: cto-audit
-description: >-
-  CTO 视角的项目级技术审计,只管三层:高层架构、领域模型、规则(harness)。定位是慢循环退火:
-  周期性外部视角,审"这轮演化之后系统是更收敛还是更漂移",产出优先落成 harness 补丁
-  (宪法断言/CLAUDE.md 规则/ADR/领域词表),报告只是补丁的公示。触发:仅限用户显式召集——
-  "cto-audit"、"CTO 审计"、"审计这个项目"、"项目体检"、"tech audit"。
-  负例:模型不得在任务中途因"发现代码有问题"自行发动本 skill(身在局中看不见自己的漂移,
-  发现记下来作下次审计输入);行级代码细节走 code-simplify(缺席时 simplify/ponytail-review);
-  单 diff 评审走 code-review;单 bug 排查不属审计;过度工程专项扫描走 ponytail-audit;
-  纯安全审计不做(本 skill 刻意弱化安全比重)。
+description: CTO 慢循环退火审计——这轮演化后系统更收敛还是更漂移;产出 harness 补丁。仅 /cto-audit 显式召集。
+disable-model-invocation: true
 argument-hint: "[目标项目目录] [engineering|algorithm|delivery]"
 ---
 

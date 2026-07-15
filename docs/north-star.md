@@ -79,6 +79,12 @@
   其余自决+公示);yao-meta-skill 只做器官移植 → skill-forge(资格门 + trigger-first
   评测纪律 + 资源边界 + 首版即基线),3 个 stdlib 脚本 vendored 进 skill-forge/scripts
   (@4eb11f9),skill-atlas 改为消费 vendored 路径,上游两仓不再跟踪。
+- **v2.6(invocation 经济学)✅ 2026-07-15**:观摩 grill-me-skills 上游的设计哲学后落地
+  三条:① description = 每回合付费的 context load,全舰瘦身(身份一句+每分支一个锚词,
+  负例迁 evals 的 negative_concepts)——常驻负担 1863→907 tokens(-51%),评测全绿未靠塞词;
+  ② 只被用户点名的技能 user-invoked 化(cto-audit 首个,"仅限用户召集"由
+  `disable-model-invocation` 机械化,其评测夹具按退役约定入 archive/);③ 教义写进
+  skill-forge(invocation 经济学一节 + "评测服务描述,不绑架描述")。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。
 

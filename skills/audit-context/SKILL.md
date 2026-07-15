@@ -1,6 +1,6 @@
 ---
 name: audit-context
-description: Audit and prune the context that loads every session — CLAUDE.md (all scopes), @-imported docs, AGENTS.md, auto-memory. Classify each entry keep/merge/drop/update/relocate by "would removing this make Claude err?", verify, then apply. Trigger: "audit CLAUDE", "prune memory", "clean context", "CLAUDE.md too verbose", "审计 CLAUDE", "清理记忆", "精简 CLAUDE", or periodic sweeps.
+description: Audit and prune the always-loaded context — CLAUDE.md, @-imports, auto-memory. Use when "audit CLAUDE/prune memory/清理记忆" or periodic sweeps.
 ---
 
 # Audit Context

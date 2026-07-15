@@ -1,13 +1,9 @@
 ---
 name: grill-me
 description: >-
-  开工前的决策盘问:把任务拆成决策树,低风险分支 CTO 自决并公示,只把高风险
-  决策——破坏性/不可逆操作、项目稳定性、用户可见的功能大变化、花钱/对外承诺
-  ——一次一个升级给 CEO 拍板,每问自带推荐答案。Trigger: "grill me"、"盘问我"、
-  "有什么要我拍板的"、"对齐一下再动手"、write-plan 定稿前的最后确认。
-  负例:事实问题自己查环境不上呈;找未知盲区走 blindspot;评审已写的代码走
-  code-review;单个孤立决策直接 AskUserQuestion 即可,不用建树;立项/写计划
-  本身走 write-plan——scope 协商是它的事,本 skill 只在计划成型后接手未决树。
+  开工前的决策盘问:建决策树,细节自决并公示,只把高风险决策(破坏性/稳定性/
+  功能大变/花钱)一次一个升级给 CEO 拍板,每问带推荐答案。Use when "grill me/盘问",
+  或 write-plan 定稿前;单个孤立决策直接 AskUserQuestion,不用建树。
 ---
 
 # grill-me

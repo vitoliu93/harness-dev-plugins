@@ -1,6 +1,6 @@
 ---
 name: docs-organize
-description: 开发文档体检 + 落地持续 placement 约定。核心模型「文档—事实—代码」：每份文档必须锚定事实来源（代码/issue/需求），违反事实的修或删，重复的合并，位置统一收敛到 docs/ 并维护索引；临时/handoff 类上全局 ~/tmp/，非项目文档外迁。Trigger on "整理文档", "文档体检", "docs organize", "organize docs", "文档整理", "docs-organize", or periodic docs maintenance sweeps.
+description: 开发文档体检:按「文档—事实—代码」锚点修/删/合并,收敛进 docs/ 并维护索引。Use when "整理文档/docs organize" 或周期性文档维护。
 argument-hint: "[audit | adopt]"
 ---
 
