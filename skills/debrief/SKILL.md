@@ -90,9 +90,9 @@ Three checks against this task's experience:
    New pattern → add a row with `seen: 1`. Existing row → increment, unless
    today's date is already in its notes column (a re-run of debrief for the
    same task must not double-count). A row reaching **3** → propose invoking
-   `yao-meta-skill` to author it (ask the user; never auto-create).
+   `skill-forge` to author it (ask the user; never auto-create).
 
-   Graduation conditions (from yao-meta-skill's method — apply before proposing):
+   Graduation conditions (skill-forge's qualification gate — apply before proposing):
    - **Near-neighbor rule**: draft the candidate's one-line `description:`
      first; if it isn't clearly distinguishable from an existing skill's
      description, fold the pattern into that skill instead of creating one.

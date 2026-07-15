@@ -2,18 +2,18 @@
 name: skill-atlas
 description: >-
   Fleet health check for the skill collection: route-overlap matrix, staleness
-  signal, per-skill trigger eval, and context budget — powered by the
-  yao-meta-skill upstream tools (stdlib-only, offline).
+  signal, per-skill trigger eval, and context budget — powered by the vendored
+  toolchain in skill-forge/scripts (stdlib-only, offline).
 argument-hint: "[optional: skill name to focus on]"
 ---
 
 # skill-atlas
 
-Engine lives in the upstream checkout — set once:
+Engine is vendored in skill-forge (upstream yao-meta-skill no longer tracked) — set once:
 
 ```bash
-YAO=~/codebase/github/yao-meta-skill
 PLUGIN=~/codebase/projects/agent-plugins
+YAO=$PLUGIN/skills/skill-forge/scripts
 ```
 
 Run the four checks, then report. A description edit without re-running its
@@ -22,7 +22,7 @@ eval is a lint failure — say so when you see one.
 ## 1. Route overlap (all skills, no fixtures needed)
 
 ```bash
-python3 $YAO/scripts/build_skill_atlas.py --workspace-root $PLUGIN/skills \
+python3 $YAO/build_skill_atlas.py --workspace-root $PLUGIN/skills \
   --output-dir /tmp/atlas
 ```
 
@@ -46,15 +46,12 @@ refresh or retirement (archive/, never delete) via debrief Move 3.
 ```bash
 for d in $PLUGIN/skills/*/evals; do
   s=$(basename $(dirname $d))
-  python3 - <<PY  # extract description from frontmatter
-import re; t=open("$PLUGIN/skills/$s/SKILL.md").read()
-m=re.search(r'description: >-\n((?:  .*\n)+)', t)
-open("/tmp/desc-$s.txt","w").write(" ".join(l.strip() for l in m.group(1).splitlines()))
-PY
-  python3 $YAO/scripts/trigger_eval.py --description-file /tmp/desc-$s.txt \
+  python3 $YAO/trigger_eval.py --description-file $PLUGIN/skills/$s/SKILL.md \
     --cases $d/trigger_cases.json --semantic-config $d/semantic_config.json
 done
 ```
+
+(vendored trigger_eval 已修复 `>-` 折叠块解析,SKILL.md 直接喂,无需预提取。)
 
 Gate: precision = recall = 1.0. Any FP/FN → fix the description wording (or a
 genuinely wrong case) before shipping. New skill → copy the fixture shape from
@@ -65,7 +62,7 @@ coverage is computed against description-anchored concepts).
 ## 4. Context budget
 
 ```bash
-python3 $YAO/scripts/context_sizer.py $PLUGIN/skills/<name> --json
+python3 $YAO/context_sizer.py $PLUGIN/skills/<name> --json
 ```
 
 SKILL.md body over ~700 tokens → move detail into `references/` (progressive

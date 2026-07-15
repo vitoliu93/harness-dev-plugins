@@ -1,0 +1,25 @@
+{
+  "recommended_threshold": 0.25,
+  "should_trigger": [
+    { "text": "铸造一个新技能", "family": "explicit_zh" },
+    { "text": "把这个重复了三次的流程铸造成技能", "family": "explicit_zh" },
+    { "text": "建个 skill 收编这套手工步骤", "family": "explicit_zh" },
+    { "text": "create a skill for this recurring workflow", "family": "explicit_en" },
+    { "text": "improve this skill, the routing keeps missing", "family": "improve" },
+    { "text": "这个候选满 3 次了,毕业成技能吧", "family": "graduation" },
+    { "text": "改良这个 skill 的 description,评测跑绿再交", "family": "improve" },
+    { "text": "SKILL-CANDIDATES 里那个候选可以毕业了", "family": "graduation" }
+  ],
+  "should_not_trigger": [
+    { "text": "跑一下 skill 舰队体检", "family": "fleet_check" },
+    { "text": "解释一下 skill-forge 的方法", "family": "explain_only" },
+    { "text": "这个任务一次性的,别建 skill", "family": "no_build" },
+    { "text": "总结一下这套流程写成文档", "family": "docs_only" }
+  ],
+  "near_neighbor": [
+    { "text": "看看全舰有没有路由重叠", "family": "skill_atlas" },
+    { "text": "给 plugin 加个 PreToolUse hook", "family": "plugin_dev" },
+    { "text": "帮我把这个 agent 的 frontmatter 改一下", "family": "agent_dev" },
+    { "text": "把这段 SOP 整理进 README", "family": "docs_only" }
+  ]
+}

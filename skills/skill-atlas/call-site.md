@@ -24,6 +24,8 @@
 | media-understanding | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
 | dispatch | "派活/dispatch" | ③ ⚠ orphan:强能力·1 次·被裸开引擎绕过 |
 | cto-audit | "cto-audit/审计这个项目/项目体检"(仅用户召集)· debrief Move 3 审计信号层提醒 | ①③ ⚠新增,观察 debrief 提醒是否真发生 |
+| grill-me | blindspot 收尾链下一步 · write-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
+| skill-forge | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
 | audit-context | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
 | docs-organize | "整理文档/docs organize" | orphan · 月度卫生(豁免:低频天性) |
 

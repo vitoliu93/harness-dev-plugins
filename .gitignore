@@ -1,2 +1,4 @@
 skills/lark-*
 .skill-lock.json
+__pycache__/
+skills/skill-forge/reports/

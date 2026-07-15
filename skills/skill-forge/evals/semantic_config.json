@@ -1,0 +1,41 @@
+{
+  "positive_concepts": {
+    "forge": {
+      "weight": 0.6,
+      "phrases": ["铸造", "建个 skill", "create a skill", "improve this skill", "改良"]
+    },
+    "eval_discipline": {
+      "weight": 0.3,
+      "phrases": ["评测", "trigger", "触发词"]
+    },
+    "placement": {
+      "weight": 0.25,
+      "phrases": ["资源边界", "references"]
+    },
+    "graduation": {
+      "weight": 0.45,
+      "phrases": ["候选", "毕业"]
+    }
+  },
+  "negative_concepts": {
+    "fleet_check": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": ["体检", "舰队", "路由重叠", "staleness"]
+    },
+    "explain_only": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": ["解释", "是什么意思", "什么是"]
+    },
+    "no_build": {
+      "weight": 0.45,
+      "exclusive": true,
+      "phrases": ["别建", "不建", "一次性"]
+    },
+    "plugin_scaffold": {
+      "weight": 0.35,
+      "phrases": ["hook", "脚手架", "plugin.json", "mcp"]
+    }
+  }
+}

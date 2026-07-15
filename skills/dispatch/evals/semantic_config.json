@@ -114,5 +114,11 @@
         "并行开几个 agent"
       ]
     }
-  }
+  },
+  "fallback_positive_concepts": [
+    "offload",
+    "engine_named",
+    "bulk_mechanical",
+    "read_layer"
+  ]
 }

@@ -1,0 +1,1 @@
+vendored from yao-meta-skill@4eb11f9 (2026-07-15) — stdlib-only, upstream no longer tracked; fix in place

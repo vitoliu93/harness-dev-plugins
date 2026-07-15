@@ -24,7 +24,7 @@
 战术层   write-plan(原 advanced-plan)· dispatch(跨引擎派活)· grill-me · advisor · worktree(约定+安全)
 执行层   code-search · 外部引擎(注册表见 dispatch 的 references/engines.md)
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
-沉淀层   debrief(收盘三件套)· memory(带生命周期)· yao-meta-skill(技能铸造)
+沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
 
@@ -73,6 +73,12 @@
   advanced-plan→write-plan、html-doc→create-readable-html(名字说动作;领域词名字如
   worktree/dispatch/debrief 不动)。计划文档立两层规矩:goal.md 人话对齐目标(用户可读),
   验证细节只进 todo.md 的 Verify 字段(agent 层)。
+- **v2.5(消化外部依赖)✅ 2026-07-15**:grill-me 与 yao-meta-skill 从"外部安装"收编为
+  自有 skill。grill-me 重造为 CEO/CTO 分层版(四律保留:决策树依赖序/每问带推荐答案/
+  一次一问/事实自查;新增 stakes filter——只有破坏性/稳定性/功能大变/花钱升级给 CEO,
+  其余自决+公示);yao-meta-skill 只做器官移植 → skill-forge(资格门 + trigger-first
+  评测纪律 + 资源边界 + 首版即基线),3 个 stdlib 脚本 vendored 进 skill-forge/scripts
+  (@4eb11f9),skill-atlas 改为消费 vendored 路径,上游两仓不再跟踪。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。
 
