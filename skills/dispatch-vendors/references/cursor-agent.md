@@ -17,11 +17,16 @@ stdout, prompt text on stderr — verified live 2026-07-16).
 
 - Modes: `--mode plan` (read-only: analyze/propose, no edits) · `--mode ask`
   (read-only Q&A) · omit `--mode` for edit-capable runs.
-- Model: daily default `composer-2.5`; premium escalation
-  `cursor-grok-4.5-high(-fast)`, `gpt-5.5-high`,
+- Model: daily default `composer-2.5` (treat as sonnet-tier); premium
+  escalation `cursor-grok-4.5-high(-fast)` (treat as opus-tier — verified:
+  adversarial review with computed evidence), `gpt-5.5-high`,
   `claude-opus-4-8-thinking-high`; non-Anthropic diversity picks: grok/gpt
   families. **Names rotate** — re-run `--list-models` (cheap, ~2s) before
   escalating. Parameterized: `--model 'claude-opus-4-8[context=1m,effort=high]'`.
+- **Plan-mode deliverable location**: with `--mode plan` + stream-json, the
+  final report lands in the `createPlanToolCall` event's `args.plan` — the
+  `result` field only carries progress narration (verified). Parse the
+  tool_call, or skip plan mode when you want the answer in `result`.
 - Output: **default to `stream-json` or `text`, avoid `json`** — `json` only
   flushes at process exit, and the process can finish the work yet never
   exit (verified: 20-min hang with a complete conversation on disk; the

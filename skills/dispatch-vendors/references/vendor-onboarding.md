@@ -87,5 +87,10 @@ scenarios.md 路由行 + ledger 记账习惯 + 观察期(一个月真实使用�
 | opencode × kimi-k2.7-code | ❌ 0-token 空转(×3) | 未测 | — | **禁用,勿再派** |
 | opencode × glm-5.2 | ✅ | 未测 | ~4096 上限,写文件规避 | 可用,产出必须写文件 |
 | opencode × doubao-seed-2.0-pro | ✅ | ✅ 完美 | 未探上限 | 视觉任务次选 |
-| cursor × composer-2.5 | ✅(勘察+写) | ✅ 完美 | json 会挂死,**用 stream-json/text** | 勘察主力+视觉主力 |
-| cursor × grok/gpt-5.5 | 未测(premium) | 官方支持,未实测 | 同 cursor | 硬任务/红队升级位 |
+| cursor × composer-2.5 | ✅(勘察+写) | ✅ 完美 | json 会挂死,**用 stream-json/text** | 勘察主力+视觉主力(≈sonnet 档) |
+| cursor × grok-4.5-high | ✅ 对抗审计 6 发现全带算证 | ✅ 完美 | 同 cursor;plan 模式交付物在 `createPlanToolCall` 事件里,不在 result 字段 | 硬任务/红队升级位(≈opus 档) |
+| cursor × gpt-5.5 | 未测(premium) | 官方支持,未实测 | 同 cursor | grok 的同档替补 |
+
+**cursor 档位心法**:composer-2.5 当 sonnet 用(日常勘察/写),
+grok-4.5-high 当 opus 用(对抗审计/硬推理)——实测 grok 审 deepseek 写的
+测试,抓出 2 处假断言+scorer 本体 2 个公式边界,升档物有所值。
