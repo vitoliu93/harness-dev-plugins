@@ -74,7 +74,8 @@ CREATE TABLE IF NOT EXISTS observations (
   dispatch_engine  TEXT,                 -- if dispatch-vendors offloaded to a vendor CLI
   dispatch_result  TEXT,                 -- ok|retried|blocked
   summary          TEXT,                 -- one line, human-readable
-  learn_candidates TEXT                  -- JSON array of rule candidates
+  learn_candidates TEXT,                 -- JSON array of rule candidates
+  sop_candidate    TEXT                  -- named repeatable procedure, or NULL (SOP-skill mining)
 );
 
 -- ============ the six observability views ============

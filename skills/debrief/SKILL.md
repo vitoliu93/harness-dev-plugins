@@ -92,6 +92,17 @@ Three checks against this task's experience:
    same task must not double-count). A row reaching **3** → propose invoking
    `skill-forge` to author it (ask the user; never auto-create).
 
+   Cross-session 兜底 — memory 计数只覆盖跑过 debrief 的 session;ccobs 蒸馏层
+   全量标注 `sop_candidate`(可复现流程),收盘时顺手对账:
+
+   ```bash
+   sqlite3 ~/.claude/observability/obs.db "SELECT sop_candidate, COUNT(*) c
+     FROM observations WHERE sop_candidate IS NOT NULL
+     GROUP BY sop_candidate HAVING c>=2 ORDER BY c DESC"
+   ```
+
+   命中主题不在 SKILL-CANDIDATES → 补行,seen 取该计数。没装 ccobs / 查不到 → 跳过。
+
    Graduation conditions (skill-forge's qualification gate — apply before proposing):
    - **Near-neighbor rule**: draft the candidate's one-line `description:`
      first; if it isn't clearly distinguishable from an existing skill's

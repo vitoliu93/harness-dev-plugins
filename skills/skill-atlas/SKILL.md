@@ -79,6 +79,22 @@ either propose a wiring point or confirm the "低频按需是天性,非病" exem
 A new atom whose call site you can't fill shouldn't have shipped — flag it;
 every added/renamed atom is one row in this table, part of its own diff.
 
+## 6. Cross-refs(xref — 拆分/改名防断线)
+
+Skill 间依赖是散文级名字引用("按 grill-me 分层"),故障模式是失效文字。
+grep 即依赖图,不需要 lockfile:
+
+```bash
+for d in $PLUGIN/skills/*/; do n=$(basename $d)
+  hits=$(grep -rlw --include='*.md' "$n" $PLUGIN/skills | grep -v "/skills/$n/" \
+    | sed 's|.*/skills/\([^/]*\)/.*|\1|' | sort -u)
+  [ -n "$hits" ] && echo "$n ← $(echo "$hits" | tr '\n' ' ')"
+done
+```
+
+改名/拆分/归档某 skill 前必跑一次它的名字:每个命中处要么同一 diff 内更新,
+要么确认是同名巧合词。引用了已不存在 skill 名的文档 = lint failure。
+
 ## Report
 
 ```
@@ -88,5 +104,6 @@ stale   : <skills >90d untouched | none>
 triggers: <per-skill P/R | which skills lack fixtures>
 budget  : <skills over 700 tokens | all within>
 callsite: <orphans/⚠ wanting a wiring point | all wired or exempt>
+xref    : <引用已消失 skill 名的文档 | clean>
 proposed: <merge/tighten/refresh/retire actions → feed debrief Move 3>
 ```

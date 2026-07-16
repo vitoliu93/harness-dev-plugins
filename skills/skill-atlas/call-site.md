@@ -8,26 +8,31 @@
 "description 写得好"不算 call site——它只保证被路由到,不保证被想起。
 填不出 call site 的原子 = 博物馆展品:要么给它接线,要么显式豁免为"低频按需是天性"。
 
-| 原子 | 调用点 | 类型 |
-|---|---|---|
-| blindspot | kox-ship Stage 1(计划前盲区扫描) | ① |
-| write-plan | kox-ship 可验收计划阶段 · "写计划/plan" | ①③ |
-| debrief | kox-ship finalize · "收盘/复盘/debrief" | ①③ |
-| exa-code | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
-| worktree | PreToolUse worktree-guard(退出安全)· 分支约定 | ②③ |
-| skill-atlas | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |
-| handoff | "handoff/交接/接手/继续 <slug>" | ③ |
-| create-readable-html | "可视化/画个图/信息图"(skill-guard→executor) | ③ |
-| ccobs | "观测报告/usage report" ·(debrief/skill-atlas 取使用率) | ③ |
-| recall | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
-| agent-reach | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
-| media-understanding | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
-| dispatch-vendors | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · write-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
-| cto-audit | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
-| grill-me | blindspot 收尾链下一步 · write-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
-| skill-forge | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
-| audit-context | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
-| docs-organize | "整理文档/docs organize" | orphan · 月度卫生(豁免:低频天性) |
+形态列:**meta**(管技能系统本身)· **atom**(单能力,可被组合技能链到,通常
+model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invocation
+默认,见 skill-forge §2。
+
+| 原子 | 形态 | 调用点 | 类型 |
+|---|---|---|---|
+| blindspot | atom | kox-ship Stage 1(计划前盲区扫描) | ① |
+| write-plan | sop | kox-ship 可验收计划阶段 · "写计划/plan" | ①③ |
+| debrief | meta | kox-ship finalize · "收盘/复盘/debrief" | ①③ |
+| exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
+| worktree | atom | PreToolUse worktree-guard(退出安全)· 分支约定 | ②③ |
+| skill-atlas | meta | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |
+| handoff | atom | "handoff/交接/接手/继续 <slug>" | ③ |
+| create-readable-html | atom | "可视化/画个图/信息图"(skill-guard→executor) | ③ |
+| ccobs | atom | "观测报告/usage report" ·(debrief/skill-atlas 取使用率) | ③ |
+| recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
+| agent-reach | atom | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
+| media-understanding | atom | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
+| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · write-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
+| cto-audit | sop | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
+| grill-me | atom | blindspot 收尾链下一步 · write-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
+| skill-forge | meta | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
+| report | atom | 收尾汇报前必载(CLAUDE.md 指路)· "汇报/report" | ②③ |
+| audit-context | sop | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
+| docs-organize | sop | "整理文档/docs organize" | orphan · 月度卫生(豁免:低频天性) |
 
 > **skill-atlas 本轮自己上了户口**:原是 orphan,现 event 档由 `skill-atlas-guard` hook 兜底(commit 碰 SKILL.md 必先跑、过期即 deny),staleness 仍季度搭北极星——那台否决机第一次治好了自己报出的病。
 

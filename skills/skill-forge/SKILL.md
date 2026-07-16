@@ -10,9 +10,8 @@ description: >-
 # skill-forge
 
 消化自 yao-meta-skill@4eb11f9:方法收进本文,工具链 vendored 在
-`scripts/`(stdlib-only)。上游 155 个脚本只有这几件有工程含金量,其余是
-多平台发布治理——单人场景纯负重。上游自己的教义说"rigor 必须长得比
-context 成本快,否则删",它自己就是反面教材;铸造时引以为戒。
+`scripts/`(stdlib-only;上游 155 脚本只有这几件有含金量)。上游教义
+"rigor 必须长得比 context 成本快,否则删"——它自己是反面教材,引以为戒。
 
 ```bash
 PLUGIN=~/codebase/projects/agent-plugins
@@ -23,8 +22,9 @@ FORGE=$PLUGIN/skills/skill-forge/scripts
 
 建:跨 session 第 3 次手做(debrief SKILL-CANDIDATES 毕业)、易被路由错、
 可脚本化压缩。不建:一次性任务、解释/总结/翻译类、"以后可能用"。
-Near-neighbor 律:先草拟一行 description,与现有 skill 分不清 → 并入该
-skill,不新建。Boundary 律:候选必须能说出边界或代价("用于 X,不用于 Y")
+组合律:现有 skill 串起来够用 → 不新建,链路写成 SOP skill 或
+call-site.md 一行。Near-neighbor 律:先草拟一行 description,与现有
+skill 分不清 → 并入该 skill,不新建。Boundary 律:候选必须能说出边界或代价("用于 X,不用于 Y")
 ——只有重复次数不够毕业(debrief 的毕业条件与这两条同源)。
 
 ## 1. 意图对话 — 只问改变设计的问题
@@ -42,6 +42,11 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 - 只被用户点名、或由 hook 指路 → `disable-model-invocation: true`,
   description 一行写给人,零 context 费("仅限用户召集"类规则由此机械化,
   例:cto-audit)。此类不建 evals——没有路由可测。
+- 来源定默认:session 沉淀的 SOP(ccobs sop_candidate/debrief 候选)→
+  user-invoked;被链原子 → model-invoked,description 带"被 X 链到"锚
+  (skill-atlas xref 抓边用)。
+- 拆分自由度同轴:user-invoked 零费随需拆;model-invoked 要证据(eval FP/FN
+  或双 call site)且 diff 同步全部 xref 命中处——预算是路由精度。
 
 ## 3. Trigger-first — description 先于正文(model-invoked 才做)
 
