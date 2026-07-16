@@ -107,11 +107,12 @@ Three checks against this task's experience:
    agent-plugins) → offer to edit directly; npx-managed → note it in the
    memory from Move 2 instead.
 
-   Special case when this task used `dispatch`: read
-   `~/.claude/dispatch/ledger.md` and check the terminal-tier column. Cheap
-   tiers (0/1) settling most dispatches → healthy. Repeatedly tier-3 with
-   inline fixups → the routing admits too much judgment-work; propose
-   tightening dispatch's litmus or trigger list as the drift fix.
+   Special case when this task used `dispatch-vendors`: read
+   `~/.claude/dispatch/ledger.md` and check the result column. Mostly
+   pass with few fixups/resumes → healthy. Repeated fail or pass-with-fixups
+   → the dispatched tasks carry more judgment or context than the gate
+   admits; propose tightening dispatch-vendors' gate or scenario catalog as
+   the drift fix.
 
 3. **审计信号**(cto-audit 的信号层——只提醒,不发动):两个便宜指标,任一命中
    就在收盘报告末尾加一句「建议召集 cto-audit:<原因>」:

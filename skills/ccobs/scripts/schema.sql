@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS observations (
   task_type        TEXT,                 -- feature|bugfix|research|ops|chat|...
   outcome          TEXT,                 -- done|partial|abandoned|unknown
   corrections      INTEGER,              -- times the user corrected the agent
-  dispatch_engine  TEXT,                 -- if /dispatch was used
+  dispatch_engine  TEXT,                 -- if dispatch-vendors offloaded to a vendor CLI
   dispatch_result  TEXT,                 -- ok|retried|blocked
   summary          TEXT,                 -- one line, human-readable
   learn_candidates TEXT                  -- JSON array of rule candidates

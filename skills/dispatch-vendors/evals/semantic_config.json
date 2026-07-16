@@ -1,0 +1,114 @@
+{
+  "positive_concepts": {
+    "vendor_named": {
+      "weight": 0.4,
+      "phrases": [
+        "vendor",
+        "vendor CLI",
+        "claude -p",
+        "opencode",
+        "cursor-agent",
+        "让 cursor",
+        "用 cursor",
+        "cursor 跑",
+        "dispatch",
+        "派给"
+      ]
+    },
+    "independence": {
+      "weight": 0.4,
+      "phrases": [
+        "后台",
+        "顺便",
+        "不急",
+        "别占主线",
+        "unattended",
+        "独立进程",
+        "挂后台",
+        "跑一晚上",
+        "回头给我结果"
+      ]
+    },
+    "diversity": {
+      "weight": 0.55,
+      "phrases": [
+        "非 Claude",
+        "找个别的模型",
+        "别的模型家族",
+        "non-Anthropic",
+        "红队",
+        "独立 review",
+        "找盲点",
+        "挑毛病",
+        "两个 vendor",
+        "各写一版"
+      ]
+    },
+    "self_contained_task": {
+      "weight": 0.35,
+      "phrases": [
+        "repo recon",
+        "复现",
+        "最小 repro",
+        "E2E",
+        "写一套测试",
+        "依赖",
+        "迁到",
+        "基准测试",
+        "影响面",
+        "勘察",
+        "plan 模式"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "inline_work": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "你自己来",
+        "自己改",
+        "就行"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么意思",
+        "是什么"
+      ]
+    },
+    "active_build": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "正在开发",
+        "一起重构",
+        "边聊边改",
+        "别外包"
+      ]
+    },
+    "sibling_skills": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "subagent",
+        "搜一下代码库",
+        "帮我 review",
+        "好好想想",
+        "深度调研",
+        "网页来源",
+        "Workflow",
+        "编排"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "vendor_named",
+    "independence",
+    "diversity",
+    "self_contained_task"
+  ]
+}

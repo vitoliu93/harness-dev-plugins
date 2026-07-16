@@ -55,7 +55,7 @@ done
 
 Gate: precision = recall = 1.0. Any FP/FN → fix the description wording (or a
 genuinely wrong case) before shipping. New skill → copy the fixture shape from
-`skills/dispatch/evals/` (cases: should / should-not / near-neighbor buckets;
+`skills/dispatch-vendors/evals/` (cases: should / should-not / near-neighbor buckets;
 config: 3-5 concept buckets whose phrases must appear in the description —
 coverage is computed against description-anchored concepts).
 
@@ -66,7 +66,7 @@ python3 $YAO/context_sizer.py $PLUGIN/skills/<name> --json
 ```
 
 SKILL.md body over ~700 tokens → move detail into `references/` (progressive
-disclosure), like `dispatch/references/engines.md`.
+disclosure), like `dispatch-vendors/references/scenarios.md`.
 
 ## 5. Call sites (judgment, not computed)
 

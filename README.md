@@ -33,7 +33,7 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 |---|---|
 | write-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). 原 advanced-plan — the word still routes here. Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
-| dispatch | Outsource brief-able execution to external headless engines (dscode/arkcode/droid/cursor-agent) — smart model plans, cheap engine types, machine checks verify. |
+| dispatch-vendors | Dispatch a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a standalone vendor agent CLI (claude -p / opencode / cursor-agent) — unattended, resumable, on someone else's quota. |
 | blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
 | worktree | Conventions on top of git worktrees: branch-as-identity, attach/resume, cross-machine handoff, exit-safety order. |
 | handoff | Save / pick up task state in global `~/tmp/` for cross-session, cross-agent transfer. |

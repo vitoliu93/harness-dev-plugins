@@ -45,7 +45,7 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 
 ## 3. Trigger-first — description 先于正文(model-invoked 才做)
 
-1. 建 `evals/`,抄 `skills/dispatch/evals/` 的形状(should / should-not /
+1. 建 `evals/`,抄 `skills/dispatch-vendors/evals/` 的形状(should / should-not /
    near-neighbor 三桶 + 概念桶)。
 2. `python3 $FORGE/trigger_eval.py --description-file skills/<name>/SKILL.md
    --cases <c> --semantic-config <s>` → P = R = 1.0 才继续

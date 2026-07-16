@@ -22,7 +22,7 @@
 | recall | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
 | agent-reach | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
 | media-understanding | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
-| dispatch | "派活/dispatch" | ③ ⚠ orphan:强能力·1 次·被裸开引擎绕过 |
+| dispatch-vendors | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · write-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
 | cto-audit | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
 | grill-me | blindspot 收尾链下一步 · write-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
 | skill-forge | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
@@ -33,11 +33,12 @@
 
 ## 待接线清单(类型含 ⚠ 的行)
 
-- **dispatch** — 信 §4 的中心案例:能力很强,但 call site 只有触发词,且账本显示流量在
-  裸开 dscode/arkcode 绕过它(165 会话 vs ledger 2 行)。要么把它接进某条 workflow 的
-  "settled plan 后的机械批量改"阶段,要么承认触发词是它唯一的路。
+- **dispatch-vendors** — 原 dispatch("廉价打字员"定位)被两侧夹死:委派走 subagent/
+  Workflow,便宜引擎被裸开(141 会话 vs 中转 ~11 次)。2026-07-16 重定位为"整块独立任务
+  派给 vendor CLI"(D 多样性/Q 配额/I 索引三闸门),触发改为模型主动。观察期至 08-16:
+  若真实派活仍 <5 次,按 debrief Move 3 走 archive。
 - **recall** — 本次新增,call site 合法但仅 ③(触发词)。观察期:若"以前查过吗"没长成
-  肌肉记忆,它就是下一个 dispatch。采纳/证伪的闸门见蓝图图纸 1(手动裸跑三次那条 SQL)。
+  肌肉记忆,它就是下一个旧 dispatch(廉价打字员版的命运)。采纳/证伪的闸门见蓝图图纸 1(手动裸跑三次那条 SQL)。
 - **cto-audit** — 2026-07-15 新增。发动权刻意只给用户(③),debrief Move 3 的审计信号层
   是它的提醒线(①)。观察期:两次收盘后看提醒是否真的触发过;若从未触发且用户也从未召集,
   按其自己的"有生有灭"律处理。

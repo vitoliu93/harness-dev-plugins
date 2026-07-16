@@ -21,8 +21,8 @@
 
 ```
 编排层   归项目插件所有(项目生命周期 SOP,贴着各自绑定的基建长)—— dev-kit 零编排绑定
-战术层   write-plan(原 advanced-plan)· dispatch(跨引擎派活)· grill-me · advisor · worktree(约定+安全)
-执行层   code-search · 外部引擎(注册表见 dispatch 的 references/engines.md)
+战术层   write-plan(原 advanced-plan)· dispatch-vendors(整块独立任务派给 vendor CLI)· grill-me · advisor · worktree(约定+安全)
+执行层   code-search · vendor CLI(claude -p / opencode / cursor-agent,sheets 见 dispatch-vendors 的 references/)
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影

@@ -1,0 +1,40 @@
+# cursor-agent — Cursor Ultra subscription
+
+Flags verified 2026-07-16 via `--help` / `--list-models`. Quota: Cursor
+subscription — plan-mode reads are the cheap way to spend it, premium models
+the expensive way. Unique asset: Cursor's **workspace index** (fast, accurate
+repo-wide localization without cold grep).
+
+```bash
+cursor-agent --mode plan -p "<question>" --output-format json --model composer-2.5 --trust   # read-only recon
+cursor-agent -p "<brief>" --output-format json --model composer-2.5 --force
+cursor-agent -p --resume <chatId> "<consolidated fix list>" --force    # fix round (edits need --force too)
+```
+
+**`--trust` is mandatory headless in any not-yet-trusted directory** — even
+plan mode; without it the run dies on a Workspace Trust prompt (exit 0, empty
+stdout, prompt text on stderr — verified live 2026-07-16).
+
+- Modes: `--mode plan` (read-only: analyze/propose, no edits) · `--mode ask`
+  (read-only Q&A) · omit `--mode` for edit-capable runs.
+- Model: daily default `composer-2.5`; premium escalation
+  `cursor-grok-4.5-high(-fast)`, `gpt-5.5-high`,
+  `claude-opus-4-8-thinking-high`; non-Anthropic diversity picks: grok/gpt
+  families. **Names rotate** — re-run `--list-models` (cheap, ~2s) before
+  escalating. Parameterized: `--model 'claude-opus-4-8[context=1m,effort=high]'`.
+- Output: `--output-format text|json|stream-json` (with `-p`); chat id in the
+  JSON output. `create-chat` pre-allocates an id headlessly.
+- Resume: `--resume <chatId>` · `--continue` (latest). `cursor-agent ls` is
+  TUI-only (crashes headless: "Raw mode is not supported") — to find/verify a
+  session headlessly, read the filesystem instead:
+  `~/.cursor/chats/<workspace-hash>/<chatId>/` (`meta.json` carries cwd +
+  createdAtMs/updatedAtMs; `store.db` is the conversation). A hung `-p` run
+  whose chat dir has stopped updating but has a fat store.db = work done,
+  output never flushed → kill it and `--resume <chatId>` to harvest.
+- Unattended edits: `-f/--force` (alias `--yolo`); middle ground
+  `--auto-review`; `--trust` skips workspace-trust prompt (headless only).
+- Isolation: `-w/--worktree [name]` = native git worktree at
+  `~/.cursor/worktrees/<repo>/<name>`; `--worktree-base <branch>`.
+- Scope: `--workspace <path>` (default cwd), `--add-dir <path>` repeatable.
+- Sandbox/MCP: `--sandbox enabled|disabled`, `--approve-mcps`; no
+  finer tool-restriction flag.
