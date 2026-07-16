@@ -22,8 +22,17 @@ stdout, prompt text on stderr — verified live 2026-07-16).
   `claude-opus-4-8-thinking-high`; non-Anthropic diversity picks: grok/gpt
   families. **Names rotate** — re-run `--list-models` (cheap, ~2s) before
   escalating. Parameterized: `--model 'claude-opus-4-8[context=1m,effort=high]'`.
-- Output: `--output-format text|json|stream-json` (with `-p`); chat id in the
-  JSON output. `create-chat` pre-allocates an id headlessly.
+- Output: **default to `stream-json` or `text`, avoid `json`** — `json` only
+  flushes at process exit, and the process can finish the work yet never
+  exit (verified: 20-min hang with a complete conversation on disk; the
+  stream variant flushed 68 events fine on the same task class). Chat id in
+  the JSON output; `create-chat` pre-allocates an id headlessly.
+- **Vision: YES** on composer-2.5 (image transcription verified live);
+  grok/gpt-5.5 support it per Cursor docs (unprobed). The fleet's primary
+  vision engine alongside opencode doubao.
+- **Avoid `-w` headless** — it created the worktree then hung before the
+  conversation started (no chat dir ever appeared; verified). Make your own
+  `git worktree` and run with cwd inside it instead.
 - Resume: `--resume <chatId>` · `--continue` (latest). `cursor-agent ls` is
   TUI-only (crashes headless: "Raw mode is not supported") — to find/verify a
   session headlessly, read the filesystem instead:

@@ -22,7 +22,12 @@ of the module being built here; that's subagent/Workflow territory.
 
 Vendor sheets: `references/claude-cli.md` (incl. dscode/arkcode variants) ·
 `references/opencode.md` · `references/cursor-agent.md`. Scenario catalog
-with brief shapes and vendor picks: `references/scenarios.md`.
+with brief shapes and vendor picks: `references/scenarios.md`. Onboarding a
+NEW vendor (or re-probing one): the ten-rung ladder in
+`references/vendor-onboarding.md` — also holds the live CLI×model capability
+matrix (vision, output caps, banned endpoints); **image-bearing tasks route
+only to vision-capable cells** (cursor composer/grok, opencode doubao —
+deepseek/glm are text-only).
 
 ## Gate — dispatch only if at least ONE pays
 

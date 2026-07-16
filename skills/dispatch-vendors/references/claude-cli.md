@@ -46,8 +46,15 @@ zsh -ic 'arkcode -p "<brief>" --model opus --output-format json'   # opus slot �
   low|medium|high|xhigh|max`.
 - Output: `--output-format text|json|stream-json`. With `json`, stdout is
   clean JSON (session id in the init message), warnings on stderr — redirect
-  separately, never `2>&1`. Last-resort session-id recovery: newest `.jsonl`
-  in `~/.claude/projects/<cwd-slug>/`.
+  separately, never `2>&1`. `stream-json` flushes per event AND surfaces
+  `hook_started` events — free observability into the hook stack (verified).
+  Last-resort session-id recovery: newest `.jsonl` in
+  `~/.claude/projects/<cwd-slug>/`.
+- **Vision: NO on dscode (deepseek), fatal on arkcode.** dscode degrades
+  gracefully — Read tool rejects the image in-run, agent can still reply
+  (brief a NO-VISION fallback). arkcode dies hard: image block reaches Ark
+  API → 400 "Model only support text input", whole run errors (both verified
+  live). Image-bearing tasks → cursor composer/grok or opencode doubao.
 - Resume: `-r/--resume <session-id>` · `-c/--continue` (latest in cwd) ·
   `--fork-session` (new id on resume) · `--session-id <uuid>` (force id).
 - Unattended edits: `--permission-mode bypassPermissions` (real claude only;

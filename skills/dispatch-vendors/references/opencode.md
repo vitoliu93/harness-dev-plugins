@@ -8,11 +8,14 @@ source ~/.zshenv && opencode run "<brief>" -m volcengine-plan/kimi-k2.7-code --f
 source ~/.zshenv && opencode run -s <session-id> "<consolidated fix list>" --format json --auto   # fix round
 ```
 
-- Model: `-m provider/model`. Configured provider `volcengine-plan`
-  (`~/.config/opencode/opencode.json`); preferred ids `kimi-k2.7-code`,
-  `glm-5.2`; same provider also carries `deepseek-v4-{flash,pro}`,
-  `doubao-seed-2.0-{code,pro,lite}`, `minimax-{m2.7,m3}`, `kimi-k2.6` as
-  fallbacks. `--variant high|max|minimal` = reasoning effort.
+- Model: `-m provider/model`, provider `volcengine-plan`
+  (`~/.config/opencode/opencode.json`). **Verdicts are per CLI×model, not
+  per CLI** (2026-07-16 live): `kimi-k2.7-code` — **禁用**, stable 0-token
+  silent no-op (3/3 runs even with `--auto`); `glm-5.2` — works, obey the
+  output-cap discipline below; `doubao-seed-2.0-pro` — works incl. **vision**
+  (image transcription verified). Also carries `deepseek-v4-{flash,pro}`,
+  `minimax-{m2.7,m3}` etc., unprobed. `--variant high|max|minimal` =
+  reasoning effort.
 - Output: `--format json`; session id = `sessionID` field on the JSON event
   lines.
 - Resume: `-s/--session <id>` · `-c/--continue` (latest) · `--fork` (branch,

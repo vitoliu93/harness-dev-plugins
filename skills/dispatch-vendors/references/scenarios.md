@@ -26,6 +26,13 @@ justify themselves (dscode/arkcode don't count as diverse for #3/10/11 when
 the author model is also Claude-shaped output; prefer kimi/glm/grok/gpt).
 Low on foreign quota → cut from the bottom of the list, keep 3/10/11.
 
+**Modality check before picking a vendor**: any scenario whose inputs include
+images/screenshots (bug repro with UI screenshots, doc generation from
+diagrams, E2E visual checks) must land on a vision-capable cell — cursor
+composer/grok or opencode doubao-seed-2.0-pro. deepseek (dscode) degrades
+gracefully; glm via arkcode dies with API 400. Matrix in
+`vendor-onboarding.md`.
+
 Consume cheaply: digests and finding lists are read; repros and suites are
 run once; diffs are `git diff`-ed. If consuming the result means re-deriving
 it, the scenario failed the litmus — shouldn't have been dispatched.
