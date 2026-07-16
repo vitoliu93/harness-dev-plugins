@@ -1,8 +1,9 @@
 ---
 name: dispatch
 description: >-
-  Outsource brief-able execution to cheap headless engines (fleet in
-  references/engines.md);
+  Offload brief-able execution — bulk mechanical migration/rename from a
+  settled recipe — or read-only recon to headless engines, cheap typists to
+  premium escalation (fleet in references/engines.md);
 argument-hint: "[task brief | engine name + task]"
 ---
 
@@ -63,7 +64,7 @@ already fails there the baseline is dirty — rewrite it baseline-relative per
 
 | Tier | What                                                                                       | When                                                                                                                                                                                     | Cost        |
 | ---- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| 0/1  | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p <globs-file>] [-t test-path]` | **every dispatch**                                                                                                                                                                       | zero tokens |
+| 0/1  | `scripts/verify.sh -d <wt> -a <acceptance> -b <base-sha> [-p <globs-file>] [-t test-path]...` | **every dispatch**                                                                                                                                                                       | zero tokens |
 | 2    | haiku subagent: diff vs brief, spec compliance only                                        | verify.sh WARN, `STATUS: DONE_WITH_CONCERNS` (a missing/malformed STATUS counts as that), or the brief has ≥1 spec item that couldn't be turned into a machine assertion (unconditional) | ~cheap      |
 | 3    | you read the diff                                                                          | only on Tier 2 flags, or the change touches money/security/data/migrations (unconditional)                                                                                               | expensive   |
 

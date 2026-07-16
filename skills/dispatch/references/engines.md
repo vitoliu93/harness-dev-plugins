@@ -11,6 +11,9 @@ prefix is harmless for engines that don't need it.
 
 ## Routing & escalation ladder
 
+Rung = engine ladder position (escalation moves up it); distinct from the
+verification *tiers* in SKILL.md's pyramid.
+
 | Rung | Engine | Use for |
 |---|---|---|
 | — | `cursor-agent --mode plan` (composer-2.5) | read-only 勘察 / 影响面分析 / codebase understanding — not execution |
@@ -30,7 +33,7 @@ dscode -p "<brief>" --model deepseek-v4-flash --output-format json
 dscode -p -r <session-id> "<consolidated fix list>"   # resume for the fix round
 ```
 
-- **model: slot-remapped** — zsh function (`~/.config/zsh/utils.sh`) wrapping
+- **model: slot-remapped** — zsh function (`~/.zshrc`) wrapping
   `openclaude`; slots remapped opus→`deepseek-v4-pro[1m]`,
   sonnet/haiku→`deepseek-v4-flash[1m]`. The claude binary inherits the
   settings default model (currently opus → pro slot = the expensive one), so
@@ -47,7 +50,7 @@ dscode -p -r <session-id> "<consolidated fix list>"   # resume for the fix round
   `--permission-mode` yourself — last flag wins and silently downgrades to a
   mode where non-edit tool calls get denied (no TTY in `-p` mode).
 - Full Claude Code semantics — tools, hooks, skills, plugins all load.
-  Includes **user-level hooks** (e.g. an RTK Bash-intercept layer), which can
+  Includes **user-level hooks** (e.g. a personal Bash-intercept layer), which can
   shape the engine's internal tool calls — unlike cursor-agent/opencode/droid,
   which are standalone CLIs with no Claude Code hook stack. So: don't
   extrapolate dscode output quirks to other engines, and when chasing
