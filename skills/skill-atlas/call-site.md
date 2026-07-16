@@ -14,9 +14,9 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 
 | 原子 | 形态 | 调用点 | 类型 |
 |---|---|---|---|
-| blindspot | atom | kox-ship Stage 1(计划前盲区扫描) | ① |
-| write-plan | sop | kox-ship 可验收计划阶段 · "写计划/plan" | ①③ |
-| debrief | meta | kox-ship finalize · "收盘/复盘/debrief" | ①③ |
+| blindspot | atom | ship(kox) Stage 1(计划前盲区扫描) | ① |
+| write-plan | sop | ship(kox) 可验收计划阶段 · "写计划/plan" | ①③ |
+| debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
 | worktree | atom | PreToolUse worktree-guard(退出安全)· 分支约定 | ②③ |
 | skill-atlas | meta | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |

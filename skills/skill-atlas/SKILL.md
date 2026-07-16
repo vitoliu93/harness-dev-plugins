@@ -93,7 +93,9 @@ done
 ```
 
 改名/拆分/归档某 skill 前必跑一次它的名字:每个命中处要么同一 diff 内更新,
-要么确认是同名巧合词。引用了已不存在 skill 名的文档 = lint failure。
+要么确认是同名巧合词/刻意的别名锚("Formerly X")。引用了已不存在 skill 名的
+文档 = lint failure。跨仓边(kox ship 链 write-plan/blindspot/debrief/worktree/
+recall)是本检查的盲区——动这几个原子的名字时,额外 grep kox-agent-plugins。
 
 ## Report
 
