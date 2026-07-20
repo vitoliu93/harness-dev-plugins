@@ -78,10 +78,12 @@ doubao-seed-2.0-pro 全能含视觉。结论按 CLI×model 记,failover 链也�
 全部爬完才做:vendor sheet(references/<cli>.md,含每条实证坑)+
 scenarios.md 路由行 + ledger 记账习惯 + 观察期(一个月真实使用回看)。
 
-## 当前舰队模态/能力矩阵(2026-07-16 实测)
+## 当前舰队模态/能力矩阵(2026-07-16 实测;kimi 行 2026-07-20 全梯子实测)
 
 | CLI × model | 工具写链路 | 视觉 | 输出纪律 | 判定 |
 |---|---|---|---|---|
+| kimi × k3(默认,1M ctx) | ✅ 测试套件 5/5 亲验零污染 + 7 文件红队 review 成交 | ✅ 完美(转录准,还纠正图里说谎的标注) | 无上限@1842 词;**stdout 写文件=退出才 flush**;截断判据=缺 resume_hint meta 行 | 主力候选:主线是 Claude 时 D+Q 双赢;**无头默认全自动,必须进 worktree** |
+| kimi × kimi-for-coding(K2.7) | ✅ 探针级 5s | 声明 image_in,未实测 | 同 k3 | k3 备胎/快速任务 |
 | dscode × deepseek-v4-flash | ✅ 49 测试真仓验证 | ❌ 优雅降级 | json 退出 flush,stream 可用 | 主力打字员+测试作者 |
 | arkcode × glm-5.2[1m] | ✅(探针级) | ❌ **致命 400** | 同上 | dscode 限流备胎,禁图像 |
 | opencode × kimi-k2.7-code | ❌ 0-token 空转(×3) | 未测 | — | **禁用,勿再派** |

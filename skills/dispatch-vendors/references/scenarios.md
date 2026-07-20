@@ -12,24 +12,26 @@ separate scenario.
 | 2 | Bug-report reproduction | paste report; "set up env, minimal failing repro + root-cause note" | cursor-agent (locates suspects) or dscode | Q,I |
 | 3 | Independent diff/branch review | "review branch B for correctness/security, ranked findings file:line" | `cursor-agent --mode plan` + gpt-5.5/grok | **D**,I |
 | 4 | Test-suite authoring (module frozen) | "write + run suite for M, target paths P, leave green" | dscode / opencode | Q |
-| 5 | Research / investigation | "answer Q with cited sources + recommendation" | cursor-agent or claude -p | Q |
+| 5 | Research / investigation | "answer Q with cited sources + recommendation" | cursor-agent, kimi -p (k3 1M ctx), or claude -p | Q |
 | 6 | Dependency upgrade / migration pilot | "bump vX→vY, fix build+tests, stop at green; resumable" | dscode / opencode | Q |
 | 7 | Docs generation | "write docs for surface X from code, into path P" | dscode / composer-2.5 | Q |
 | 8 | E2E / integration run | "drive flow F in a real env, report failures + traces" | dscode / opencode | Q |
 | 9 | Flaky-test hunt | "run suite N×, bisect flaky ones, report seeds/conditions" | dscode, detached | Q |
-| 10 | Red-team adversarial analysis | "attack surface S: exploits/abuse/edge failures, PoC each" | opencode (kimi) or cursor grok | **D** |
+| 10 | Red-team adversarial analysis | "attack surface S: exploits/abuse/edge failures, PoC each" | kimi -p (native — the opencode kimi cell is 禁用) or cursor grok | **D** |
 | 11 | Second-opinion implementation | same spec → TWO vendors in parallel, diff results | opencode + cursor (different families) | **D** |
 | 12 | Benchmark run | "perf bench B, N iters, medians + regressions vs baseline" | claude -p / dscode isolated process | Q |
 
 **Diversity core: #3, #10, #11** — these need a foreign model family to
 justify themselves (dscode/arkcode don't count as diverse for #3/10/11 when
-the author model is also Claude-shaped output; prefer kimi/glm/grok/gpt).
+the author model is also Claude-shaped output; prefer kimi (native `kimi -p`,
+k2/k3 family)/glm/grok/gpt).
 Low on foreign quota → cut from the bottom of the list, keep 3/10/11.
 
 **Modality check before picking a vendor**: any scenario whose inputs include
 images/screenshots (bug repro with UI screenshots, doc generation from
 diagrams, E2E visual checks) must land on a vision-capable cell — cursor
-composer/grok or opencode doubao-seed-2.0-pro. deepseek (dscode) degrades
+composer/grok, kimi k3 (verified 2026-07-20), or opencode
+doubao-seed-2.0-pro. deepseek (dscode) degrades
 gracefully; glm via arkcode dies with API 400. Matrix in
 `vendor-onboarding.md`.
 
