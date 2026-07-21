@@ -3,7 +3,7 @@ name: grill-me
 description: >-
   开工前的决策盘问:建决策树,细节自决并公示,只把高风险决策(破坏性/稳定性/
   功能大变/花钱)一次一个升级给 CEO 拍板,每问带推荐答案。Use when "grill me/盘问",
-  或 write-plan 定稿前;单个孤立决策直接 AskUserQuestion,不用建树。
+  或 advanced-plan 定稿前;单个孤立决策直接 AskUserQuestion,不用建树。
 ---
 
 # grill-me
@@ -45,5 +45,5 @@ Litmus:这个选错了,CEO 一周后会发现并在乎吗?会 → 升级。
 ## 4. 收口
 
 CEO 层全部确认才动手(硬门)。产出两份:**已确认决策**与**自决公示清单**——
-有 write-plan 的,前者进 goal.md(它锁用户意图),后者进 spec.md(实现选择
-不进 goal.md,是 write-plan 自己的规矩);没有的,两份都贴任务正文。
+有 advanced-plan 的,前者进 goal.md(它锁用户意图),后者进 spec.md(实现选择
+不进 goal.md,是 advanced-plan 自己的规矩);没有的,两份都贴任务正文。

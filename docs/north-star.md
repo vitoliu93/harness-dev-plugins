@@ -21,7 +21,7 @@
 
 ```
 编排层   归项目插件所有(项目生命周期 SOP,贴着各自绑定的基建长)—— dev-kit 零编排绑定
-战术层   write-plan(原 advanced-plan)· dispatch-vendors(整块独立任务派给 vendor CLI)· grill-me · advisor · worktree(约定+安全)
+战术层   advanced-plan · dispatch-vendors(整块独立任务派给 vendor CLI)· grill-me · second-opinion · worktree(约定+安全)
 执行层   code-search · vendor CLI(claude -p / opencode / cursor-agent,sheets 见 dispatch-vendors 的 references/)
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
@@ -70,7 +70,7 @@
   可验收计划 → 实施 → E2E 验收 → finalize 收尾)并迁居 kox-agent-plugins——编排层归
   项目插件,dev-kit 收敛为零绑定原子库(14 skills / 3 agents)。ship-tester/ship-analyst/
   cto-audit 归档:逐项验证改由计划内机检验收条款 + 项目 E2E 段承担。改名立受众原则:
-  advanced-plan→write-plan、html-doc→create-readable-html(名字说动作;领域词名字如
+  write-plan→advanced-plan(改回)、html-doc→create-readable-html(名字说动作;领域词名字如
   worktree/dispatch/debrief 不动)。计划文档立两层规矩:goal.md 人话对齐目标(用户可读),
   验证细节只进 todo.md 的 Verify 字段(agent 层)。
 - **v2.5(消化外部依赖)✅ 2026-07-15**:grill-me 与 yao-meta-skill 从"外部安装"收编为

@@ -25,13 +25,13 @@ out (e.g. at `~/codebase/projects/agent-plugins`):
 ```
 
 Then restart the session. Skills become available as `dev-kit:<skill>`
-(e.g. `/dev-kit:write-plan`).
+(e.g. `/dev-kit:advanced-plan`).
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| write-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). 原 advanced-plan — the word still routes here. Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
+| advanced-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
 | dispatch-vendors | Dispatch a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a standalone vendor agent CLI (claude -p / opencode / cursor-agent) — unattended, resumable, on someone else's quota. |
 | blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
@@ -62,12 +62,12 @@ and upload logs never enter the main session; only a distilled answer comes back
 | Agent | Model | Role |
 |---|---|---|
 | general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `create-readable-html`, `lark-*`), runs it end-to-end, returns only the distilled result. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
-| advisor | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
+| second-opinion | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
 | code-search | sonnet | Token-efficient codebase explorer — prefers auggie-mcp semantic search, `rg`/`fd` for exact matches; returns terse located results, not raw file dumps. |
 
 The other skills are deliberately *not* delegated: they either need the live
 session conversation (handoff), are interactive end-to-end (audit-context), or
-are methodologies the main agent itself must drive (write-plan).
+are methodologies the main agent itself must drive (advanced-plan).
 
 Note: Claude Code subagents cannot spawn nested subagents, so the executor reads
 content inline with strict distillation discipline instead of fanning out the
@@ -127,7 +127,7 @@ sync-agent-skills.ts # symlinks skills/* into ~/.agents/skills for other agent C
 
 ## Note on portability
 
-`write-plan` resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
+`advanced-plan` resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
 `~/.claude/skills` fallback. `exa-code` still references its scripts via
 hardcoded paths — fix those if you hit a missing-file error when it tries to
 read its own assets under a plugin-cache install.

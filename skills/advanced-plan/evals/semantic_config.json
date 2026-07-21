@@ -2,7 +2,7 @@
   "positive_concepts": {
     "planning": {
       "weight": 0.5,
-      "phrases": ["write-plan", "plan", "立项", "立个项", "开发计划", "计划"]
+      "phrases": ["advanced-plan", "plan", "立项", "立个项", "开发计划", "计划"]
     },
     "tracked_project": {
       "weight": 0.35,

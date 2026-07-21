@@ -7,7 +7,7 @@
   ],
   "should_trigger": [
     {
-      "text": "write-plan 这个任务",
+      "text": "advanced-plan 这个任务",
       "family": "explicit_en"
     },
     {
@@ -23,7 +23,7 @@
       "family": "plan_first"
     },
     {
-      "text": "advanced-plan 这个重构",
+      "text": "write-plan 这个重构",
       "family": "legacy_alias"
     },
     {

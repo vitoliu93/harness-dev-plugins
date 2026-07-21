@@ -17,9 +17,9 @@
 | 场景 | 你说 | 发生什么 |
 |---|---|---|
 | 开发任务(kox 项目) | 直接说需求,或贴 issue URL | **kox ship 五段**:上下文收集 → 可验收计划 → 实施 → E2E 验收 → finalize 收尾(S 号快道免计划文档) |
-| 非 kox 的多步任务 | "立项 / write-plan" | write-plan:goal/spec/todo + worktree 隔离,每 phase 带验收字段 |
+| 非 kox 的多步任务 | "立项 / advanced-plan" | advanced-plan:goal/spec/todo + worktree 隔离,每 phase 带验收字段 |
 | 整块独立任务外派 | "让 cursor 跑" / "后台跑,不急" / 模型主动提议 | dispatch-vendors:整块任务(勘察/红队/测试/E2E/文档/调研)派给 vendor CLI,session id 可续连,不烧 Claude 配额 |
-| 要第二意见 | "第二意见 / 校审 / ultra review" | advisor(要更强推理走这里;要**非 Anthropic 模型家族**的眼睛才走 dispatch-vendors) |
+| 要第二意见 | "第二意见 / 校审 / ultra review" | second-opinion(要更强推理走这里;要**非 Anthropic 模型家族**的眼睛才走 dispatch-vendors) |
 | 干完了 | "收盘" | debrief 三件套:归档计划目录 → 至多一条带状态的 memory → 技能候选记账 |
 | 你纠正我 | 正常说就行 | 我打一行 `[LEARN] 类型: 规则` → Stop 钩子存进 `.claude/LEARNED.md` → 下次会话自动回放最近 5 条 |
 | 月度体检 | "skill 体检" | skill-atlas:路由重叠 / 陈旧度 / 触发评测 / token 预算,只报告不动手 |

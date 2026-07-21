@@ -131,7 +131,7 @@ prompt 模板见 [references/subagent-prompts.md](references/subagent-prompts.md
 
 - HTML 可视化:写内容源稿(数字忠实照搬)→ 委派 general-skills-executor(opus)跑 create-readable-html
 - 发飞书:委派 general-skills-executor(haiku),云盘上传 + 组织内链接 + 群发链接,不走文件消息
-- write-plan 记档:goal/spec/todo/exploration 落 `<项目>/docs/advanced-plans/`,record-only,todo 按 P0/P1/P2 拆可认领 phase
+- advanced-plan 记档:goal/spec/todo/exploration 落 `<项目>/docs/advanced-plans/`,record-only,todo 按 P0/P1/P2 拆可认领 phase
 
 ## 边界
 

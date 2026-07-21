@@ -60,4 +60,4 @@
 
 - HTML：仪表盘开屏大数字 + 缺陷编号卡（P 色带）+ 模块条形图 + roadmap 泳道 + 绿色「值得肯定」收尾；全中文为主避免术语堆砌；自包含无外链；深浅色 + 移动端可读
 - 飞书：云盘上传 + 组织内链接可读 + 群发链接（不走文件消息）
-- write-plan：goal（Done means 对齐路线图）/ spec（approach + key decisions + risks）/ todo（P0~P2 可认领 phase，各带 Acceptance）/ exploration（全部取证事实编号存档）
+- advanced-plan：goal（Done means 对齐路线图）/ spec（approach + key decisions + risks）/ todo（P0~P2 可认领 phase，各带 Acceptance）/ exploration（全部取证事实编号存档）

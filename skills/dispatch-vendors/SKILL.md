@@ -50,7 +50,7 @@ interaction · verifying the result is much cheaper than re-deriving it.
 - Needs this session's accumulated context (brief would paste >~200 lines of
   prior decisions) → subagent.
 - More-Claude-eyes on a diff → `/code-review`; stronger-reasoning second
-  opinion → advisor; web research fan-out → deep-research; deterministic
+  opinion → second-opinion; web research fan-out → deep-research; deterministic
   multi-agent orchestration → Workflow. Vendor wins only on D/Q/I.
 - User wants to watch or steer → keep it inline (or they bare-open the CLI).
 

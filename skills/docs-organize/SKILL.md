@@ -24,7 +24,7 @@ argument-hint: "[audit | adopt]"
 
 ## Placement 约定（adopt 落地的内容）
 
-`$ROOT` 解析同 write-plan：git 仓 → 仓根；multi-repo workspace（CWD 是各仓的非 git 公共父目录）→ workspace 目录本身。
+`$ROOT` 解析同 advanced-plan：git 仓 → 仓根；multi-repo workspace（CWD 是各仓的非 git 公共父目录）→ workspace 目录本身。
 
 ```
 $ROOT/docs/
@@ -32,7 +32,7 @@ $ROOT/docs/
   *.md / *.html        # 活文档 + 快照类，平铺——索引即导航，不建主题目录树
   references/          # pdf/pptx/厂商参考资料
   _archive/            # 被取代的快照类
-  advanced-plans/      # write-plan/debrief 所有（目录名是历史约定），本 skill 不碰内部
+  advanced-plans/      # advanced-plan/debrief 所有（目录名是历史约定），本 skill 不碰内部
   incidents/           # 事故记录（若有）
 ```
 
@@ -92,7 +92,7 @@ dscode -p "<核验 brief>" --model deepseek-v4-flash --output-format json
 
 ## 边界（不越界）
 
-- `docs/advanced-plans/` 内部：write-plan + debrief 所有。
+- `docs/advanced-plans/` 内部：advanced-plan + debrief 所有。
 - auto-memory / CLAUDE.md 常驻上下文本体：audit-context 所有（本 skill 只动它的 docs 索引段）。
 - 子仓内部文档：不进 v1 audit 范围，单独跑时以该仓为 `$ROOT` 再来一次。
 - 远端团队仓的过时内容：报告里标注，不代改。

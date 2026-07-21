@@ -1,16 +1,16 @@
 ---
-name: write-plan
+name: advanced-plan
 description: >-
   Write the deterministic, acceptance-bearing plan for a non-trivial dev task
   and track it as a mini-project that survives context resets and handoff.
-  Trigger: "write-plan", "立项/立个项", "开发计划", "plan this task", or
+  Trigger: "advanced-plan", "立项/立个项", "开发计划", "plan this task", or
   multi-step dev work worth tracking (跟踪); resume via "continue plan",
-  "恢复计划", "接着做 <slug>". Formerly advanced-plan — that word still
+  "恢复计划", "接着做 <slug>". Formerly write-plan — that word still
   routes here. Requires a git repo.
 argument-hint: "[new <task> | resume <slug> | review <slug>]"
 ---
 
-# write-plan
+# advanced-plan
 
 Turn a dev task into a tracked mini-project. The point is **not** ceremony — it's that any agent (or future-you) can open one directory and know exactly what we're building, why, where we are, and what's left, with zero prior context.
 
@@ -33,9 +33,9 @@ If the task is genuinely trivial (one obvious edit), say so and skip the skill �
 
 ## Preconditions & isolation (non-negotiable)
 
-write-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch. The worktree/branch mechanics live in the **`worktree`** skill; write-plan adds only the naming convention below.
+advanced-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch. The worktree/branch mechanics live in the **`worktree`** skill; advanced-plan adds only the naming convention below.
 
-Before any plan work: `EnterWorktree name: "write-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop — unless it's a multi-repo workspace task, see Location below. See `worktree` for nesting, baseRef, and resume.)
+Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop — unless it's a multi-repo workspace task, see Location below. See `worktree` for nesting, baseRef, and resume.)
 
 ## Location & layout
 
@@ -63,7 +63,7 @@ Blank templates live in `assets/templates/` (one per file). **Creation = copy, t
 ```bash
 ROOT=$(git rev-parse --show-toplevel)        # repo/worktree root — plans live with the code, on this branch
                                              # multi-repo workspace task: ROOT=<workspace dir> instead (see Location)
-TPL="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude}/skills/write-plan/assets/templates"
+TPL="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude}/skills/advanced-plan/assets/templates"
 DIR="$ROOT/docs/advanced-plans/$(date +%F)-<slug>"
 mkdir -p "$DIR"
 cp "$TPL"/{goal,spec,todo}.md "$DIR"/        # light tier
@@ -78,10 +78,10 @@ After copying, replace the `<...>` placeholders with real content. Each phase in
 
 ### `new` — start a plan (default action)
 
-Trigger: "write-plan", "立项", "plan this task", or any non-trivial task kickoff.
+Trigger: "advanced-plan", "立项", "plan this task", or any non-trivial task kickoff.
 
 1. **Restate the goal back to the user in one or two sentences, decide the tier** (light/full), and settle the `<slug>`. If scope is ambiguous, ask *before* doing anything — a wrong north star wastes the whole plan.
-2. **Check git + enter the worktree** (see Preconditions). No repo → offer `git init` and stop. Then `EnterWorktree name: "write-plan-<date>-<slug>"`. All following steps run *inside* the worktree.
+2. **Check git + enter the worktree** (see Preconditions). No repo → offer `git init` and stop. Then `EnterWorktree name: "advanced-plan-<date>-<slug>"`. All following steps run *inside* the worktree.
 3. Copy the needed templates into `$ROOT/docs/advanced-plans/<date>-<slug>/` (see Templates above).
 4. Fill `goal.md` and **lock it** — it's the north star.
 5. Fill `spec.md` (real design for full tier; a few bullets for light).
@@ -95,9 +95,9 @@ Follow `todo.md` phase by phase. The Enforcement rules below are non-negotiable 
 
 **Route each item before touching it**: ① deterministic script covers it (`sed`/`ast-grep`/codemod/short script) → run the script, no engine; ② a whole self-contained side-task (independent recon/tests/E2E/docs, or wants non-Anthropic eyes) → outsource via the `dispatch-vendors` skill; ③ judgment-dense (design trade-offs, sequential probing) → implement inline in the main context. Multi-agent `Workflow` fan-out is not a function of complexity — only for genuinely parallel work the user opted into.
 
-### Routing `/write-plan <args>` — new or resume?
+### Routing `/advanced-plan <args>` — new or resume?
 
-A bare `/write-plan <args>` is ambiguous (is `<args>` a new task or a keyword for an existing plan?). **Always discover before creating** — never silently start a duplicate plan. Discovery keys off the **branch/worktree**, not a loose file glob:
+A bare `/advanced-plan <args>` is ambiguous (is `<args>` a new task or a keyword for an existing plan?). **Always discover before creating** — never silently start a duplicate plan. Discovery keys off the **branch/worktree**, not a loose file glob:
 
 1. Strip routing verbs (`new` / `resume` / `continue` / `继续` / `恢复` / `接着做`) to get the keyword.
 2. Discover an existing plan by its worktree/branch — use the discovery + attach steps in the **`worktree`** skill (`git worktree list` / `git branch -a`, then `EnterWorktree`).
@@ -108,7 +108,7 @@ A bare `/write-plan <args>` is ambiguous (is `<args>` a new task or a keyword fo
 
 ### `resume <slug>` — pick up an existing plan
 
-Trigger: "continue plan", "恢复计划", "接着做 <slug>", or a `/write-plan <kw>` that matched a worktree/branch above.
+Trigger: "continue plan", "恢复计划", "接着做 <slug>", or a `/advanced-plan <kw>` that matched a worktree/branch above.
 
 1. No keyword at all? List the plan worktrees with each `todo.md` `Current State` one-liner; ask which. Use `find` (not a bare glob — zsh aborts on no-match):
    ```bash
@@ -173,6 +173,6 @@ The plan branch is the shared object — how agents share a worktree vs. take on
 
 ## Integration with other skills
 
-- **worktree**: the isolation/branch mechanism write-plan runs on — entering, resuming, cross-machine handoff, parallel agents. write-plan adds the plan dir and the `write-plan-<date>-<slug>` naming on top (pre-rename branches carry the legacy `advanced-plan-` stem; discovery is keyword-based, so both resolve).
-- **handoff**: write-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
+- **worktree**: the isolation/branch mechanism advanced-plan runs on — entering, resuming, cross-machine handoff, parallel agents. advanced-plan adds the plan dir and the `advanced-plan-<date>-<slug>` naming on top (pre-rename branches carry the legacy `write-plan-` stem; discovery is keyword-based, so both resolve).
+- **handoff**: advanced-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
 - **agent-browser**: the default frontend verification method named in phase acceptance criteria.

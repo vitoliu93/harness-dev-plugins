@@ -8,7 +8,7 @@
     { "text": "这个方案有什么风险要我拍板的", "family": "stakes_decision" },
     { "text": "对齐一下决策再动手", "family": "preflight" },
     { "text": "动手前把这个任务的决策过一遍", "family": "preflight" },
-    { "text": "write-plan 定稿前盘问我一遍", "family": "plan_gate" },
+    { "text": "advanced-plan 定稿前盘问我一遍", "family": "plan_gate" },
     { "text": "这次改动破坏性不小,要我拍板的拿出来", "family": "stakes_decision" },
     { "text": "这个计划里风险大的决策升级给我", "family": "stakes_decision" }
   ],
@@ -21,8 +21,8 @@
   ],
   "near_neighbor": [
     { "text": "扫一下这个任务的盲区", "family": "blindspot" },
-    { "text": "找 codex 要个第二意见看看这个方案", "family": "advisor" },
-    { "text": "帮我立项写个开发计划", "family": "write_plan" },
+    { "text": "找 codex 要个第二意见看看这个方案", "family": "second_opinion" },
+    { "text": "帮我立项写个开发计划", "family": "advanced_plan" },
     { "text": "这两个库选哪个,给我个建议", "family": "single_choice" }
   ]
 }

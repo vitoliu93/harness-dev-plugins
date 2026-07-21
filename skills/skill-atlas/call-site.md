@@ -15,7 +15,7 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | 原子 | 形态 | 调用点 | 类型 |
 |---|---|---|---|
 | blindspot | atom | ship(kox) Stage 1(计划前盲区扫描) | ① |
-| write-plan | sop | ship(kox) 可验收计划阶段 · "写计划/plan" | ①③ |
+| advanced-plan | sop | ship(kox) 可验收计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
 | worktree | atom | PreToolUse worktree-guard(退出安全)· 分支约定 | ②③ |
@@ -26,9 +26,9 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
 | agent-reach | atom | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
 | media-understanding | atom | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
-| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · write-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
+| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · advanced-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
 | cto-audit | sop | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
-| grill-me | atom | blindspot 收尾链下一步 · write-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
+| grill-me | atom | blindspot 收尾链下一步 · advanced-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
 | skill-forge | meta | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
 | report | atom | 收尾汇报前必载(CLAUDE.md 指路)· "汇报/report" | ②③ |
 | audit-context | sop | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
