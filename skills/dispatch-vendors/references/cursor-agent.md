@@ -11,7 +11,9 @@ dispatches land here on **`cursor-grok-4.5-high`** as the main model, with
 `composer-2.5` as its subagent model (Cursor delegates subagents internally —
 hands-off, don't configure it). Trade-off: sub-1M ctx (composer ≈270k
 user-reported; vs k3's 1M) — acceptable, auto-compaction covers long runs.
-Scale performance under observation via the dispatch ledger.
+For **fast/light tasks**, `composer-2.5` as the main model is the first pick
+(vision-capable — its edge over deepseek), with dscode as the backup vendor
+for that tier. Scale performance under observation via the dispatch ledger.
 
 ```bash
 cursor-agent --mode plan -p "<q>" --output-format stream-json --model cursor-grok-4.5-high --trust  # read-only recon

@@ -19,7 +19,9 @@ zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'    # fix round
   three. Slot maps (read from `~/.zshrc` 2026-07-22; full backend ids also
   accepted, e.g. `--model deepseek-v4-flash`):
   - **dscode**: opus/fable/sonnet → `deepseek-v4-pro[1m]`, haiku + subagent →
-    `deepseek-v4-flash[1m]`; effort=max.
+    `deepseek-v4-flash[1m]`; effort=max. **Backup for the fast-task tier**
+    (2026-07-22) — cursor composer-2.5 is that tier's first pick (vision;
+    deepseek is text-only).
   - **arkcode**: opus/fable → `glm-5.2[1m]`, sonnet/haiku/subagent →
     `deepseek-v4-flash[1m]` (Ark-hosted); effort=max.
   - **kicode**: every slot → `k3[1m]` (`ANTHROPIC_MODEL` also set, so bare

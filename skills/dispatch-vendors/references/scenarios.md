@@ -31,8 +31,9 @@ Low on foreign quota → cut from the bottom of the list, keep 3/10/11.
 default Q-vendor** (composer-2.5 runs its subagents — Cursor-internal,
 hands-off) — Ultra quota is huge and underused. kicode's quota is small:
 spend it only on diversity-core (#3/10/11) or true 1M-ctx loads; sub-1M ctx +
-auto-compaction covers normal long runs. Under observation — revisit as the
-ledger accumulates.
+auto-compaction covers normal long runs. Fast/light tasks: `composer-2.5`
+direct (vision-capable, its edge over deepseek), dscode as that tier's
+backup. Under observation — revisit as the ledger accumulates.
 
 **Modality check before picking a vendor**: any scenario whose inputs include
 images/screenshots (bug repro with UI screenshots, doc generation from
