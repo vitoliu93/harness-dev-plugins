@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.12.2"
+    "version": "2.12.3"
   },
   "plugins": [
     {

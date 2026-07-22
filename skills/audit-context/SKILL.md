@@ -78,6 +78,8 @@ leanness 不是免费动作，要被 defect 证成 —— 否则就是 churn。�
 
 **规则**：列假设 ≠ 走过场，每条要能指向证据（file:line / grep / ADR 编号）；✗ 太多就回 Step 2 重读码，别硬推进出表。
 
+**高危判定 —「两个文件重复/可合并」**：`diff` 说 identical **不能**证明它们是两份内容，它们可能本就是同一个文件（symlink / hardlink）。下这个结论前必须 `ls -la`（看 `->` 箭头）+ 比 inode（`ls -i`），证据要写进假设段。搞错的代价是**破坏性的**：对链接目标做 Write 会写穿，把唯一真源覆盖掉。
+
 ### 5. 出表（最终）
 假设全部 ✓ 后，把分类结果表格呈现。列：entry 位置 / 内容摘要 / 分类 / 理由 /（relocate 注明去向）。**硬规则：用户确认前不动手。**
 
@@ -97,6 +99,8 @@ leanness 不是免费动作，要被 defect 证成 —— 否则就是 churn。�
 - **AGENTS.md = 唯一事实源**（build/test/style/gotcha），被所有工具读。
 - **CLAUDE.md = 薄壳**：`See @AGENTS.md` + 仅 Claude 专属的少量补充。
 审计时发现 CLAUDE.md 与 AGENTS.md 各写一份重叠内容 → 标 merge/relocate，收敛到 AGENTS.md，CLAUDE.md 只留 import。
+
+**先验链接，再判重复**：`AGENTS.md -> CLAUDE.md` 的软链**已经是**这个模式最干净的实现——只有一份内容，无 drift 风险，**无事可做，直接判 keep**。`ls -la` 看到箭头就停手；照上面的建议去「收薄壳」会写穿链接、抹掉真源（真实事故，2026-07-22）。
 
 ## 规则
 - **不先出假设段 + 表就不动手**。用户可能不同意某项分类。
