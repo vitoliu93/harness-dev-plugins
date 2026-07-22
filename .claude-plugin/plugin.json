@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.10.3",
+  "version": "2.10.4",
   "description": "Vito's atom library for Claude Code — project-agnostic, agent-facing capability atoms. Workflow orchestration (the ship SOP) moved to the project plugin that owns the infra it binds to (kox-agent-plugins). 19 skills: report (给 CEO 的收尾汇报:四问框架,细节不进正文), advanced-plan (deterministic, acceptance-bearing plan as a tracked mini-project), grill-me (开工前决策盘问:CEO/CTO 分层,高风险决策逐个上呈、细节自决公示;消化自 Matt Pocock grilling), debrief (收盘 sedimentation), dispatch-vendors (整块独立任务派给 vendor CLI: dscode/arkcode/kicode/cursor-agent, 不占主线配额), blindspot (unknown-unknowns territory briefing), worktree (branch-as-identity conventions + exit safety), handoff (global ~/tmp 交接), exa-code (web/code search), create-readable-html (self-contained visual explainer, 受众=离代码远的读者; 原 html-doc), agent-reach (YouTube 字幕等平台触达封装), media-understanding (音视频 → Gemini 转写理解), docs-organize (文档—事实—代码锚点体检 + placement 约定), audit-context (常驻上下文审计精简), skill-atlas (skill 舰队体检), skill-forge (技能铸造:资格门 + trigger-first 评测纪律;消化自 yao-meta-skill,自带 vendored 评测工具链), cto-audit (CTO 慢循环退火审计:收敛还是漂移,产出 harness 补丁), ccobs (SQLite observability ledger over session transcripts), recall (开工前对 ccobs 观测账本做先例召回，≤5 条线索、召回即怀疑，不搬运原文). 4 subagents: general-skills-executor, second-opinion (mid-task strategic guidance / second opinion), code-search, investigator (排查场景:一次 spawn 跨 logs/DB/code/tickets/docs 关联根因,替代按源 fan-out). PreToolUse skill-guard redirects noisy inline skill usage to the right subagent.",
   "author": {
     "name": "vito",

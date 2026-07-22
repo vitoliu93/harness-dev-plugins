@@ -52,6 +52,13 @@ zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'     # fix round
   - The script takes images too, not just audio/video (PNG probe 2026-07-22).
   - Needs `GEMINI_API_KEY` — present under `zsh -ic` (zshenv).
 
+## The real claude — off-roster, DO NOT use for bulk
+
+不上名单,留档备查:shares the interactive Anthropic 5h quota (same stored
+credentials, no separate headless tier). Use only when the task genuinely
+needs Anthropic models AND the main session must stay free.
+`--max-budget-usd <n>` caps spend.
+
 ## Shared flags (all three)
 
 - Run: `-p/--print`, prompt as positional arg or stdin.
