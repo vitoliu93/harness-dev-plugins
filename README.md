@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code, packaged as a plugin. The repo root is
-the plugin root — 14 skills under `skills/`, 3 subagents under `agents/`, hooks
+the plugin root — skills under `skills/`, 4 subagents under `agents/`, hooks
 under `hooks/` are auto-discovered. Retired skills and their companion subagents
 are parked under `archive/` (out of auto-discovery, kept for reference).
 North star + roadmap: `docs/north-star.md`.
@@ -55,7 +55,7 @@ on plan acceptance clauses + the project's E2E stage.
 
 ## Subagents
 
-Three subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
+Four subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
 Each runs noisy work in an isolated context so search dumps, engine transcripts,
 and upload logs never enter the main session; only a distilled answer comes back.
 
@@ -64,14 +64,16 @@ and upload logs never enter the main session; only a distilled answer comes back
 | general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `create-readable-html`, `lark-*`), runs it end-to-end, returns only the distilled result. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
 | second-opinion | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
 | code-search | sonnet | Token-efficient codebase explorer — prefers auggie-mcp semantic search, `rg`/`fd` for exact matches; returns terse located results, not raw file dumps. |
+| investigator | sonnet (opus for hard incidents) | Debug-scenario agent — one spawn per incident; correlates clues across the project's evidence sources (logs / DB / code / tickets / docs, loaded lazily via the project's own skills) inside its own context, returns root cause + evidence chain + reproduction commands. Complements built-in Explore/Plan; replaces per-source fan-out whose clues would otherwise be joined in the expensive main context. |
 
 The other skills are deliberately *not* delegated: they either need the live
 session conversation (handoff), are interactive end-to-end (audit-context), or
 are methodologies the main agent itself must drive (advanced-plan).
 
-Note: Claude Code subagents cannot spawn nested subagents, so the executor reads
-content inline with strict distillation discipline instead of fanning out the
-per-item readers its skills describe for main-session use.
+Note: nested subagent spawning requires Claude Code ≥ 2.1.172. On older
+versions the executor reads content inline with strict distillation discipline
+instead of fanning out per-item readers; investigator likewise degrades to
+inline reading when nesting is unavailable.
 
 ## Hooks
 
@@ -117,7 +119,7 @@ load at session start — restart the session after editing.
   plugin.json        # plugin manifest (name: dev-kit)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
 skills/              # 14 skills, auto-discovered
-agents/              # 3 subagents, auto-discovered
+agents/              # 4 subagents, auto-discovered
 hooks/
   hooks.json         # hook registration
   scripts/           # skill-guard.sh, worktree-guard.sh, learn-capture.py, session-replay.py
