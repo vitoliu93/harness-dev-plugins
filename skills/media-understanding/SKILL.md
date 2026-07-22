@@ -38,14 +38,14 @@ to transcribe + digest, and prints the result. Dependency-free (stdlib `urllib`)
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--audio-only`   | Transcode to 16k mono mp3 first. **The cheap default for "what does it say".** ~8× fewer tokens than video, and it makes _any_ container (opus/webm/m4a) acceptable. |
 | `--question "Q"` | Focus the digest on the user's question.                                                                                                                             |
-| `--model M`      | Default `gemini-3.1-flash-lite`. Use `gemini-2.5-flash-lite` for ~2.5× cheaper, slightly weaker.                                                                     |
+| `--model M`      | Default `gemini-3.5-flash-lite`. Use `gemini-2.5-flash-lite` for ~3× cheaper, slightly weaker.                                                                       |
 | `--prompt P`     | Fully override the instruction sent to Gemini.                                                                                                                       |
 
 ## Choosing the mode
 
 - **Audio-only (default)** — speech is the content (talks, tutorials narrated
-  aloud, podcasts, interviews). Cheapest and robust. ~$0.007 for a 19-minute
-  video on `gemini-3.1-flash-lite`.
+  aloud, podcasts, interviews). Cheapest and robust. ~$0.009 for a 19-minute
+  video on `gemini-3.5-flash-lite`.
 - **Full video** (omit `--audio-only`, pass an actual video file like mp4/webm) —
   when the _screen_ carries meaning the narration doesn't: unspoken on-screen
   code, UI walkthroughs where the speaker says "click here", chart-heavy talks.

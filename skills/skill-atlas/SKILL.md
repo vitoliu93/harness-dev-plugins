@@ -13,7 +13,6 @@ Engine is vendored in skill-forge (upstream yao-meta-skill no longer tracked) �
 
 ```bash
 PLUGIN=~/codebase/projects/agent-plugins
-YAO=$PLUGIN/skills/skill-forge/scripts
 ```
 
 Run the four checks, then report. A description edit without re-running its
@@ -22,7 +21,7 @@ eval is a lint failure — say so when you see one.
 ## 1. Route overlap (all skills, no fixtures needed)
 
 ```bash
-python3 $YAO/build_skill_atlas.py --workspace-root $PLUGIN/skills \
+python3 $PLUGIN/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $PLUGIN/skills \
   --output-dir /tmp/atlas
 ```
 
@@ -46,7 +45,7 @@ refresh or retirement (archive/, never delete) via debrief Move 3.
 ```bash
 for d in $PLUGIN/skills/*/evals; do
   s=$(basename $(dirname $d))
-  python3 $YAO/trigger_eval.py --description-file $PLUGIN/skills/$s/SKILL.md \
+  python3 $PLUGIN/skills/skill-forge/scripts/trigger_eval.py --description-file $PLUGIN/skills/$s/SKILL.md \
     --cases $d/trigger_cases.json --semantic-config $d/semantic_config.json
 done
 ```
@@ -62,7 +61,7 @@ coverage is computed against description-anchored concepts).
 ## 4. Context budget
 
 ```bash
-python3 $YAO/context_sizer.py $PLUGIN/skills/<name> --json
+python3 $PLUGIN/skills/skill-forge/scripts/context_sizer.py $PLUGIN/skills/<name> --json
 ```
 
 SKILL.md body over ~700 tokens → move detail into `references/` (progressive

@@ -30,12 +30,12 @@ download low-res video and omit --audio-only.
 Gemini bills media by duration. Audio ≈ 32 tokens/sec; video ≈ 258 tokens/sec
 (1 fps sampling) and **video-with-audio bills both**.
 
-| Input | Tokens (20 min) | `gemini-3.1-flash-lite` in-cost ($0.25/Mtok) |
+| Input | Tokens (20 min) | `gemini-3.5-flash-lite` in-cost ($0.30/Mtok) |
 |---|---|---|
-| audio-only | ~38k | ~$0.01 |
-| full video | ~310k + audio | ~$0.09 |
+| audio-only | ~38k | ~$0.011 |
+| full video | ~310k + audio | ~$0.11 |
 
-`gemini-2.5-flash-lite` is ~2.5× cheaper on input ($0.10/Mtok). Output is small
+`gemini-2.5-flash-lite` is ~3× cheaper on input ($0.10/Mtok). Output is small
 (a digest), so input dominates. Verified: a 19-min talk via `--audio-only` cost
 ~29.6k tokens. **Default to `--audio-only`**; reach for video only when the
 screen carries meaning the speech doesn't.

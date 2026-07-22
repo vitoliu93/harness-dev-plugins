@@ -10,12 +10,12 @@ Designed to be run by a content-understanding subagent so the media and raw
 transcript never touch the main window — only the returned digest does.
 
 Usage:
-    gemini_media.py <file> [--audio-only] [--question "..."] [--model gemini-3.1-flash-lite]
+    gemini_media.py <file> [--audio-only] [--question "..."] [--model gemini-3.5-flash-lite]
 
     --audio-only   transcode to 16k mono mp3 first (cheap path, ~8x fewer tokens
                    than video, and makes any container — m4a/opus/webm — accepted)
     --question Q   focus the digest on the user's question (optional)
-    --model M      Gemini model id (default gemini-3.1-flash-lite; the cheaper
+    --model M      Gemini model id (default gemini-3.5-flash-lite; the cheaper
                    gemini-2.5-flash-lite also works)
     --prompt P     fully override the instruction sent to Gemini
 """
@@ -66,7 +66,7 @@ def main():
     ap.add_argument("file")
     ap.add_argument("--audio-only", action="store_true")
     ap.add_argument("--question", default=None)
-    ap.add_argument("--model", default="gemini-3.1-flash-lite")
+    ap.add_argument("--model", default="gemini-3.5-flash-lite")
     ap.add_argument("--prompt", default=None)
     args = ap.parse_args()
 
