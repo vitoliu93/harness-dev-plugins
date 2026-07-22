@@ -1,6 +1,6 @@
 -- ccobs schema — derived, rebuildable index over agent observability JSONL/SQLite.
 -- Facts + pointers only: no message bodies, no secrets. Drop the DB and re-ingest at will.
--- Five sources: claude-code, codex, droid, grok, opencode.
+-- Seven sources: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
 
 PRAGMA journal_mode = WAL;
 
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   started_at    TEXT,                    -- ISO8601, min event ts
   ended_at      TEXT,                    -- ISO8601, max event ts
   file_path     TEXT NOT NULL,           -- pointer back to raw source
-  source        TEXT NOT NULL DEFAULT 'claude-code'   -- one of claude-code|codex|droid|grok|opencode
+  source        TEXT NOT NULL DEFAULT 'claude-code'   -- one of claude-code|codex|droid|grok|opencode|cursor-ide|cursor-agent
 );
 
 -- one row per assistant message (deduped by message_id; streaming emits

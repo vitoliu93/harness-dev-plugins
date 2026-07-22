@@ -1,7 +1,7 @@
 ---
 name: ccobs
 description: >-
-  agent 工具可观测账本:五源 session 灌入 SQLite,出用量/技能使用率/token
+  agent 工具可观测账本:七源 session 灌入 SQLite,出用量/技能使用率/token
   经济等观测视图。Use when "观测报告/usage report/ccobs",
   或 skill-atlas/debrief 要会话统计。
 ---
@@ -30,7 +30,7 @@ SELECT * FROM v_tool_overview;
 WHERE t.model LIKE 'deepseek%'
 ```
 
-## 五个采集源
+## 七个采集源
 
 | source | 原始位置 | 增量机制 | tokens | skill/subagent |
 |---|---|---|---|---|
@@ -39,6 +39,8 @@ WHERE t.model LIKE 'deepseek%'
 | droid | `~/.factory/sessions/*/*.jsonl` + `.settings.json` | 字节偏移 | ❌ | ✅（Skill/Task 工具） |
 | grok | `~/.grok/sessions/<enc-cwd>/<uuid>/` | events 字节偏移 + summary 重读 | ❌ | subagent ✅（spawn_subagent） |
 | opencode | `~/.local/share/opencode/opencode.db` | time_updated 水位线（只读打开） | ✅ 每 message + cost | ✅（skill/task part） |
+| cursor-ide | `~/Library/.../Cursor/.../state.vscdb`（只读打开） | composerData.lastUpdatedAt 水位线 | ❌（字段在但≈全 0，非零才记） | ❌（无 skill 概念） |
+| cursor-agent | `~/.cursor/chats/*/*/store.db` + `meta.json` | meta.json updatedAtMs 水位线 | ❌ | ❌ |
 
 `project` 键全源统一为 CC 目录编码（`cwd.replaceAll('/','-')`），跨源
 `GROUP BY project` 直接可用；原始路径在 `cwd` 列。hook 是 claude-code 独占
@@ -48,7 +50,8 @@ WHERE t.model LIKE 'deepseek%'
 
 - DB / 队列 / 日志：`~/.claude/observability/`（`CCOBS_DIR` 可覆盖）
 - `scripts/schema.sql` — 表 + 7 个视图，views 即报告（视图用 DROP+CREATE，改定义后跑一次 ingest 即生效）
-- `scripts/ingest.ts` — 五 adapter 增量、幂等灌库（单文件注册表模式）
+- `scripts/ingest.ts` — 七 adapter 增量、幂等灌库（单文件注册表模式）；每次运行（手动或 launchd）
+  append 一行带时间戳的 summary 到 `~/.claude/observability/ingest.log`
 - `scripts/obs-enqueue.ts` — Stop hook：只 append 一行到 queue.jsonl，毫秒级
 - `scripts/install.sh` — macOS(arm) 启动器：自动装 bun + launchd 每小时（灌库→蒸馏，RunAtLoad 开机补跑）+ 首次灌库
 - `scripts/distill-prompt.md` / `scripts/distill.ts` — 语义蒸馏（仅 claude-code；provider 解析：
@@ -86,7 +89,7 @@ launchd 每小时兜底、Stop hook 每会话入队——但**很近的会话**�
 （DB、五源原始库），从任何目录跑都对：
 
 ```bash
-# 全量增量，最稳（五源都扫，只读新字节）
+# 全量增量，最稳（七源都扫，只读新字节）
 bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts
 # 只消费 Stop hook 队列（最便宜的准实时路径）
 bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
@@ -117,6 +120,13 @@ bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
 - grok 的 ts 精度是微秒（其他源毫秒），字符串比较仍正确。
 - 蒸馏效果验收：`--limit 10` 跑完后抽查 observations 表；不合格换 llm.json 模型或改
   prompt，`--session` 重蒸对比。
+- cursor-ide：turn/tool 的 ts 恒 NULL（bubble 只有 app 相对时钟，无 epoch 时戳）；token
+  字段虽在但≈全 0（0 视为缺失记 NULL）；turn 级 model 大多 NULL（modelInfo 多挂在 user
+  bubble 上）；约六成 composer 无 workspace 归属 → project='unknown'；`agentKv:blob:*`
+  （新版 Agent 的 1.4 GB 二进制块）未解析，落在其中的会话统计缺失。
+- cursor-agent：model 是会话级快照（meta 的 lastUsedModel）；消息顺序在 protobuf 链里，
+  刻意不解析（聚合统计不依赖顺序），只捞 JSON blob；少数 store.db SQLITE_CANTOPEN，
+  跳过、下轮重试；cwd 从首条 user 消息的 `Workspace Path:` 提取，提不到 → 'unknown'。
 
 ## 加新源三步（Claude Desktop / Codex app 大概率共用现有存储，先验证格式再动手）
 
@@ -125,18 +135,19 @@ bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
 2. 缺失字段诚实置 NULL，不猜不估；hook_runs 不写。
 3. `project` 必须 `encodeProject(cwd)`；session 起止时间聚合事件 ts。
 
-## cursor 系不灌库，现场查询指引
+## cursor 系正文查询指引（账本外）
 
-cursor-agent 和 cursor-ide 数据保真度低（无 token、blob 需解码）且格式脏，刻意不做
-adapter。要查时直接去原始库：
+cursor 两源已入账本（2026-07 推翻早先「不灌库」决策：droid/grok 先例说明无 token 不构成
+排除理由，且 CLI 侧 toolName / workspace 归属勘察后可提取）。但账本只存 facts——要看
+**消息正文**时仍去原始库：
 
-- **cursor-agent**：`~/.cursor/chats/<workspace-md5>/<session-uuid>/store.db`，两张表——
-  `meta`（key/value，JSON 含 agentId / name / mode / createdAt / lastUsedModel）、
-  `blobs`（id/data，data 是 JSON bytes 的消息节点 role/content，从 meta 的
-  latestRootBlobId 下钻）。`sqlite3` 直读即可。
+- **cursor-agent**：`~/.cursor/chats/<workspace-md5>/<session-uuid>/store.db`，
+  `blobs` 表 JSON blob 是 OpenAI 式 role/content 消息，`sqlite3` 直读即可；顺序在
+  protobuf 链（从 meta 的 latestRootBlobId 下钻），账本刻意不解析。
 - **cursor-ide**：`~/Library/Application Support/Cursor/User/globalStorage/state.vscdb`
-  （2GB+），`cursorDiskKV` 表的 `composerData:*`（会话）与 `agentKv:blob:*`。只按 key
-  点查，别全表扫。
+  （2GB+），`cursorDiskKV` 表 `composerData:<cid>`（会话元信息）与
+  `bubbleId:<cid>:<bid>`（单条消息，text/thinking/toolFormerData）。只按 key
+  范围查，别全表扫。
 
 ## 接线（待办）
 

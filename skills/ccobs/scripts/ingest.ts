@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // ccobs ingest — incremental, idempotent sweep of agent observability data into obs.db.
-// Five adapters: claude-code, codex, droid, grok, opencode.
+// Seven adapters: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
 // Facts + pointers only; message bodies never enter the DB.
 // Safe to re-run any time; safe to delete the DB and rebuild.
 //
@@ -9,10 +9,10 @@
 //   bun ingest.ts --project X               # only project dirs whose name contains X
 //   bun ingest.ts --queue                   # only sessions listed in queue.jsonl (Stop-hook feed, claude-code only)
 //   bun ingest.ts --source codex            # single-source debug
-//   bun ingest.ts --source opencode         # single-source debug
+//   bun ingest.ts --source cursor-ide       # single-source debug
 
 import { Database } from "bun:sqlite"
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, renameSync, statSync } from "node:fs"
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, renameSync, statSync } from "node:fs"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, sep } from "node:path"
 
@@ -700,6 +700,166 @@ function ingestOpencode(stmts: Stmts): number {
   }
 }
 
+// ===================== adapter: cursor-ide =====================
+
+const CURSOR_IDE_DB = join(homedir(), "Library", "Application Support", "Cursor", "User", "globalStorage", "state.vscdb")
+
+const cursorIde: Adapter = {
+  name: "cursor-ide",
+  discover() {
+    return existsSync(CURSOR_IDE_DB) ? [CURSOR_IDE_DB] : []
+  },
+  ingest(stmts: Stmts) {
+    let total = 0
+    for (const _db of this._files) {
+      total += ingestCursorIde(stmts)
+    }
+    return total
+  },
+  _files: [] as string[],
+}
+
+function ingestCursorIde(stmts: Stmts): number {
+  const row = stmts.getState.get(CURSOR_IDE_DB) as { offset: number } | null
+  const watermark = row?.offset ?? 0 // epoch-ms watermark over composerData.lastUpdatedAt
+  let ide: Database
+  try { ide = new Database(CURSOR_IDE_DB, { readonly: true }) } catch { return 0 }
+
+  try {
+    let total = 0
+    let maxWatermark = watermark
+
+    // Key-range scans (not LIKE) so the cursorDiskKV PK index is used — the table is 2 GB+.
+    const comps = ide.prepare(
+      "SELECT key, value FROM cursorDiskKV WHERE key >= 'composerData:' AND key < 'composerData;' AND value IS NOT NULL",
+    ).all() as any[]
+    const bubbleQ = ide.prepare(
+      "SELECT key, value FROM cursorDiskKV WHERE key >= 'bubbleId:' || ? || ':' AND key < 'bubbleId:' || ? || ';' AND value IS NOT NULL",
+    )
+
+    for (const r of comps) {
+      let c: any
+      try { c = JSON.parse(r.value) } catch { continue }
+      const updated = c.lastUpdatedAt ?? 0
+      if (updated <= watermark) continue
+      const sid = c.composerId ?? r.key.slice("composerData:".length)
+      const cwd = c.workspaceIdentifier?.uri?.path ?? null
+
+      for (const br of bubbleQ.all(sid, sid) as any[]) {
+        let b: any
+        try { b = JSON.parse(br.value) } catch { continue }
+        if (b.type !== 2) continue // type 1 = user; turns are assistant-only
+        const bid = br.key.split(":")[2] ?? br.key
+        // tokenCount is present on every bubble but almost always all-zero — zero means "not recorded"
+        const tin = b.tokenCount?.inputTokens ?? 0
+        const tout = b.tokenCount?.outputTokens ?? 0
+        const hasTok = tin + tout > 0
+        // no epoch timestamp on bubbles (timingInfo is app-relative) — ts stays NULL
+        stmts.turn.run(bid, sid, null, b.modelInfo?.modelName ?? null,
+          hasTok ? tin : null, hasTok ? tout : null, null, null, null)
+        total++
+        const tf = b.toolFormerData
+        if (tf?.name) {
+          stmts.tool.run(bid, sid, null, tf.name, null, null, null, null)
+          if (tf.status === "error") stmts.toolErr.run(null, bid)
+          total++
+        }
+      }
+
+      const startedAt = c.createdAt ? new Date(c.createdAt).toISOString() : null
+      const endedAt = updated ? new Date(updated).toISOString() : null
+      stmts.session.run(sid, "main", null, null, encodeProject(cwd), cwd, null, null,
+        startedAt, endedAt, CURSOR_IDE_DB, "cursor-ide")
+      if (updated > maxWatermark) maxWatermark = updated
+    }
+
+    if (maxWatermark > watermark) {
+      stmts.putState.run(CURSOR_IDE_DB, maxWatermark)
+    }
+    return total
+  } finally {
+    ide.close()
+  }
+}
+
+// ===================== adapter: cursor-agent =====================
+
+const CURSOR_CHATS = join(homedir(), ".cursor", "chats")
+
+const cursorAgent: Adapter = {
+  name: "cursor-agent",
+  discover() { return scanGlob(CURSOR_CHATS, "*/*/store.db") },
+  ingest(stmts: Stmts) {
+    let total = 0
+    for (const path of this._files) {
+      total += ingestCursorAgentSession(path, stmts)
+    }
+    return total
+  },
+  _files: [] as string[],
+}
+
+function ingestCursorAgentSession(path: string, stmts: Stmts): number {
+  const dir = dirname(path)
+  const sid = basename(dir) // session uuid = directory name
+  let metaJson: any = {}
+  try { metaJson = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8")) } catch {}
+  const updated = metaJson.updatedAtMs ?? 0
+  const row = stmts.getState.get(path) as { offset: number } | null
+  if (updated && updated <= (row?.offset ?? 0)) return 0
+
+  let db: Database
+  // a fraction of store.dbs are unopenable (SQLITE_CANTOPEN) — skip, retry next sweep
+  try {
+    db = new Database(path, { readonly: true })
+  } catch { return 0 }
+
+  let n = 0
+  let model: string | null = null
+  let cwd: string | null = null
+  try {
+    // meta table: single row, value is (hex-encoded) JSON with lastUsedModel
+    try {
+      const m = db.prepare("SELECT value FROM meta LIMIT 1").get() as any
+      const s = typeof m?.value === "string" ? m.value : Buffer.from(m?.value ?? "").toString("utf8")
+      const decoded = s.startsWith("{") ? s : Buffer.from(s, "hex").toString("utf8")
+      model = JSON.parse(decoded).lastUsedModel ?? null
+    } catch {}
+
+    let blobs: any[]
+    try { blobs = db.prepare("SELECT id, data FROM blobs").all() as any[] } catch { return 0 }
+    for (const b of blobs) {
+      let o: any
+      // non-JSON blobs are the protobuf ordering chain — aggregates don't need order, skip
+      try { o = JSON.parse(Buffer.from(b.data).toString("utf8")) } catch { continue }
+      if (o.role === "assistant") {
+        // blob ids are content-addressed (sha256) — prefix with sid to avoid cross-session PK collisions
+        stmts.turn.run(`${sid}-${String(b.id).slice(0, 12)}`, sid, null, model, null, null, null, null, null)
+        n++
+      } else if (o.role === "user" && cwd === null && typeof o.content === "string") {
+        cwd = /Workspace Path: (.+)/.exec(o.content)?.[1]?.trim() ?? null
+      } else if (o.role === "tool" && Array.isArray(o.content)) {
+        for (const part of o.content) {
+          if (part?.type === "tool-result" && part.toolName) {
+            stmts.tool.run(`${sid}-${part.toolCallId ?? String(b.id).slice(0, 12)}`, sid, null,
+              part.toolName, null, null, null, null)
+            n++
+          }
+        }
+      }
+    }
+  } finally {
+    db.close()
+  }
+
+  const startedAt = metaJson.createdAtMs ? new Date(metaJson.createdAtMs).toISOString() : null
+  const endedAt = updated ? new Date(updated).toISOString() : null
+  stmts.session.run(sid, "main", null, null, encodeProject(cwd), cwd, null, null,
+    startedAt, endedAt, path, "cursor-agent")
+  if (updated) stmts.putState.run(path, updated)
+  return n
+}
+
 // ===================== adapter type + registry =====================
 
 type Adapter = {
@@ -709,7 +869,7 @@ type Adapter = {
   _files: string[]
 }
 
-const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode]
+const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode, cursorIde, cursorAgent]
 
 // ===================== main =====================
 
@@ -752,4 +912,7 @@ if (!sourceFilter || sourceFilter === "claude-code") {
     ) WHERE kind = 'subagent' AND subagent_type IS NULL AND parent_id IS NOT NULL`)
 }
 db.close()
-console.log(`ccobs: ${touched.length ? touched.join(", ") : "no new data"} → ${DB_PATH}`)
+const summary = `ccobs: ${touched.length ? touched.join(", ") : "no new data"} → ${DB_PATH}`
+console.log(summary)
+// every run (manual or launchd) leaves a timestamped line in the log file
+try { appendFileSync(join(OBS_DIR, "ingest.log"), `${new Date().toISOString()} ${summary}\n`) } catch {}
