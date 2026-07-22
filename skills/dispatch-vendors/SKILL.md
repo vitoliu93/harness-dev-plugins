@@ -64,8 +64,11 @@ interaction · verifying the result is much cheaper than re-deriving it.
 ## Protocol
 
 1. Brief is zero-context (every fact inline) + a machine-checkable acceptance
-   command written BEFORE dispatching. Parallel edits → vendor gets its own
-   worktree. Long/review-class briefs must also demand the deliverable file
+   command written BEFORE dispatching. The brief must state the acceptance
+   script is read-only for the vendor — threshold mismatch → report
+   NEEDS_CONTEXT, never edit the gate (a vendor once rewrote the threshold;
+   DONE self-reports are void once the gate is editable). Parallel edits →
+   vendor gets its own worktree. Long/review-class briefs must also demand the deliverable file
    created EARLY (skeleton first, fill incrementally) — a killed/timed-out
    vendor then still leaves partial value on disk (verified: a 560s kill
    with nothing written; cursor 20-min hang with the report unflushed).
