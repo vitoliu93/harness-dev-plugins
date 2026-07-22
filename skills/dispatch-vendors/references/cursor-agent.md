@@ -6,8 +6,8 @@ the expensive way. Unique asset: Cursor's **workspace index** (fast, accurate
 repo-wide localization without cold grep).
 
 ```bash
-cursor-agent --mode plan -p "<question>" --output-format json --model composer-2.5 --trust   # read-only recon
-cursor-agent -p "<brief>" --output-format json --model composer-2.5 --force
+cursor-agent --mode plan -p "<q>" --output-format stream-json --model composer-2.5 --trust  # read-only recon
+cursor-agent -p "<brief>" --output-format stream-json --model composer-2.5 --force
 cursor-agent -p --resume <chatId> "<consolidated fix list>" --force    # fix round (edits need --force too)
 ```
 
@@ -27,11 +27,21 @@ stdout, prompt text on stderr — verified live 2026-07-16).
   final report lands in the `createPlanToolCall` event's `args.plan` — the
   `result` field only carries progress narration (verified). Parse the
   tool_call, or skip plan mode when you want the answer in `result`.
-- Output: **default to `stream-json` or `text`, avoid `json`** — `json` only
+- Output: **`stream-json` is the default; never `json`** — `json` only
   flushes at process exit, and the process can finish the work yet never
-  exit (verified: 20-min hang with a complete conversation on disk; the
-  stream variant flushed 68 events fine on the same task class). Chat id in
-  the JSON output; `create-chat` pre-allocates an id headlessly.
+  exit (verified: 20-min hang with a complete conversation on disk). No
+  `--verbose` needed here (that's a claude-binary requirement);
+  `--stream-partial-output` adds text deltas — noise, skip it.
+  - **Line 1 IS the `system`/`init` event, carrying `session_id`** (=the
+    chat id for `--resume`) — verified live 2026-07-22, arrives within
+    ~15s. Capture at launch; it survives a kill, `json`'s does not.
+    (`create-chat` also pre-allocates an id headlessly.)
+  - Per-event flush on a redirected file verified same run: 0 → 8.5KB/10
+    lines → 33KB/40 → 56KB/63, continuous. Event mix is
+    `tool_call`-dominated (42 of 63) with `thinking`/`assistant` interleaved,
+    so `tail -3 | jq -c '.type'` reads as real progress.
+  - Final answer: `jq -r 'select(.type=="result").result'` — populated in
+    ask/edit modes. **Plan mode is the exception**, see below.
 - **Vision: YES** on composer-2.5 (image transcription verified live);
   grok/gpt-5.5 support it per Cursor docs (unprobed). The fleet's primary
   vision engine (kicode k3 the other verified cell).

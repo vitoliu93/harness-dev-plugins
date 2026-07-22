@@ -68,13 +68,19 @@ needs Anthropic models AND the main session must stay free.
 - Output: **default to `stream-json --verbose`** (`--verbose` is required
   alongside it under `-p`). Warnings go to stderr — redirect separately,
   never `2>&1`. Why it beats `json`:
-  - **Line 1 is the `init` event carrying `session_id` — capture it at
-    launch.** With `json` nothing is written until exit, so a killed or hung
-    run loses the id too, and `-r` fix rounds become impossible on exactly
-    the runs that need them.
-  - Per-event flush is real on a redirected regular file, not a TTY illusion
-    (measured live: 20KB→71KB across ~16s mid-run, well before exit). So
-    growing line count = a genuine liveness signal.
+  - **`session_id` lands in the first seconds — capture it at launch:**
+    `jq -r 'select(.session_id).session_id' out.jsonl | head -1`. Don't grab
+    line 1 blindly: the variants' hook stack fires first, so lines 1-4 are
+    `hook_started` and the `init` event is ~line 5 (verified). Every one of
+    them carries the same `session_id`, so the jq above works from the very
+    first flush. With `json` nothing is written until exit, so a killed or
+    hung run loses the id too, and `-r` fix rounds become impossible on
+    exactly the runs that need them.
+  - Per-event flush is real on a redirected regular file, not a TTY illusion,
+    **including through a foreign `ANTHROPIC_BASE_URL` backend** (dscode →
+    deepseek, verified live 2026-07-22: 33KB/51 lines at t+5s climbing to
+    120KB/165 lines at t+65s, continuous). Growing line count = a genuine
+    liveness signal.
   - Surfaces `hook_started`/`hook_response` — free observability into the
     hook stack, a noise suspect unique to these variants.
   - Final answer is byte-identical to `json`'s:
