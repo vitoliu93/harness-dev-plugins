@@ -65,4 +65,4 @@ zsh -ic 'arkcode -p "<brief>" --model opus --output-format json'   # opus slot �
   auth falls back to `ANTHROPIC_API_KEY` only and all context must be passed
   explicitly. Good for the real claude; pointless for dscode/arkcode (their
   value includes the loaded ecosystem).
-- No `--timeout` — wrap with shell `timeout` if needed.
+- No `--timeout` — and macOS has no `timeout(1)` either (verified 2026-07-22: exit 127, two dead runs); run bare with `run_in_background` + monitor, or `gtimeout` if coreutils installed.
