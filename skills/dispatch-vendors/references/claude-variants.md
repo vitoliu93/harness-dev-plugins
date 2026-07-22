@@ -6,10 +6,11 @@ semantics (tools/hooks/skills all load). dscode/arkcode verified 2026-07-16;
 kicode verified and slot maps re-read from `~/.zshrc` 2026-07-22.
 
 ```bash
-zsh -ic 'dscode  -p "<brief>" --model deepseek-v4-flash --output-format json'
-zsh -ic 'arkcode -p "<brief>" --model opus --output-format json'   # opus slot → glm-5.2[1m]
-zsh -ic 'kicode  -p "<brief>" --model opus --output-format json'   # every slot → k3[1m]
-zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'     # fix round
+F='--output-format stream-json --verbose'   # --verbose is mandatory with -p
+zsh -ic "dscode  -p '<brief>' --model deepseek-v4-flash $F"
+zsh -ic "arkcode -p '<brief>' --model opus $F"   # opus slot → glm-5.2[1m]
+zsh -ic "kicode  -p '<brief>' --model opus $F"   # every slot → k3[1m]
+zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'    # fix round
 ```
 
 - **Wrap in `zsh -ic '…'`** — they are `~/.zshrc` functions; a plain
@@ -64,12 +65,32 @@ needs Anthropic models AND the main session must stay free.
 - Run: `-p/--print`, prompt as positional arg or stdin.
 - Model: `--model <alias|full-id>`, `--fallback-model <list>`, `--effort
   low|medium|high|xhigh|max` (wrappers already pin effort via env).
-- Output: `--output-format text|json|stream-json`. With `json`, stdout is
-  clean JSON (session id in the init message AND the final `result` event),
-  warnings on stderr — redirect separately, never `2>&1`. `stream-json`
-  flushes per event AND surfaces `hook_started` events — free observability
-  into the hook stack (verified). Last-resort session-id recovery: newest
-  `.jsonl` in `~/.claude/projects/<cwd-slug>/`.
+- Output: **default to `stream-json --verbose`** (`--verbose` is required
+  alongside it under `-p`). Warnings go to stderr — redirect separately,
+  never `2>&1`. Why it beats `json`:
+  - **Line 1 is the `init` event carrying `session_id` — capture it at
+    launch.** With `json` nothing is written until exit, so a killed or hung
+    run loses the id too, and `-r` fix rounds become impossible on exactly
+    the runs that need them.
+  - Per-event flush is real on a redirected regular file, not a TTY illusion
+    (measured live: 20KB→71KB across ~16s mid-run, well before exit). So
+    growing line count = a genuine liveness signal.
+  - Surfaces `hook_started`/`hook_response` — free observability into the
+    hook stack, a noise suspect unique to these variants.
+  - Final answer is byte-identical to `json`'s:
+    `jq -r 'select(.type=="result").result' out.jsonl`.
+- **Heartbeat has two tiers — pick deliberately, and never poll on a timer.**
+  A background run costs zero while it runs (the harness notifies on exit);
+  every check you initiate costs a full turn at current context size.
+  - alive? → `wc -l out.jsonl` twice, compare. ~0 tokens.
+  - on track? → `tail -3 out.jsonl | jq -c '.type, .message.content[]?.name?'`.
+    A full turn plus a few k. Only when genuinely suspicious or asked.
+- **Never `cat`/`head`/Read the whole `.jsonl`.** The redirect keeps megabytes
+  out of context only if you don't pull them back in yourself.
+- Session-id recovery if line 1 was missed: force it instead —
+  `--session-id $(uuidgen)`. Do NOT use "newest `.jsonl` in
+  `~/.claude/projects/<cwd-slug>/`": the orchestrator's OWN transcript lives
+  in that same directory and is usually the newest file (verified).
 - Resume: `-r/--resume <session-id>` · `-c/--continue` (latest in cwd) ·
   `--fork-session` (new id on resume) · `--session-id <uuid>` (force id).
 - Tools: `--allowedTools/--disallowedTools "<list>"`, `--tools ""` disables all.

@@ -67,11 +67,13 @@ interaction · verifying the result is much cheaper than re-deriving it.
    incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
    `zsh -ic '…'` and pass `--model` explicitly; cursor-agent takes
    `source ~/.zshenv &&` for keys.
-   Use the vendor's JSON flag (claude-binary variants `--output-format json`;
-   cursor prefer `stream-json`/`text` — its `json` can hang unflushed).
-   stdout to scratchpad, stderr separate (never `2>&1` — merging
-   mangles the JSON). Capture the **session id** (variants: final `result`
-   event `session_id`; cursor: chatId).
+   Use `stream-json` (variants add `--verbose`; cursor's `json` can hang
+   unflushed). stdout to scratchpad, stderr separate (never `2>&1` — merging
+   mangles the JSON). Capture the **session id at launch** from line 1's
+   `init` event (cursor: chatId) — it survives a kill, a buffered `json`
+   run's does not. Inspect the file only via `wc -l` / `tail -N | jq -c`;
+   never `cat`/`head`/Read it whole, and never poll on a timer — the redirect
+   only keeps megabytes out of context if you don't pull them back in.
 3. Verify yourself — run the acceptance, read the artifact; never accept the
    vendor's self-report. Fix round = resume by session id with one
    consolidated list. Two resumes max, then take it back inline.
