@@ -24,6 +24,9 @@ zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'    # fix round
     `deepseek-v4-flash[1m]` (Ark-hosted); effort=max.
   - **kicode**: every slot → `k3[1m]` (`ANTHROPIC_MODEL` also set, so bare
     works too — pass `--model` anyway for uniformity); effort=high, 1M ctx.
+    **Quota small (2026-07-22)** — reserve for diversity-core
+    (red-team/second-opinion) or genuine 1M-ctx loads; bulk Q work goes to
+    cursor-agent (fleet primary).
 - **Permissions: the wrappers do NOT set `bypassPermissions`** (re-read
   2026-07-22 — the old sheet's claim was stale). Runs inherit user settings
   `defaultMode: auto`; the auto classifier executes on the vendor backend, so

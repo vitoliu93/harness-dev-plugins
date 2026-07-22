@@ -23,6 +23,12 @@ of the module being built here; that's subagent/Workflow territory.
 
 Vendor sheets: `references/claude-variants.md` (dscode/arkcode/kicode — one
 claude binary, three foreign-quota wrappers) · `references/cursor-agent.md`.
+**Default pick (2026-07-22 quota economics): cursor-agent +
+`cursor-grok-4.5-high`** (composer-2.5 serves as its subagent model —
+Cursor delegates internally, hands-off) — Ultra quota is huge and mostly
+unspent; kicode's Kimi quota is small, reserve it for diversity-core or true
+1M-ctx loads. Sub-1M ctx is covered by auto-compaction for long runs (keep
+observing at scale via the ledger).
 Scenario catalog
 with brief shapes and vendor picks: `references/scenarios.md`. Onboarding a
 NEW vendor (or re-probing one): the ten-rung ladder in
@@ -79,3 +85,21 @@ interaction · verifying the result is much cheaper than re-deriving it.
    consolidated list. Two resumes max, then take it back inline.
 4. Append `date | vendor | scenario | pass/fail(+fixups) | resumes:N` to
    `~/.claude/dispatch/ledger.md` (debrief reads it at 收盘).
+
+## Vendor limited mid-run (quota/rate-limit hits while the job is going)
+
+Diagnose before acting — a stall is not proof: process alive + session jsonl
+still advancing = still working, leave it alone. Confirmed limit = 429/quota
+errors in the jsonl tail, or the user says so from the vendor console (window
+sizes and reset times are console-side facts you cannot see — never guess
+them; wait-for-reset is only an option when the user explicitly offers it).
+
+Once limited, **hand over — it's cheap by construction**: the session id is
+stored (resumable later if quota returns) and partial work is already on disk
+(early-skeleton rule). Kill the run, harvest the worktree + partial report,
+then re-dispatch to a DIFFERENT vendor family or take it inline — takeover
+brief = original brief + `## Prior findings (from a limited run)` pasting the
+partial report verbatim and listing what's already excluded/verified, so the
+successor doesn't re-derive it. Takeover also dies → inline.
+
+Ledger the limited run as `fail(quota-limited)` so debrief sees the pattern.

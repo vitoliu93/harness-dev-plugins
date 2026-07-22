@@ -5,9 +5,17 @@ subscription — plan-mode reads are the cheap way to spend it, premium models
 the expensive way. Unique asset: Cursor's **workspace index** (fast, accurate
 repo-wide localization without cold grep).
 
+**Fleet primary vendor (2026-07-22 quota economics)** — Ultra quota is huge
+and mostly unspent (user console), while kicode's Kimi quota is small: default
+dispatches land here on **`cursor-grok-4.5-high`** as the main model, with
+`composer-2.5` as its subagent model (Cursor delegates subagents internally —
+hands-off, don't configure it). Trade-off: sub-1M ctx (composer ≈270k
+user-reported; vs k3's 1M) — acceptable, auto-compaction covers long runs.
+Scale performance under observation via the dispatch ledger.
+
 ```bash
-cursor-agent --mode plan -p "<q>" --output-format stream-json --model composer-2.5 --trust  # read-only recon
-cursor-agent -p "<brief>" --output-format stream-json --model composer-2.5 --force
+cursor-agent --mode plan -p "<q>" --output-format stream-json --model cursor-grok-4.5-high --trust  # read-only recon
+cursor-agent -p "<brief>" --output-format stream-json --model cursor-grok-4.5-high --force
 cursor-agent -p --resume <chatId> "<consolidated fix list>" --force    # fix round (edits need --force too)
 ```
 
@@ -17,12 +25,16 @@ stdout, prompt text on stderr — verified live 2026-07-16).
 
 - Modes: `--mode plan` (read-only: analyze/propose, no edits) · `--mode ask`
   (read-only Q&A) · omit `--mode` for edit-capable runs.
-- Model: daily default `composer-2.5` (treat as sonnet-tier); premium
-  escalation `cursor-grok-4.5-high(-fast)` (treat as opus-tier — verified:
-  adversarial review with computed evidence), `gpt-5.5-high`,
-  `claude-opus-4-8-thinking-high`; non-Anthropic diversity picks: grok/gpt
-  families. **Names rotate** — re-run `--list-models` (cheap, ~2s) before
-  escalating. Parameterized: `--model 'claude-opus-4-8[context=1m,effort=high]'`.
+- Model: primary `cursor-grok-4.5-high` (treat as opus-tier — verified:
+  adversarial review with computed evidence); `composer-2.5` is the subagent
+  model (sonnet-tier; Cursor delegates internally — hands-off). **Effort:
+  always high** — pick the `-high` variant whenever the roster exposes one
+  (grok's name encodes it; composer-2.5 lists no effort tiers). Other
+  escalations: GPT pick is `gpt-5.6-sol-high` (1M; **not gpt-5.5**),
+  `claude-opus-4-8-thinking-high`; non-Anthropic
+  diversity picks: grok/gpt families. **Names rotate** — re-run
+  `--list-models` (cheap, ~2s; names re-verified 2026-07-22). Parameterized:
+  `--model 'claude-opus-4-8[context=1m,effort=high]'`.
 - **Plan-mode deliverable location**: with `--mode plan` + stream-json, the
   final report lands in the `createPlanToolCall` event's `args.plan` — the
   `result` field only carries progress narration (verified). Parse the

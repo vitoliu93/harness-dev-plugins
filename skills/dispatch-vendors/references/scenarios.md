@@ -10,7 +10,7 @@ separate scenario.
 |---|----------|-------------|-------------|------|
 | 1 | Repo recon / onboarding map | "map how X flows through this repo → module + call-path digest" | `cursor-agent --mode plan` | I,Q |
 | 2 | Bug-report reproduction | paste report; "set up env, minimal failing repro + root-cause note" | cursor-agent (locates suspects) or dscode | Q,I |
-| 3 | Independent diff/branch review | "review branch B for correctness/security, ranked findings file:line" | `cursor-agent --mode plan` + gpt-5.5/grok | **D**,I |
+| 3 | Independent diff/branch review | "review branch B for correctness/security, ranked findings file:line" | `cursor-agent --mode plan` + gpt-5.6-sol/grok | **D**,I |
 | 4 | Test-suite authoring (module frozen) | "write + run suite for M, target paths P, leave green" | dscode / kicode | Q |
 | 5 | Research / investigation | "answer Q with cited sources + recommendation" | cursor-agent or kicode (k3 1M ctx) | Q |
 | 6 | Dependency upgrade / migration pilot | "bump vX→vY, fix build+tests, stop at green; resumable" | dscode / arkcode | Q |
@@ -26,6 +26,13 @@ justify themselves (dscode/arkcode don't count as diverse for #3/10/11 when
 the author model is also Claude-shaped output; prefer kicode (k3 family) /
 glm (arkcode) / grok / gpt).
 Low on foreign quota → cut from the bottom of the list, keep 3/10/11.
+
+**Quota economics (2026-07-22): cursor-agent `cursor-grok-4.5-high` is the
+default Q-vendor** (composer-2.5 runs its subagents — Cursor-internal,
+hands-off) — Ultra quota is huge and underused. kicode's quota is small:
+spend it only on diversity-core (#3/10/11) or true 1M-ctx loads; sub-1M ctx +
+auto-compaction covers normal long runs. Under observation — revisit as the
+ledger accumulates.
 
 **Modality check before picking a vendor**: any scenario whose inputs include
 images/screenshots (bug repro with UI screenshots, doc generation from
