@@ -15,7 +15,7 @@
       "family": "explicit_en"
     },
     {
-      "text": "顺便让 opencode 跑一版 E2E,不急",
+      "text": "顺便让 kicode 跑一版 E2E,不急",
       "family": "independence"
     },
     {
@@ -31,11 +31,11 @@
       "family": "diversity"
     },
     {
-      "text": "让 claude -p 挂后台把依赖从 v2 迁到 v3,跑到测试全绿",
+      "text": "让 dscode 挂后台把依赖从 v2 迁到 v3,跑到测试全绿",
       "family": "vendor_named"
     },
     {
-      "text": "opencode 那边独立写一套测试,回头给我结果",
+      "text": "arkcode 那边独立写一套测试,回头给我结果",
       "family": "vendor_named"
     },
     {

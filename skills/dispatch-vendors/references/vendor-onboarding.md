@@ -78,20 +78,23 @@ doubao-seed-2.0-pro 全能含视觉。结论按 CLI×model 记,failover 链也�
 全部爬完才做:vendor sheet(references/<cli>.md,含每条实证坑)+
 scenarios.md 路由行 + ledger 记账习惯 + 观察期(一个月真实使用回看)。
 
-## 当前舰队模态/能力矩阵(2026-07-16 实测;kimi 行 2026-07-20 全梯子实测)
+## 当前舰队模态/能力矩阵(2026-07-16 实测;kicode 行与图像兜底 2026-07-22 实测)
 
 | CLI × model | 工具写链路 | 视觉 | 输出纪律 | 判定 |
 |---|---|---|---|---|
-| kimi × k3(默认,1M ctx) | ✅ 测试套件 5/5 亲验零污染 + 7 文件红队 review 成交 | ✅ 完美(转录准,还纠正图里说谎的标注) | 无上限@1842 词;**stdout 写文件=退出才 flush**;截断判据=缺 resume_hint meta 行 | 主力候选:主线是 Claude 时 D+Q 双赢;**无头默认全自动,必须进 worktree** |
-| kimi × kimi-for-coding(K2.7) | ✅ 探针级 5s | 声明 image_in,未实测 | 同 k3 | k3 备胎/快速任务 |
-| dscode × deepseek-v4-flash | ✅ 49 测试真仓验证 | ❌ 优雅降级 | json 退出 flush,stream 可用 | 主力打字员+测试作者 |
-| arkcode × glm-5.2[1m] | ✅(探针级) | ❌ **致命 400** | 同上 | dscode 限流备胎,禁图像 |
-| opencode × kimi-k2.7-code | ❌ 0-token 空转(×3) | 未测 | — | **禁用,勿再派** |
-| opencode × glm-5.2 | ✅ | 未测 | ~4096 上限,写文件规避 | 可用,产出必须写文件 |
-| opencode × doubao-seed-2.0-pro | ✅ | ✅ 完美 | 未探上限 | 视觉任务次选 |
+| kicode × k3[1m](唯一模型,1M ctx) | ✅ 文本回环+图像读取实测 | ✅ 精确(文字/形状/颜色全对) | claude binary 纪律(json 退出 flush,stream 逐事件落盘) | k3 家族入口:主线是 Claude 时 D+Q 双赢;权限走 settings auto(classifier 跑在 k3 上,后端抖动会卡权限) |
+| dscode × deepseek-v4-flash | ✅ 49 测试真仓验证 | ❌ 优雅降级 → 走图像兜底(e2e 实证) | json 退出 flush,stream 可用 | 主力打字员+测试作者 |
+| arkcode × glm-5.2[1m] | ✅(探针级) | ❌ **致命 400** → 图像任务必须走兜底 | 同上 | dscode 限流备胎,禁图像直投 |
 | cursor × composer-2.5 | ✅(勘察+写) | ✅ 完美 | json 会挂死,**用 stream-json/text** | 勘察主力+视觉主力(≈sonnet 档) |
 | cursor × grok-4.5-high | ✅ 对抗审计 6 发现全带算证 | ✅ 完美 | 同 cursor;plan 模式交付物在 `createPlanToolCall` 事件里,不在 result 字段 | 硬任务/红队升级位(≈opus 档) |
 | cursor × gpt-5.5 | 未测(premium) | 官方支持,未实测 | 同 cursor | grok 的同档替补 |
+
+**图像兜底(media-understanding)**:text-only 单元(dscode/arkcode)派图像/音
+视频任务时,简报让 vendor 先跑 media-understanding 脚本(Gemini → 文本)再对
+文本推理——脚本确切路径写进简报
+(`~/.agents/skills/media-understanding/scripts/gemini_media.py`),只写"用
+media-understanding skill"vendor 要自己 find 半天(2026-07-22 实证:给路径后
+dscode 一次跑通,转录精确)。
 
 **cursor 档位心法**:composer-2.5 当 sonnet 用(日常勘察/写),
 grok-4.5-high 当 opus 用(对抗审计/硬推理)——实测 grok 审 deepseek 写的

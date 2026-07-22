@@ -34,6 +34,10 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/media-understanding/scripts/gemini_media.py
 It uploads the file via the Gemini File API, waits for processing, asks the model
 to transcribe + digest, and prints the result. Dependency-free (stdlib `urllib`).
 
+Images work too (PNG/JPG, verified 2026-07-22) — this is also the vision
+fallback for text-only vendor CLIs (dscode/arkcode): dispatch-vendors
+briefs route image tasks through this script.
+
 | Option           | Effect                                                                                                                                                               |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--audio-only`   | Transcode to 16k mono mp3 first. **The cheap default for "what does it say".** ~8× fewer tokens than video, and it makes _any_ container (opus/webm/m4a) acceptable. |

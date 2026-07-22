@@ -4,10 +4,10 @@ description: >-
   Dispatch a whole self-contained task — repo recon/影响面勘察, bug repro,
   红队/独立 review, test authoring, E2E, docs, research, dependency migration
   — to a
-  standalone vendor agent CLI (claude -p / opencode / cursor-agent / kimi -p)
+  standalone vendor agent CLI (dscode / arkcode / kicode / cursor-agent)
   running
   unattended on its own quota, resumable by session id. Trigger when the user
-  names a vendor ("让 cursor 跑/opencode 试试"), signals independence
+  names a vendor ("让 cursor 跑/kicode 试试"), signals independence
   ("后台跑/顺便/不急/别占主线"), or you spot a parallelizable side-quest or a
   non-Anthropic model-diversity win (别的模型家族挑毛病/找盲点). NOT for the module
   the main session is actively building.
@@ -21,15 +21,16 @@ autonomy, session-resumable, and above all **someone else's quota**. The unit
 of dispatch is a WHOLE independent task with a clean boundary — never a slice
 of the module being built here; that's subagent/Workflow territory.
 
-Vendor sheets: `references/claude-cli.md` (incl. dscode/arkcode variants) ·
-`references/opencode.md` · `references/cursor-agent.md` · `references/kimi.md`.
+Vendor sheets: `references/claude-variants.md` (dscode/arkcode/kicode — one
+claude binary, three foreign-quota wrappers) · `references/cursor-agent.md`.
 Scenario catalog
 with brief shapes and vendor picks: `references/scenarios.md`. Onboarding a
 NEW vendor (or re-probing one): the ten-rung ladder in
 `references/vendor-onboarding.md` — also holds the live CLI×model capability
 matrix (vision, output caps, banned endpoints); **image-bearing tasks route
-only to vision-capable cells** (cursor composer/grok, kimi k3, opencode
-doubao — deepseek/glm are text-only).
+to vision-capable cells (cursor composer/grok, kicode k3 — deepseek/glm are
+text-only), or to a text-only cell with the media-understanding fallback
+written into the brief** (variants sheet has the exact pattern).
 
 ## Gate — dispatch only if at least ONE pays
 
@@ -60,18 +61,17 @@ interaction · verifying the result is much cheaper than re-deriving it.
    command written BEFORE dispatching. Parallel edits → vendor gets its own
    worktree. Long/review-class briefs must also demand the deliverable file
    created EARLY (skeleton first, fill incrementally) — a killed/timed-out
-   vendor then still leaves partial value on disk (verified: kimi 560s kill
+   vendor then still leaves partial value on disk (verified: a 560s kill
    with nothing written; cursor 20-min hang with the report unflushed).
 2. Launch with Bash `run_in_background: true`, using the vendor sheet's exact
-   incantation — dscode/arkcode are `~/.zshrc` functions, wrap in
-   `zsh -ic '…'`; opencode/cursor-agent take `source ~/.zshenv &&` for keys;
-   kimi is a bare binary, no wrapper/env prefix (and headless kimi
-   auto-approves all tools — worktree mandatory).
-   Use the vendor's JSON flag (`--output-format json`; opencode `--format
-   json`; kimi has NO plain json — `--output-format stream-json`).
+   incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
+   `zsh -ic '…'` and pass `--model` explicitly; cursor-agent takes
+   `source ~/.zshenv &&` for keys.
+   Use the vendor's JSON flag (claude-binary variants `--output-format json`;
+   cursor prefer `stream-json`/`text` — its `json` can hang unflushed).
    stdout to scratchpad, stderr separate (never `2>&1` — merging
-   mangles the JSON). Capture the **session id** (kimi: final meta event
-   `session.resume_hint` → `.session_id`).
+   mangles the JSON). Capture the **session id** (variants: final `result`
+   event `session_id`; cursor: chatId).
 3. Verify yourself — run the acceptance, read the artifact; never accept the
    vendor's self-report. Fix round = resume by session id with one
    consolidated list. Two resumes max, then take it back inline.

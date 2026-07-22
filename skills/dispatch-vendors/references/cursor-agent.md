@@ -34,7 +34,7 @@ stdout, prompt text on stderr — verified live 2026-07-16).
   the JSON output; `create-chat` pre-allocates an id headlessly.
 - **Vision: YES** on composer-2.5 (image transcription verified live);
   grok/gpt-5.5 support it per Cursor docs (unprobed). The fleet's primary
-  vision engine alongside opencode doubao.
+  vision engine (kicode k3 the other verified cell).
 - **Avoid `-w` headless** — it created the worktree then hung before the
   conversation started (no chat dir ever appeared; verified). Make your own
   `git worktree` and run with cwd inside it instead.
