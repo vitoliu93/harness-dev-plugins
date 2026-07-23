@@ -201,23 +201,30 @@ ledger:    零模型自动记账（双货币）→ 画像/熔断/governor 回流
 
 ## 6. 待实验回答（试点收数据）
 
+0. **【TODO】30 天 session 回测交叉验证**（vito 2026-07-23 补）：用 ccobs 账本（已含
+   claude-code/codex/cursor-agent/cursor-ide/droid/grok/opencode 七源，30 天约 900+ 主会话）
+   回测真实编码任务分布——任务类型 × 体量 × 结局 × 纠偏次数（`v_session_quality`）、
+   host token 基线（`v_token_economy`）、委派现状（`v_agent_spawns`/vendor 各源用量）——
+   交叉验证本方案的三个关键假设：可委派任务占比、盈亏平衡下限、§4.8 的"估算自做成本"
+   基线锚。结论回写本文档修订。**这是试点启动的前置项，先于 §7.3。**
 1. probe 错位阈值（30% 错位 = 上下文不足还是更优下手点？）
 2. spec 对抗审查增量发现率（20 份历史 spec 盲测，低则只留高风险任务）
 3. mutation score 各 task_type 合理阈值
 4. 共享测试库能否廉价命名空间化（决定 E2E 任务并行度上限）
-5. "估算自做成本"基线锚（纯 host 基线期 vs ccobs 回测）
+5. "估算自做成本"基线锚（纯 host 基线期 vs ccobs 回测——先做第 0 项，本项可能直接被吸收）
 6. 集成验收批量窗口 N
-7. spec:diff 比率阈值 0.3 的校准
+7. spec:diff 比率阈值 0.3 的校准（第 0 项回测可直接给初值）
 
 ## 7. 落地路线
 
 1. **先行件（零模型基建）**：pre-red gate 脚本、run_receipt schema、报告 validator、
    writes 求交校验、job_ledger 表（ccobs 扩展）
-2. **spec 模板定稿**（S/L 两档）+ 每仓 context pack 蒸馏 + 最小 house style（~20 条硬规则，
+2. **30 天 session 回测**（§6 第 0 项）：验证假设、定基线锚，结论回写修订本文档
+3. **spec 模板定稿**（S/L 两档）+ 每仓 context pack 蒸馏 + 最小 house style（~20 条硬规则，
    异族 review 锚点）
-3. **试点**：30 张真实 issue、3-4 周、按 bugfix/feature/refactor 分层、半随机对照
+4. **试点**：30 张真实 issue、3-4 周、按 bugfix/feature/refactor 分层、半随机对照
    （host-direct vs 委派两臂）、governor 上线
-4. **毕业标准**：配对省率 CI 下限 >50% + 逃逸归因分布稳定 + 无熔断触发。
+5. **毕业标准**：配对省率 CI 下限 >50% + 逃逸归因分布稳定 + 无熔断触发。
    试点学费 = 一半单走对照臂的吞吐损失（已获 vito 认可方向，待正式启动确认）。
 
 ## 8. 与现有资产的关系
