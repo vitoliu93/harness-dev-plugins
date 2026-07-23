@@ -1,6 +1,7 @@
 ---
 name: audit-context
-description: Audit and prune the always-loaded context — CLAUDE.md, @-imports, auto-memory. 仅用户点名时触发("audit CLAUDE/prune memory/清理记忆");agent 不得主动发起(包括 periodic sweep——等用户叫)。
+description: Audit and prune the always-loaded context — CLAUDE.md, @-imports, auto-memory. Use when "audit CLAUDE/prune memory/清理记忆" or periodic sweeps.
+disable-model-invocation: true
 ---
 
 # Audit Context
