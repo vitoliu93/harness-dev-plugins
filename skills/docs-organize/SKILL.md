@@ -1,6 +1,6 @@
 ---
 name: docs-organize
-description: 开发文档体检:按「文档—事实—代码」锚点修/删/合并,收敛进 docs/ 并维护索引。Use when "整理文档/docs organize" 或周期性文档维护。
+description: 开发文档体检:按「文档—事实—代码」锚点修/删/合并,收敛进 docs/ 并维护索引。仅用户点名时触发("整理文档/docs organize");agent 不得主动发起(包括"周期性维护"——等用户叫)。
 argument-hint: "[audit | adopt]"
 ---
 
