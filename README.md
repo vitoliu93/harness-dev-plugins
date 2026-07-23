@@ -118,13 +118,12 @@ load at session start — restart the session after editing.
 .claude-plugin/
   plugin.json        # plugin manifest (name: dev-kit)
   marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 14 skills, auto-discovered
+skills/              # 20 skills, auto-discovered
 agents/              # 4 subagents, auto-discovered
 hooks/
   hooks.json         # hook registration
   scripts/           # skill-guard.sh, worktree-guard.sh, learn-capture.py, session-replay.py
 archive/             # retired skills/ + agents/ (incl. ship, ship-tester, ship-analyst, cto-audit), not auto-discovered
-sync-agent-skills.ts # symlinks skills/* into ~/.agents/skills for other agent CLIs; prunes stale links (bun run sync-agent-skills)
 ```
 
 ## Note on portability

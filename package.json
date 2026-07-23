@@ -1,7 +1,0 @@
-{
-  "name": "@vito/agents",
-  "version": "1.0.0",
-  "scripts": {
-    "sync-agent-skills": "bun sync-agent-skills.ts"
-  }
-}
