@@ -66,7 +66,8 @@ verification-strong / weak 两队列**分开记成功率**——weak（只能判
   bugfix 40k · refactor 35k · ops 11k · config 8k——"估算自做成本"直接查表。
 - **一次过率**（done 且零纠偏）：ops 84% > refactor 79% > bugfix 72% >
   config 69% > **feature 56%**（高危，强制 L 档）。
-- 可委派池 ≈ 编码会话的 40-50%（编码类占全部会话 55%）；盈亏线下
-  （<10k out tokens）占编码会话 35%，直接拒。
+- 可委派池 ≈ 编码会话的 40-50%（编码类占全部会话 55%）；<10k out tokens
+  占编码会话 35%——此线是**事后审计线**（委派单实际产出频繁落线下 →
+  收紧资格门三信号），不是派发前预测闸门（token 预测极不准，不做）。
 - 北极星起点：廉价算力 output token 占比 **6.2%**（vendor 侧无 token
   计量，真实略高——账本待补项）。
