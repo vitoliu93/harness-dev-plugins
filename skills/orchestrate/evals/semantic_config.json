@@ -1,0 +1,132 @@
+{
+  "positive_concepts": {
+    "delegate": {
+      "weight": 0.45,
+      "phrases": [
+        "委派",
+        "delegate",
+        "派出去",
+        "派活",
+        "委派出去",
+        "把活派",
+        "delegation"
+      ]
+    },
+    "routing": {
+      "weight": 0.62,
+      "phrases": [
+        "分给 vendor",
+        "vendor 和 subagent",
+        "适合委派",
+        "哪些任务可以委派",
+        "拆分",
+        "收回",
+        "host 自己做",
+        "路由"
+      ]
+    },
+    "spec_acceptance": {
+      "weight": 0.4,
+      "phrases": [
+        "spec",
+        "spec pack",
+        "验收命令",
+        "验收门",
+        "acceptance gates",
+        "acceptance",
+        "机器可判"
+      ]
+    },
+    "parallel_orchestration": {
+      "weight": 0.6,
+      "phrases": [
+        "编排",
+        "orchestrate",
+        "fan out",
+        "并行开发",
+        "并行改代码",
+        "worker",
+        "撞车",
+        "cheap workers"
+      ]
+    },
+    "delegation_lifecycle": {
+      "weight": 0.4,
+      "phrases": [
+        "委派失败",
+        "哪级恢复",
+        "升档",
+        "省 token",
+        "窗口快烧穿",
+        "确定性的编码活",
+        "防绿着错"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么意思",
+        "是什么"
+      ]
+    },
+    "inline_work": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "你自己来",
+        "自己改",
+        "就行"
+      ]
+    },
+    "active_build": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "正在开发",
+        "一起重构",
+        "边聊边改",
+        "别外包"
+      ]
+    },
+    "dispatch_transport": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "让 cursor",
+        "让 kicode",
+        "让 dscode",
+        "让 arkcode",
+        "后台跑",
+        "顺便",
+        "不急",
+        "回头给我结果",
+        "非 Claude",
+        "找盲点",
+        "独立 review"
+      ]
+    },
+    "sibling_skills": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "开发计划",
+        "立个项",
+        "subagent 去搜",
+        "搜一下代码库",
+        "grill me",
+        "盘问"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "delegate",
+    "routing",
+    "spec_acceptance",
+    "parallel_orchestration",
+    "delegation_lifecycle"
+  ]
+}

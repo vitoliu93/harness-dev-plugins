@@ -72,7 +72,7 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 - 从候选毕业的,回写 SKILL-CANDIDATES 该行 3 行 eval-delta:
   before-description → after-description → 修掉了什么路由混淆。
 - 跑 `plugin-dev:skill-reviewer` 独立评审(自验抓不出语义缺陷)。
-- bump plugin.json + marketplace.json,`bun sync-agent-skills.ts`。
+- bump plugin.json + marketplace.json(skills/ 只经 plugin 分发,sync 脚本已废)。
 - 恰好列 **3 个**下一迭代方向,防 scope 蔓延,也防"首版即终版"。
 
 ## Vendored 工具链

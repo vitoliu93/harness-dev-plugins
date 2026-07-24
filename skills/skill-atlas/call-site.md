@@ -26,7 +26,8 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
 | agent-reach | atom | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
 | media-understanding | atom | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
-| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · advanced-plan 路由 ② | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
+| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · advanced-plan 路由 ② · orchestrate 传输层下游 ① | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
+| orchestrate | sop | "委派/编排/派活/适合委派吗/spec pack" · 模型主动(准备 fan out 编码工作前) · 传输链到 dispatch-vendors | ①③ ⚠ 2026-07-24 新增(消化自三方编排设计文档),观察期:先行件(pre-red gate/receipt/账本)未建前是纯纪律层 |
 | cto-audit | sop | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
 | grill-me | atom | blindspot 收尾链下一步 · advanced-plan 定稿前 · "grill me/盘问我/要我拍板的" | ①③ ⚠新增(消化自 Matt Pocock grilling,加 CEO/CTO 分层) |
 | skill-forge | meta | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
@@ -37,6 +38,12 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 > **skill-atlas 本轮自己上了户口**:原是 orphan,现 event 档由 `skill-atlas-guard` hook 兜底(commit 碰 SKILL.md 必先跑、过期即 deny),staleness 仍季度搭北极星——那台否决机第一次治好了自己报出的病。
 
 ## 待接线清单(类型含 ⚠ 的行)
+
+- **orchestrate** — 2026-07-24 新增,操作化 `docs/2026-07-23-coding-agent-orchestration-design.md`。
+  当前是纯纪律层(路由判定/spec 模板/门时序可即用);pre-red gate 脚本、run_receipt
+  validator、job_ledger(ccobs 扩表)是设计文档 §7 的先行件,建成后回填本 skill 的
+  scripts/。观察期:若委派场景仍全部裸走 dispatch-vendors 而不过资格门,说明纪律层
+  没被想起,按 debrief Move 3 处理。
 
 - **dispatch-vendors** — 原 dispatch("廉价打字员"定位)被两侧夹死:委派走 subagent/
   Workflow,便宜引擎被裸开(141 会话 vs 中转 ~11 次)。2026-07-16 重定位为"整块独立任务
