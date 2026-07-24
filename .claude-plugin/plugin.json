@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.13.2",
+  "version": "2.13.3",
   "description": "Vito's atom library for Claude Code: project-agnostic, agent-facing. 21 skills for planning, reporting, delegation, retrieval, and skill/context upkeep; 4 subagents (general-skills-executor, second-opinion, code-search, investigator); 3 PreToolUse hooks that push noisy skills into subagents and guard worktrees. The ship SOP lives in kox-agent-plugins, next to the infra it binds to.",
   "author": {
     "name": "vito",
