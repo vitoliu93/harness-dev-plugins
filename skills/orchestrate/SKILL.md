@@ -1,12 +1,11 @@
 ---
 name: orchestrate
 description: >-
-  Route and delegate coding work across vendors / subagents / host:
-  eligibility, spec + acceptance authoring, parallel-worker gates, failure
-  recovery. Trigger on 委派/delegate/派活 coding tasks, 编排/fan out parallel
-  workers, "这个任务适合委派吗", a spec pack for a worker, or before you fan
-  out coding work yourself. NOT single-task vendor CLI transport
-  (dispatch-vendors owns that).
+  Delegation discipline for coding work: route across vendor / subagent /
+  host, write spec + acceptance, gate parallel workers. Use when
+  委派/delegate/派活, 编排/fan out workers, "这个任务适合委派吗", a spec pack
+  for a worker, or before fanning out coding work yourself. NOT vendor CLI
+  transport (dispatch-vendors).
 argument-hint: "[task or batch to delegate]"
 ---
 
