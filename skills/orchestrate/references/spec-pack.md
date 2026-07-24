@@ -14,7 +14,7 @@ out_of_scope:         # 越界清单，显式列"别碰"
 escalate_when:        # 何时停手上报（而不是自由发挥）
 ```
 
-## L 档（追加，用于契约类/跨仓任务）
+## L 档（追加，用于契约类/跨仓任务；feature 类强制）
 
 ```yaml
 interface_contract:   # verbatim 签名 + 错误语义，host 先行冻结

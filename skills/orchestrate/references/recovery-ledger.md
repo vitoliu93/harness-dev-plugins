@@ -59,3 +59,14 @@ verification-strong / weak 两队列**分开记成功率**——weak（只能判
   >80% → 只放行判断活。单 session 硬顶：并发 worker ≤3、委派 ≤8 单。
 - 省率口径：`host_tokens_per_merged_task`（失败/返工/善后全摊入），固定报
   "质量门槛内省率"（只计双过无返工单）——防 Goodhart。
+
+## 回测基线（2026-07-24，30 天 ccobs 窗口，判定用）
+
+- **自做成本锚**（done 中位 out tokens，含 subagent）：feature 44k ·
+  bugfix 40k · refactor 35k · ops 11k · config 8k——"估算自做成本"直接查表。
+- **一次过率**（done 且零纠偏）：ops 84% > refactor 79% > bugfix 72% >
+  config 69% > **feature 56%**（高危，强制 L 档）。
+- 可委派池 ≈ 编码会话的 40-50%（编码类占全部会话 55%）；盈亏线下
+  （<10k out tokens）占编码会话 35%，直接拒。
+- 北极星起点：廉价算力 output token 占比 **6.2%**（vendor 侧无 token
+  计量，真实略高——账本待补项）。

@@ -142,9 +142,10 @@ ledger:    零模型自动记账（双货币）→ 画像/熔断/governor 回流
    拒收，style 意见 ≤3 条单列）｜行为=执行验收。coding 与 review vendor 必须异族（路由器
    硬约束）。
 5. **集成验收（merge queue）——并行体系唯一必须的串行点**：worker 各自过验收 ≠ 合并后能过；
-   rebase 使验收失效。候选分支按 diff_size 降序 merge --no-commit 到预览分支，跑全套验收，
-   绿→逐个 FF，红→bisect 退回肇事分支。验收报告强制带 tree_hash，host 核对验收跑的就是
-   待合 tree。
+   rebase 使验收失效。候选分支按 diff_size 降序合入预览分支，跑全套验收，绿→**预览分支
+   整体合入主干**（2026-07-24 修订：原"逐个 FF"在 git 机制上不可行——第一个合入后其余
+   分支不再是主干祖先），红→对候选集合 bisect 退回肇事分支后重建预览。验收报告强制带
+   tree_hash，host 核对验收跑的就是待合 tree。
 6. **并发控制**：spec 必填 writes glob + allowed_extra_writes；派发前并行任务两两求交，
    非空即串行或重拆；完成后 git diff --name-only 回验，越界拒收。契约类文件求交命中 =
    拆任务失败的信号 → host 先行落地契约，下游基于冻结契约并行。**lockfile 铁律**：依赖变更
@@ -201,25 +202,42 @@ ledger:    零模型自动记账（双货币）→ 画像/熔断/governor 回流
 
 ## 6. 待实验回答（试点收数据）
 
-0. **【TODO】30 天 session 回测交叉验证**（vito 2026-07-23 补）：用 ccobs 账本（已含
-   claude-code/codex/cursor-agent/cursor-ide/droid/grok/opencode 七源，30 天约 900+ 主会话）
-   回测真实编码任务分布——任务类型 × 体量 × 结局 × 纠偏次数（`v_session_quality`）、
-   host token 基线（`v_token_economy`）、委派现状（`v_agent_spawns`/vendor 各源用量）——
-   交叉验证本方案的三个关键假设：可委派任务占比、盈亏平衡下限、§4.8 的"估算自做成本"
-   基线锚。结论回写本文档修订。**这是试点启动的前置项，先于 §7.3。**
+0. **【已完成 2026-07-24】30 天 session 回测交叉验证**（vito 2026-07-23 补）：用 ccobs 账本
+   回测真实编码任务分布，交叉验证可委派任务占比、盈亏平衡下限、"估算自做成本"基线锚。
+   **回测结论**（窗口 06-24→07-24，蒸馏覆盖 577/820 claude-code 主会话；口径 caveat：
+   corrections 由蒸馏模型判定未校准，token 计 output 侧不含 input/cache）：
+   - **任务分布**：编码类（feature/bugfix/refactor/config/ops）占 55.3%
+     （21.1/17.3/5.4/5.2/6.2）；research 42.8% 天然不入委派池（§5.3 探索性排除成立）。
+   - **可委派占比**：编码会话中体量在盈亏线上（≥10k out tokens）的占 64.6%；再按
+     一次过率（done 且零纠偏：ops 84%/refactor 79%/bugfix 72%/config 69%/feature 56%）
+     折算，现实可委派 ≈ 编码会话的 40-50%、全部会话的 ~25%。§5.2 "净赚中间地带比
+     预想窄"成立，但池子足够撑试点。
+   - **盈亏平衡下限初值**：35.4% 的编码会话 <10k out tokens（均值 ~17 turns）——此档
+     spec+验收成本必然倒挂，路由器直接拒；初值定为**预估产出 <10k tokens 不委派**。
+   - **自做成本基线锚**（done 中位 out tokens，含 subagent 开销）：feature 44k、
+     bugfix 40k、refactor 35k、ops 11k、config 8k。§6.5 被本项吸收，纯 host 基线期不必开。
+   - **feature 是高危类型**：一次过率最低（56%）且 partial 均值 264k tokens/229 turns
+     ≈ 6× done 中位——失败极贵。feature 委派强制 L 档 spec + spec 对抗审查（§4.6）。
+   - **spec:diff 0.3（§6.7）**：账本无 diff 体量，无法直接校准；间接一致性检验通过——
+     0.3 × 中位自做成本 ≈ 10-13k，与 context pack 硬预算 12-15k 同量级。初值保留，
+     直接校准等 job_ledger 落地记 diff_stat。
+   - **北极星基线**：30 天 output token 廉价算力占比 **6.2%**（deepseek 0.84M +
+     gpt-5.5 0.34M + k3/glm 0.38M vs anthropic 23.9M）。cursor-agent（39 单）/grok
+     （47 单）/droid 无 token 计量，真实占比略高——**vendor 侧 token 计量是账本待补项**。
 1. probe 错位阈值（30% 错位 = 上下文不足还是更优下手点？）
 2. spec 对抗审查增量发现率（20 份历史 spec 盲测，低则只留高风险任务）
 3. mutation score 各 task_type 合理阈值
 4. 共享测试库能否廉价命名空间化（决定 E2E 任务并行度上限）
-5. "估算自做成本"基线锚（纯 host 基线期 vs ccobs 回测——先做第 0 项，本项可能直接被吸收）
+5. ~~"估算自做成本"基线锚~~（已被第 0 项吸收：done 中位 out tokens 分型入表）
 6. 集成验收批量窗口 N
-7. spec:diff 比率阈值 0.3 的校准（第 0 项回测可直接给初值）
+7. spec:diff 比率阈值 0.3 的校准（第 0 项间接一致性检验通过，直接校准等 job_ledger 记 diff_stat）
 
 ## 7. 落地路线
 
 1. **先行件（零模型基建）**：pre-red gate 脚本、run_receipt schema、报告 validator、
    writes 求交校验、job_ledger 表（ccobs 扩展）
-2. **30 天 session 回测**（§6 第 0 项）：验证假设、定基线锚，结论回写修订本文档
+2. ~~**30 天 session 回测**~~（§6 第 0 项，2026-07-24 完成）：三假设已验证、基线锚已入表；
+   新增待补项：vendor 侧 token 计量（cursor-agent/grok/droid 现无 token 数据）
 3. **spec 模板定稿**（S/L 两档）+ 每仓 context pack 蒸馏 + 最小 house style（~20 条硬规则，
    异族 review 锚点）
 4. **试点**：30 张真实 issue、3-4 周、按 bugfix/feature/refactor 分层、半随机对照
