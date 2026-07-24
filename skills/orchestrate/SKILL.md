@@ -2,13 +2,11 @@
 name: orchestrate
 description: >-
   Route and delegate coding work across vendors / subagents / host:
-  delegation eligibility, spec + acceptance authoring, parallel-worker
-  orchestration and quality gates, staged failure recovery. Trigger on
-  委派/delegate/派活 coding tasks, 编排/fan out parallel workers across
-  issues, "这个任务适合委派吗" (is this task delegable?), a spec pack with
-  acceptance gates for a worker, or before you fan out coding work yourself.
-  NOT for single-task vendor CLI transport — that is dispatch-vendors
-  (this skill decides and specs, then hands transport off).
+  eligibility, spec + acceptance authoring, parallel-worker gates, failure
+  recovery. Trigger on 委派/delegate/派活 coding tasks, 编排/fan out parallel
+  workers, "这个任务适合委派吗", a spec pack for a worker, or before you fan
+  out coding work yourself. NOT single-task vendor CLI transport
+  (dispatch-vendors owns that).
 argument-hint: "[task or batch to delegate]"
 ---
 
@@ -16,7 +14,7 @@ argument-hint: "[task or batch to delegate]"
 
 Delegation = write spec + acceptance instead of code; it pays only when
 that is cheaper than doing it yourself. Quality = the acceptance-command
-suite. Design: `docs/2026-07-23-coding-agent-orchestration-design.md`.
+suite.
 
 **Pipeline**: eligibility → route → spec pack → gates → transport
 (dispatch-vendors / subagent) → acceptance + recovery → ledger.
