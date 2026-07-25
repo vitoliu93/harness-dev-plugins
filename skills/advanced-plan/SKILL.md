@@ -24,6 +24,7 @@ Six possible files, but **lazy by tier** — do not create all six for a one-lin
 | `preflight.md`    | Infra/facility readiness checklist                      | only if infra/deploy/creds/external svc |
 | `exploration.md`  | Running notebook of repo/code discoveries               | lazily, as you discover things          |
 | `review.md`       | Post-completion retrospective on the **agent's** process | only at completion                      |
+| `prototype.html`  | **The user-facing deliverable of planning** — your understanding of the target, rendered | full tier with a design/PRD source, or any UI change — see `plan-prototype` |
 
 **Tiers:**
 - **Light** (typo, small bug, localized change): `goal.md` + `spec.md` + `todo.md` (single phase). Skip the rest.
@@ -80,14 +81,16 @@ After copying, replace the `<...>` placeholders with real content. Each phase in
 
 Trigger: "advanced-plan", "立项", "plan this task", or any non-trivial task kickoff.
 
-1. **Restate the goal back to the user in one or two sentences, decide the tier** (light/full), and settle the `<slug>`. If scope is ambiguous, ask *before* doing anything — a wrong north star wastes the whole plan.
+1. **Restate the goal back to the user in one or two sentences, decide the tier** (light/full), and settle the `<slug>`. If scope is ambiguous, ask *before* doing anything — a wrong north star wastes the whole plan. The planning phase is where the user's time is cheap and yours is expensive: squeeze the ambiguity out here (`grill-me` builds the decision tree) so execution can run without interrupting them.
 2. **Check git + enter the worktree** (see Preconditions). No repo → offer `git init` and stop. Then `EnterWorktree name: "advanced-plan-<date>-<slug>"`. All following steps run *inside* the worktree.
-3. Copy the needed templates into `$ROOT/docs/advanced-plans/<date>-<slug>/` (see Templates above).
-4. Fill `goal.md` and **lock it** — it's the north star.
-5. Fill `spec.md` (real design for full tier; a few bullets for light).
-6. If infra/deploy/external services are involved, fill `preflight.md` and **run the checks now** — don't defer infra failures to mid-execution.
-7. Fill `todo.md`: the `Current State` cursor (record the **branch** here) + phases, each with acceptance criteria + verification method.
-8. Commit the plan dir (`git add docs/advanced-plans/<date>-<slug> && git commit`), tell the user the branch + first phase, then begin execution (or stop for plan approval if the user wants to review first).
+3. **Pull the reference sources in, then read them whole.** Any artifact the work must match (prototype, design export, PRD section, sample payload) that lives outside the repo gets copied to `$ROOT/docs/refs/<slug>/` first — worktrees, vendor subprocesses and post-compaction context can none of them see `~/Downloads`, and a file outside git has no version to agree on. Then read each one **end to end**; "it's large, I'll grep the relevant part" is how a 100KB design source ends up never read by anyone. Too large for this context → delegate one agent to distil it into an in-repo verbatim spec, and read that.
+4. Copy the needed templates into `$ROOT/docs/advanced-plans/<date>-<slug>/` (see Templates above).
+5. Fill `goal.md` and **lock it** — it's the north star. Before writing `Done means`, grep the touched repos' `CLAUDE.md` / `docs/**/decisions.md` for existing acceptance discipline (what must be verified, by whom, what an agent may not self-certify) and either follow it or state in the plan that you are superseding it and why. A fresh kickoff doc silently weakening a rule the team already paid to learn is the expensive kind of drift.
+6. Fill `spec.md` (real design for full tier; a few bullets for light).
+7. **Full tier with a `参考真源`, or any user-visible UI change → run `plan-prototype`**: render your understanding of the target as `prototype.html` and show the user *that*, not the markdown. It is the one artifact they approve; the plan files stay agent-facing.
+8. If infra/deploy/external services are involved, fill `preflight.md` and **run the checks now** — don't defer infra failures to mid-execution.
+9. Fill `todo.md`: the `Current State` cursor (record the **branch** here) + phases, each with acceptance criteria + verification method.
+10. Commit the plan dir (`git add docs/advanced-plans/<date>-<slug> && git commit`), tell the user the branch + first phase, then begin execution (or stop for plan approval if the user wants to review first).
 
 ### `execute` — do the work
 
@@ -136,7 +139,7 @@ Trigger: task done, or "review the plan", "复盘这个任务".
 
 The templates carry the structure; these are the rules for filling them honestly.
 
-- **goal.md** — User intent, decomposed by the agent, then **locked**. Concise, unambiguous, observable "done means". Implementation choices do NOT go here (they drift) — they live in `spec.md`. Only post-creation edit is appended scope-change entries. Write it reader-first: plain language aligned to the goal, not the code — someone far from the code (the user) must grasp it at a glance; code references belong in todo.md `Verify` fields, never here.
+- **goal.md** — User intent, decomposed by the agent, then **locked**. Concise, unambiguous, observable "done means". `参考真源` names what the result must match and how the match is judged; leaving it blank is how a whole delivery gets graded on an axis nobody was measuring. Implementation choices do NOT go here (they drift) — they live in `spec.md`. Only post-creation edit is appended scope-change entries. Write it reader-first: plain language aligned to the goal, not the code — someone far from the code (the user) must grasp it at a glance; code references belong in todo.md `Verify` fields, never here.
 - **spec.md** — The approach, design, and technical decisions — and where they get **updated** if the approach changes. Approach changed? Edit spec, never goal.
 - **preflight.md** (conditional) — Checklist derived from spec of required infra/creds/services. Run the checks before coding; a preflight you don't execute is theater. Record what was broken + the fix.
 - **todo.md** ⭐ — The **single source of truth / save-slot**. Two parts: a `Current State` header (the live cursor a fresh agent reads to recover) and the phases. Each phase needs acceptance criteria + a concrete verification method:
@@ -159,6 +162,7 @@ Documents that lie are worse than no documents. Keep them honest:
 2. **No phase is `done` without verification evidence.** Run the test / agent-browser flow; record the result. "Should work" ≠ done.
 3. **Code and runtime win over docs.** If `spec.md`/`todo.md` disagree with what the code actually does, the docs are wrong — fix them in the same turn you notice.
 4. **`goal.md` is immutable** except append-only scope-change entries. Approach changed? Edit `spec.md`.
+   Because it is immutable it's also the anchor replayed after every compaction (`plan-anchor` hook) — but replaying a path is not reading the file: **re-open the `参考真源` before any phase that builds against it.** A summary of a design source is not the design source.
 5. **Don't let process block small work.** Light tier exists for a reason; preflight is conditional. Match the ceremony to the risk.
 6. **Commit on the plan branch as you go** — at minimum after each phase, alongside the `Current State` update, so the branch always reflects real progress. (Commit/push discipline + cross-machine handoff: see `worktree`.)
 
@@ -176,3 +180,5 @@ The plan branch is the shared object — how agents share a worktree vs. take on
 - **worktree**: the isolation/branch mechanism advanced-plan runs on — entering, resuming, cross-machine handoff, parallel agents. advanced-plan adds the plan dir and the `advanced-plan-<date>-<slug>` naming on top (pre-rename branches carry the legacy `write-plan-` stem; discovery is keyword-based, so both resolve).
 - **handoff**: advanced-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
 - **agent-browser**: the default frontend verification method named in phase acceptance criteria.
+- **plan-prototype**: renders the plan's target as `prototype.html` — the planning phase's user-facing deliverable, and afterwards the in-repo reference the work is checked against.
+- **grill-me**: the planning-phase interview. Run it before locking `goal.md` on anything non-trivial — every ambiguity settled here is an interruption execution doesn't have to make.

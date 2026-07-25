@@ -92,6 +92,13 @@ Three checks against this task's experience:
    same task must not double-count). A row reaching **3** → propose invoking
    `skill-forge` to author it (ask the user; never auto-create).
 
+   **Same-session recurrence counts too.** The same-date rule dedupes *re-runs
+   of debrief*, not repeats inside one long session. Hand-doing the same thing
+   ≥2 times within a session — re-deriving the same env vars, re-fixing one
+   class of error across three deploys, the same gate returning a false verdict
+   twice — is the strongest fixation signal there is. Count `seen +1`, note
+   `<date>×N (same session)`.
+
    Cross-session 兜底 — memory 计数只覆盖跑过 debrief 的 session;ccobs 蒸馏层
    全量标注 `sop_candidate`(可复现流程),收盘时顺手对账:
 
@@ -112,18 +119,25 @@ Three checks against this task's experience:
    - On promotion, record a 3-line **eval-delta** in the candidate row:
      before-description → after-description → what route confusion it fixes.
 
-2. **Skill drift** — did an existing skill mislead us this task (stale path,
-   wrong assumption, missing branch)? Propose the one-line fix to that
-   SKILL.md now, while the failure is fresh. Its own repo (e.g.
-   agent-plugins) → offer to edit directly; npx-managed → note it in the
-   memory from Move 2 instead.
+2. **Harness drift** — did anything in the harness mislead us this task (stale
+   path, wrong assumption, missing branch)? Propose the one-line fix now, while
+   the failure is fresh. Its own repo (e.g. agent-plugins) → offer to edit
+   directly; npx-managed → note it in the memory from Move 2 instead.
+   The surface is wider than SKILL.md: **a plan/goal template that had no slot
+   for the thing that went wrong, a `/goal` condition the judge could satisfy
+   without the work being done, or a hook that never fired** are the same class
+   of defect and the same fix — they just don't look like skills.
 
    Special case when this task used `dispatch-vendors`: read
    `~/.claude/dispatch/ledger.md` and check the result column. Mostly
    pass with few fixups/resumes → healthy. Repeated fail or pass-with-fixups
    → the dispatched tasks carry more judgment or context than the gate
    admits; propose tightening dispatch-vendors' gate or scenario catalog as
-   the drift fix.
+   the drift fix. The ledger only records dispatches that happened, so also
+   ask the survivorship question: **did dispatching stop partway through the
+   task?** If yes, name why (nature of the work changed / not worth it /
+   forgot) — an all-`pass` ledger over a collapsed second half reads as
+   "healthy" and isn't.
 
 3. **审计信号**(cto-audit 的信号层——只提醒,不发动):两个便宜指标,任一命中
    就在收盘报告末尾加一句「建议召集 cto-audit:<原因>」:

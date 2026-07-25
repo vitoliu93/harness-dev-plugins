@@ -46,10 +46,28 @@ written into the brief** (variants sheet has the exact pattern).
 - **Q**uota: heavy/long unattended work (test suite, migration pilot, E2E,
   flaky hunt, benchmark, overnight run) that would eat the 5h window.
 - **I**ndex: cursor-agent's workspace index beats cold grep — repo recon,
-  bug localization. Use `--mode plan` (read-only) for these.
+  bug localization. Use `--mode plan` (read-only) for these — **but plan mode
+  also blocks writes to your scratchpad, so the report never lands; either drop
+  `--mode plan` and put "read-only, change no file in the repo" in the brief,
+  or `--resume <session> -p 'write the report to <path>'` after.**
 
-Plus the boundary litmus, all three: brief fits in one prompt · zero mid-task
-interaction · verifying the result is much cheaper than re-deriving it.
+**Q has a floor.** The vendor must plausibly run **≥20 min** or produce
+**≥300 lines**. Below that, writing the brief + verifying the result costs more
+than the generation it saves — measured: a batch of 5–8 minute UI-component
+dispatches was net-negative. Under the floor → inline or subagent.
+
+**A — acceptance-decidable, a veto (not a reason to dispatch).** Dispatch only
+if "did it work" is answerable by a command. When success is judged by *does it
+look right* (visual fidelity, layout, wording, feel), the vendor gets only the
+machine-checkable subset (data contracts, pure functions, state machines); the
+look-and-feel part stays inline. Legitimate middle path: dispatch a
+**spec-extraction** run first (design source → verbatim spec table), you approve
+the spec, and only then dispatch implementation against it.
+
+Plus the boundary litmus, all four: brief fits in one prompt · zero mid-task
+interaction · verifying the result is much cheaper than re-deriving it **and
+the verification is not your eyes** · the brief is shorter than the code you'd
+write doing it yourself.
 
 ## Don't dispatch — route elsewhere
 
@@ -72,7 +90,29 @@ interaction · verifying the result is much cheaper than re-deriving it.
    created EARLY (skeleton first, fill incrementally) — a killed/timed-out
    vendor then still leaves partial value on disk (verified: a 560s kill
    with nothing written; cursor 20-min hang with the report unflushed).
-2. Launch with Bash `run_in_background: true`, using the vendor sheet's exact
+   Three things zero-context does NOT mean prose:
+   - **Source artifacts go over verbatim, by path.** Design source, prototype,
+     schema dump, sample payload — write the in-repo path into the brief and
+     require the vendor to read it first. Your prose retelling is not the
+     artifact and does not satisfy zero-context. External file (`~/Downloads`,
+     Desktop) → copy it into the repo first; a vendor subprocess cannot see
+     what isn't in the tree.
+   - **Constants carry provenance.** Any threshold / conversion factor /
+     contract number you hand down cites its `file:line`, and you re-source it
+     yourself once. A vendor's own passing test proves it implemented your
+     brief — never that your brief was right.
+   - **Recon output sets direction, not truth.** For guard/security/invariant
+     work, re-derive the write paths yourself (grep every call site) before
+     coding against a recon conclusion.
+   The vendor does **not** commit — changes stay in the working tree, you
+   verify, then you commit. (Otherwise the diff lands under your git identity
+   before anyone reviewed it.)
+2. **Probe before you bet the brief** (30s, first dispatch into a repo/worktree
+   this session): one throwaway run — "read `<known file>` and echo its first
+   line". No output → the vendor's tools are dead in that tree; go inline
+   instead of discovering it 14 minutes later (real case: a full recon brief
+   came back as "all filesystem tools failed, cannot deliver").
+   Launch with Bash `run_in_background: true`, using the vendor sheet's exact
    incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
    `zsh -ic '…'` and pass `--model` explicitly; cursor-agent takes
    `source ~/.zshenv &&` for keys.
@@ -87,7 +127,11 @@ interaction · verifying the result is much cheaper than re-deriving it.
    vendor's self-report. Fix round = resume by session id with one
    consolidated list. Two resumes max, then take it back inline.
 4. Append `date | vendor | scenario | pass/fail(+fixups) | resumes:N` to
-   `~/.claude/dispatch/ledger.md` (debrief reads it at 收盘).
+   `~/.claude/dispatch/ledger.md` (debrief reads it at 收盘). **Write the row
+   in the same Bash call that launches** (`… | dispatched`), then amend the
+   verdict on return — rows recorded only on success go missing exactly when
+   they matter. A fixup caused by *your* wrong brief is logged as such, not as
+   a vendor fixup; the ledger is a signal about the gate, not a scoreboard.
 
 ## Vendor limited mid-run (quota/rate-limit hits while the job is going)
 
