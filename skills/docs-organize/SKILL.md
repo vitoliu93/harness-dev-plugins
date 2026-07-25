@@ -20,7 +20,7 @@ argument-hint: "[audit | adopt]"
 | **活文档** | 描述"现状"（现状总览、字段表、环境归属、Runbook） | 必须与代码一致：核验失真 → fix；骨架性失真（描述的机制已不存在）→ delete/重写 |
 | **快照类** | dated 方案/决策记录（"YYYY-MM-DD 定稿"、方案 vN） | 本身是历史事实，代码演进≠删除理由；被新版取代 → 移 `_archive/`，不改写 |
 | **参考资料** | pdf/pptx/厂商大 HTML，外部知识的本地副本 | 不核验内容，只问"还被需要吗" → `references/` 或预删 |
-| **临时/handoff** | 跨 session 交接、一次性审计产物 | handoff 类 → `~/.claude/observability/handoff/`（见 handoff skill）；一次性 dump → 项目 `tmp/`（纯 scratch，随时可清）或预删 |
+| **临时/handoff** | 跨 session 交接、一次性审计产物 | handoff 类 → 全局 `~/tmp/`（见 handoff skill）；一次性 dump → 项目 `tmp/`（纯 scratch，随时可清）或预删 |
 | **非项目文档** | 与本 workspace 任何需求都不发生联系（学习材料、面试题） | 外迁 `~/Documents/claude-code/docs/`，workspace 里零容忍 |
 
 ## Placement 约定（adopt 落地的内容）
@@ -40,7 +40,7 @@ $ROOT/docs/
 三句硬规则（adopt 时写进 `docs/README.md` 头部，$ROOT/CLAUDE.md 的 docs 索引段落改成指针 + 这三句）：
 
 1. 新文档只许落 `$ROOT/docs/`（跨仓/全局的）或对应子仓（单仓强相关的，跟代码走）；落地即在 `docs/README.md` 登记一行。子仓必读文档也用相对链接登记进中央索引。
-2. 临时/handoff 类进 `~/.claude/observability/handoff/`（记录和别的账本放一起），不进 `docs/`，不进项目 `tmp/`。
+2. 临时/handoff 类上全局 `~/tmp/`，不进 `docs/`，不进项目 `tmp/`。
 3. 非项目文档不落 workspace，直接去 `~/Documents/claude-code/docs/`。
 
 ## audit 流程
@@ -79,7 +79,7 @@ dscode -p "<核验 brief>" --model deepseek-v4-flash --output-format json
 
 ### 4. 分级执行
 
-- **批量档**（一次确认全执行）：move（进 references/、_archive/、外迁）、明显垃圾 delete（无锚点过期 dump、被取代的中间草稿）、handoff 迁 `~/.claude/observability/handoff/`。
+- **批量档**（一次确认全执行）：move（进 references/、_archive/、外迁）、明显垃圾 delete（无锚点过期 dump、被取代的中间草稿）、handoff 迁 `~/tmp/`。
 - **逐条档**（一条条过用户）：活文档 fix/重写、散片 merge、拿不准的孤儿。
 - workspace 级 `docs/` 通常不在 git 里，删无兜底——delete 永远先过表，宁可多归档少硬删。
 

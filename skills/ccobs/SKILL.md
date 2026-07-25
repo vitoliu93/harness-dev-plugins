@@ -48,7 +48,8 @@ WHERE t.model LIKE 'deepseek%'
 
 - DB / 队列 / 日志：`~/.claude/observability/`（`CCOBS_DIR` 可覆盖）。这个目录是
   全部 agent 运行记录的共同家:ccobs 的库、dispatch 账本、compaction 日志、
-  handoff、skill-atlas 产物都在这儿——**动态记录一律不落源码仓**
+  skill-atlas 产物都在这儿——**动态记录一律不落源码仓**。例外是临时且跨 CLI 的
+  中转件(handoff → `~/tmp/`):它们不是账本,也不该锁在 Claude 自己的目录里
 - `scripts/schema.sql` — 表 + 7 个视图，views 即报告（视图用 DROP+CREATE，改定义后跑一次 ingest 即生效）
 - `scripts/ingest.ts` — 七 adapter 增量、幂等灌库（单文件注册表模式）；每次运行（手动或 launchd）
   append 一行带时间戳的 summary 到 `~/.claude/observability/ingest.log`
