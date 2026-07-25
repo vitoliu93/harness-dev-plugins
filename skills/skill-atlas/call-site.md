@@ -30,7 +30,8 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | orchestrate | sop | "委派/编排/派活/适合委派吗/spec pack" · 模型主动(准备 fan out 编码工作前) · 传输链到 dispatch-vendors | ①③ ⚠ 2026-07-24 新增(消化自三方编排设计文档),观察期:先行件(pre-red gate/receipt/账本)未建前是纯纪律层 |
 | cto-audit | sop | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
 | grill-me | atom | blindspot 收尾链下一步 · advanced-plan `new` 步骤 1 点名 · ship(kox) Stage 2 · "grill me/盘问我/要我拍板的" | ①③ |
-| plan-prototype | atom | advanced-plan `new` 步骤 7(full 档有参考真源 / 任何 UI 改动)· ship(kox) Stage 2 的用户层产出 · "目标原型/先给我看看你要做成什么样" | ①③ ⚠ 2026-07-25 新增(消化自 1.4 剪辑器复盘:验收口径缺保真轴),观察期至 08-25 |
+| plan-prototype | atom | advanced-plan `new` 步骤 7(full 档有参考真源 / 任何 UI 改动)· ship(kox) Stage 2 的用户层产出 · campaign checkpoint 表 · "目标原型/先给我看看你要做成什么样" | ①③ ⚠ 2026-07-25 新增(消化自 1.4 剪辑器复盘:验收口径缺保真轴),观察期至 08-25 |
+| campaign | sop | ship(kox) Stage 0 尺寸门第三档(≥3 张异构单 或 跨 ≥2 天 → 先起 charter)· "做 xx 模块/这个版本这一块" · resume "继续 <campaign>" | ①③ ⚠ 2026-07-25 新增(消化自 1.4 剪辑器复盘:5 次逐单收盘全绿 + 1 次模块级失败无归口),观察期至 08-25 |
 | skill-forge | meta | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
 | report | atom | 收尾汇报前必载(CLAUDE.md 指路)· "汇报/report" | ②③ |
 | audit-context | sop | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
@@ -52,6 +53,12 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
   若真实派活仍 <5 次,按 debrief Move 3 走 archive。
 - **recall** — 本次新增,call site 合法但仅 ③(触发词)。观察期:若"以前查过吗"没长成
   肌肉记忆,它就是下一个旧 dispatch(廉价打字员版的命运)。采纳/证伪的闸门见蓝图图纸 1(手动裸跑三次那条 SQL)。
+- **campaign** — 2026-07-25 新增,占的是「issue 之上」这一层的制度空位(空着的时候由
+  /goal Stop hook 顶替,而它只判文本闭合不判方向)。call site 是 ①(ship Stage 0 尺寸门
+  第三档)。观察期至 08-25 的证伪条件:**又出现一次跨天多单任务却没建 charter**,
+  说明尺寸门那一行没被读到 → 该往 Stage 0 更前面挪或换措辞;反向信号:建了 charter 但
+  完成判据仍全部落在「机器判」,说明介质标注那条没起作用。
+
 - **plan-prototype** — 2026-07-25 新增。call site 是 ①(advanced-plan/ship 的计划阶段固定步骤),
   不靠触发词兜底。观察期至 08-25 的证伪条件很硬:**非 S 的 UI 任务走完计划却没有
   `prototype.html`**,说明步骤 7 被跳过 → 那就不是技能问题,是闸门位置错了(该往

@@ -1,0 +1,83 @@
+{
+  "positive_concepts": {
+    "module_scope": {
+      "weight": 0.5,
+      "phrases": [
+        "模块",
+        "版本",
+        "module",
+        "module rollout",
+        "多个仓",
+        "跨仓",
+        "整体"
+      ]
+    },
+    "multi_issue": {
+      "weight": 0.5,
+      "phrases": [
+        "多张单",
+        "异构工单",
+        "异构",
+        "工单",
+        "issue",
+        "issues",
+        "≥3",
+        "拆成",
+        "依赖序",
+        "单与单"
+      ]
+    },
+    "charter": {
+      "weight": 0.45,
+      "phrases": [
+        "北极星",
+        "完成判据",
+        "参考真源",
+        "模块交付",
+        "campaign",
+        "charter"
+      ]
+    },
+    "duration": {
+      "weight": 0.4,
+      "phrases": [
+        "跨 ≥2 天",
+        "跨天",
+        "好几天",
+        "推进",
+        "tracked",
+        "继续"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "single_issue": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "单个 issue",
+        "单张",
+        "一张单",
+        "ship",
+        "advanced-plan"
+      ]
+    },
+    "homogeneous_batch": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "同构条目",
+        "同构",
+        "批量",
+        "L 档",
+        "矩阵"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "module_scope",
+    "multi_issue",
+    "charter",
+    "duration"
+  ]
+}
