@@ -72,7 +72,7 @@ acceptance ran on the exact tree being merged.
 - Shared state (DB, ports, object storage) is a first-class locked
   resource; parallelism = 1.
 - Worktree break-even: task duration < 2x environment setup time = don't
-  open one (conventions live in the worktree skill).
+  open one。
 
 ## 7. Mutation spot-checks (sampling acceptance sensitivity)
 

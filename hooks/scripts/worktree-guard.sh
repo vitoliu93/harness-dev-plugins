@@ -38,7 +38,7 @@ deny() {
 }
 
 case "$cwd/" in
-  "$abs"/*) deny "你还在这个 worktree 里 ($abs)。先 ExitWorktree (keep),回到主 checkout 再 remove — 见 worktree skill 的 Exit safety 顺序。" ;;
+  "$abs"/*) deny "你还在这个 worktree 里 ($abs)。先 ExitWorktree (keep),回到主 checkout 再 remove。顺序:commit → ExitWorktree keep → 合并分支 → 从外面 remove。" ;;
 esac
 
 if [[ "$command" != *"--force"* ]] && [ -n "$(git -C "$abs" status --porcelain 2>/dev/null)" ]; then

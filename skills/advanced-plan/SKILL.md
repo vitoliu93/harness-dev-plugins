@@ -34,9 +34,11 @@ If the task is genuinely trivial (one obvious edit), say so and skip the skill �
 
 ## Preconditions & isolation (non-negotiable)
 
-advanced-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch. The worktree/branch mechanics live in the **`worktree`** skill; advanced-plan adds only the naming convention below.
+advanced-plan **only runs inside a git repo, on a dedicated worktree + branch** — that's what makes the plan a shareable artifact instead of scratch files: the branch *is* the plan's identity, and any agent picks it up by entering the worktree or checking out the branch.
 
-Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop — unless it's a multi-repo workspace task, see Location below. See `worktree` for nesting, baseRef, and resume.)
+Before any plan work: `EnterWorktree name: "advanced-plan-<date>-<slug>"`, then start creating files. **One plan = one branch = one worktree** — the slug, branch name, and worktree name share the same `<date>-<slug>` stem so all three are greppable by one keyword. (No repo → offer `git init` and stop — unless it's a multi-repo workspace task, see Location below.) Already inside a worktree? Reuse it — `EnterWorktree` refuses to nest. Base ref follows the repo's `worktree.baseRef` setting; don't override unless asked.
+
+**Exit safety** — the order is fixed; violating it has caused deadlocks and lost work: (1) commit (or cherry-pick out) everything worth keeping; (2) `ExitWorktree action: "keep"` — drop the session's pin first; (3) merge/land the branch; (4) only after merge, remove — `ExitWorktree action: "remove"` or `git worktree remove <path>` **from outside the worktree**. Never auto-remove: an unmerged branch or dirty tree dies with it. (A PreToolUse guard denies the two dangerous removals.)
 
 ## Location & layout
 
@@ -55,7 +57,7 @@ $ROOT/docs/advanced-plans/<YYYY-MM-DD>-<slug>/
 
 **Multi-repo tasks**: when the task spans multiple git repos and the CWD is their common parent workspace directory (a non-git dir holding the repos), there is no single branch that can carry the plan — putting it inside one of the repos hides it from the others' worktrees. In that case `$ROOT` = the workspace dir itself: the plan lives at `<workspace>/docs/advanced-plans/<date>-<slug>/`, outside git and unaffected by any worktree, physically shared by all sessions (`.lock` applies as usual). Two compensations for what's lost: (1) no git audit trail — on close, `debrief` moves the dir to `<workspace>/docs/advanced-plans/_archive/` instead of relying on a merge; (2) no branch-as-discovery — keep naming discipline: every sub-repo's branch/worktree uses the same `<date>-<slug>` stem as the plan dir, so one keyword greps all of them. A task touching only one repo keeps the normal rule even if launched from the workspace dir: the plan goes in that repo, on its branch.
 
-**Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. The discovery + cross-machine handoff mechanics are in the **`worktree`** skill. (Multi-repo plans are the exception: discovery is by the shared slug stem, per above.)
+**Cross-agent reach** has exactly one model — the branch: another agent finds the worktree/branch and enters it, and the plan dir is right there. Cross-machine: push the branch (after each meaningful checkpoint if live handoff matters); the other machine fetches, adds a worktree on it, enters. (Multi-repo plans are the exception: discovery is by the shared slug stem, per above.)
 
 ## Templates
 
@@ -103,9 +105,10 @@ Follow `todo.md` phase by phase. The Enforcement rules below are non-negotiable 
 A bare `/advanced-plan <args>` is ambiguous (is `<args>` a new task or a keyword for an existing plan?). **Always discover before creating** — never silently start a duplicate plan. Discovery keys off the **branch/worktree**, not a loose file glob:
 
 1. Strip routing verbs (`new` / `resume` / `continue` / `继续` / `恢复` / `接着做`) to get the keyword.
-2. Discover an existing plan by its worktree/branch — use the discovery + attach steps in the **`worktree`** skill (`git worktree list` / `git branch -a`, then `EnterWorktree`).
+2. Discover an existing plan by its worktree/branch — `git worktree list | grep -i "<kw>"`, then `git branch -a --list "*<kw>*"` (remote-only → `git fetch` first). Discovery is keyword-based, so pre-rename branches carrying the legacy `write-plan-` stem still resolve.
 3. Decide:
-   - **worktree or branch matches** → enter it (per `worktree`), then recover (below).
+   - **live worktree matches** → `EnterWorktree path: <its path>`, then recover (below).
+   - **branch only** → `git worktree add .claude/worktrees/<stem> <branch>`, enter it, then recover.
    - **nothing matches** → treat `<args>` as a **new** task (`new` flow above).
 4. Explicit verbs override the guess: `new <x>` always creates; `resume/继续 <x>` always searches and **reports "no plan found"** rather than creating.
 
@@ -131,7 +134,7 @@ Trigger: task done, or "review the plan", "复盘这个任务".
 1. Copy `review.md`'s template and run the retrospective (see semantics below).
 2. Commit the final plan state on the branch. Land the work the usual way (open a PR / merge the branch) — the committed `docs/advanced-plans/<slug>/` rides along as the audit trail.
 3. Invoke the **`debrief`** skill for sedimentation — it archives the plan dir, writes the memory entry, and scans for skill candidates.
-4. Leave the worktree only when the user asks (`ExitWorktree keep|remove`, see `worktree`) — `keep` to preserve, `remove` once merged. Don't auto-remove.
+4. Leave the worktree only when the user asks (`ExitWorktree keep|remove`, per Exit safety above) — `keep` to preserve, `remove` once merged. Don't auto-remove.
 
 ---
 
@@ -164,11 +167,11 @@ Documents that lie are worse than no documents. Keep them honest:
 4. **`goal.md` is immutable** except append-only scope-change entries. Approach changed? Edit `spec.md`.
    Because it is immutable it's also the anchor replayed after every compaction (`plan-anchor` hook) — but replaying a path is not reading the file: **re-open the `参考真源` before any phase that builds against it.** A summary of a design source is not the design source.
 5. **Don't let process block small work.** Light tier exists for a reason; preflight is conditional. Match the ceremony to the risk.
-6. **Commit on the plan branch as you go** — at minimum after each phase, alongside the `Current State` update, so the branch always reflects real progress. (Commit/push discipline + cross-machine handoff: see `worktree`.)
+6. **Commit on the plan branch as you go** — at minimum after each phase, alongside the `Current State` update, so the branch always reflects real progress — uncommitted work is invisible to every other worktree, machine, and future session. Push the branch if another machine or agent may pick it up.
 
 ## Multi-agent collaboration
 
-The plan branch is the shared object — how agents share a worktree vs. take one each off the branch is in the **`worktree`** skill (Parallel agents). What's plan-specific is coordinating on the plan files when agents share one working tree:
+The plan branch is the shared object. Agents either share one worktree (`EnterWorktree path:` the same path) or take one each off the branch (`git worktree add … <branch>`, reconcile in git instead of racing on one tree). What's plan-specific is coordinating on the plan files when agents share one working tree:
 
 - **Lock file** `docs/advanced-plans/<slug>/.lock` with `owner: <session-id>`, `since: <ts>`, `lease: <ts+TTL>`. Take it before editing shared files; release (delete) when stopping. A stale lease (past TTL) may be reclaimed — note the takeover in `exploration.md`.
 - **Phase claiming:** an agent sets `Owner` + `Lease` on the phase it drives in `todo.md` `Current State`. Other agents pick a different unclaimed phase.
@@ -177,7 +180,6 @@ The plan branch is the shared object — how agents share a worktree vs. take on
 
 ## Integration with other skills
 
-- **worktree**: the isolation/branch mechanism advanced-plan runs on — entering, resuming, cross-machine handoff, parallel agents. advanced-plan adds the plan dir and the `advanced-plan-<date>-<slug>` naming on top (pre-rename branches carry the legacy `write-plan-` stem; discovery is keyword-based, so both resolve).
 - **handoff**: advanced-plan is the persistent project record; `handoff` is a point-in-time context dump. For a tracked task, keep `todo.md` current — a handoff can just point at the `docs/advanced-plans/<slug>/` dir.
 - **agent-browser**: the default frontend verification method named in phase acceptance criteria.
 - **plan-prototype**: renders the plan's target as `prototype.html` — the planning phase's user-facing deliverable, and afterwards the in-repo reference the work is checked against.

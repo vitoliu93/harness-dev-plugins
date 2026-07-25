@@ -18,7 +18,6 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | advanced-plan | sop | ship(kox) 可验收计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
-| worktree | atom | PreToolUse worktree-guard(退出安全)· 分支约定 | ②③ |
 | skill-atlas | meta | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |
 | handoff | atom | "handoff/交接/接手/继续 <slug>" | ③ |
 | create-readable-html | atom | "可视化/画个图/信息图"(skill-guard→executor) | ③ |
@@ -75,3 +74,10 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
   按其自己的"有生有灭"律处理。
 
 新增/改名任何原子 → 本表补一行(**接线点 = 新原子的准入证**)。空格子就是待接线清单。
+
+## 已归档
+
+- **worktree** — 2026-07-26 归档到 `archive/skills/worktree/`。命名 stem、attach/resume
+  发现法、退出安全四步已内联进 advanced-plan;`worktree-guard` hook 仍在岗(deny 文案改为自述)。
+  归档理由:机制侧已被 harness 的 `EnterWorktree`/`ExitWorktree` 吃掉,剩下的约定量太小,
+  不值一个路由位。
