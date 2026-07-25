@@ -15,8 +15,9 @@
 # The quarterly staleness sweep is unaffected (it's not a commit-time event).
 # Anything unparseable / not-our-repo → allow (exit 0). Fail-open by design.
 #
-# ponytail: keys freshness off skill-atlas's /tmp/atlas output path; if that dir
-# is cleared (reboot) the next skill commit re-runs atlas once — safe, not silent.
+# ponytail: keys freshness off skill-atlas's default output path, which lives with
+# the other agent ledgers (~/.claude/observability, SKILL_ATLAS_DIR to override) —
+# never in the repo or /tmp, so the marker survives a reboot.
 set -uo pipefail
 
 input=$(cat)
@@ -29,7 +30,7 @@ cwd=$(jq -r '.cwd // empty' <<<"$input")
 
 root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
 # Scope to the dev-kit plugin repo ONLY — skill-atlas audits THIS fleet and the
-# /tmp/atlas freshness marker is dev-kit's. Other plugin repos (e.g. kox) have
+# atlas freshness marker is dev-kit's. Other plugin repos (e.g. kox) have
 # their own skills/*/SKILL.md we must not gate against dev-kit's atlas.
 [ "$(jq -r '.name // empty' "$root/.claude-plugin/plugin.json" 2>/dev/null)" = "dev-kit" ] || exit 0
 
@@ -37,7 +38,7 @@ root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
 git -C "$root" status --porcelain 2>/dev/null | grep -qE 'skills/[^/]+/SKILL\.md' || exit 0
 
 # Freshness: any SKILL.md newer than skill-atlas's last route-overlap output?
-atlas_out="/tmp/atlas/route_overlap_matrix.csv"
+atlas_out="${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas}/atlas/route_overlap_matrix.csv"
 if [ -f "$atlas_out" ] && [ -z "$(find "$root"/skills/*/SKILL.md -newer "$atlas_out" 2>/dev/null)" ]; then
   exit 0   # atlas ran after the latest SKILL.md change → fresh → allow
 fi

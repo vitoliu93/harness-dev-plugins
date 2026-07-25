@@ -16,10 +16,10 @@ Trigger: user says **"handoff"**, **"交接"**, **"save progress"**
 
 Steps:
 
-1. Create `~/tmp/` if it doesn't exist. Handoffs live in the **global** `~/tmp/` — not the project's `tmp/` — so they survive worktree removal, don't pollute any repo, and one directory holds all in-flight handoffs across projects and agent CLIs.
+1. Create `~/.claude/observability/handoff/` if it doesn't exist. Handoffs are records, so they live with the other agent ledgers (ccobs' DB, the dispatch ledger, the compaction log) — **never in a repo**: they survive worktree removal, pollute nothing, and one directory holds all in-flight handoffs across projects and agent CLIs.
 2. Generate a short 2-4 word kebab-case title summarizing the task, and take `<project>` = last path segment of the project root.
-3. Write the handoff document to: `~/tmp/handoff-<YYYY-MM-DD>-<project>-<short-title>.md`
-   - `~/tmp/` is outside any repo, so background sessions can write it directly — no worktree isolation issues, no `$CLAUDE_JOB_DIR` detour.
+3. Write the handoff document to: `~/.claude/observability/handoff/<YYYY-MM-DD>-<project>-<short-title>.md`
+   - It's outside any repo, so background sessions can write it directly — no worktree isolation issues, no `$CLAUDE_JOB_DIR` detour.
 4. The document MUST follow this structure:
 
 ```markdown
@@ -95,7 +95,7 @@ Non-obvious things the next session MUST know:
 5. After writing, output:
 
 ```
-Handoff saved: ~/tmp/handoff-<YYYY-MM-DD>-<project>-<short-title>.md
+Handoff saved: ~/.claude/observability/handoff/<YYYY-MM-DD>-<project>-<short-title>.md
 Take over with: handoff pick up <short-title>
 ```
 
@@ -105,11 +105,11 @@ Trigger: user says **"take over"**, **"pick up"**, **"continue"**, **"接手"**
 
 Steps:
 
-1. If no keyword provided, list the 5 most recent files matching `~/tmp/handoff-*.md` — prefer those whose `<project>` segment matches the current project root's basename, fall back to all — and ask the user which one.
-2. If a keyword is provided, glob `~/tmp/handoff-*<keyword>*.md`.
+1. If no keyword provided, list the 5 most recent files matching `~/.claude/observability/handoff/*.md` — prefer those whose `<project>` segment matches the current project root's basename, fall back to all — and ask the user which one.
+2. If a keyword is provided, glob `~/.claude/observability/handoff/*<keyword>*.md`.
    - Single match: use it.
    - Multiple matches: show the list and ask the user to pick.
-   - No match: also try the legacy location `tmp/handoff-*<keyword>*.md` in the project root (pre-global convention); still nothing → show `ls ~/tmp/handoff-*.md` output and ask for correction.
+   - No match: try the legacy locations in order — `~/tmp/handoff-*<keyword>*.md` (pre-2026-07-26), then `tmp/handoff-*<keyword>*.md` in the project root (pre-global); still nothing → show the handoff dir listing and ask for correction.
 3. Read the handoff document thoroughly.
 4. Print a brief summary:
    - Task goal (1-2 sentences)

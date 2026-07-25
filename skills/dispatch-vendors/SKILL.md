@@ -133,7 +133,8 @@ write doing it yourself.
    vendor's self-report. Fix round = resume by session id with one
    consolidated list. Two resumes max, then take it back inline.
 4. Append `date | vendor | scenario | why:econ|obs | pass/fail(+fixups) | resumes:N` to
-   `~/.claude/dispatch/ledger.md` (debrief reads it at 收盘). **Write the row
+   `~/.claude/observability/dispatch/ledger.md` — records live with the other
+   agent ledgers, never in a repo (debrief reads it at 收盘). **Write the row
    in the same Bash call that launches** (`… | dispatched`), then amend the
    verdict on return — rows recorded only on success go missing exactly when
    they matter. A fixup caused by *your* wrong brief is logged as such, not as

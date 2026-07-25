@@ -52,8 +52,9 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 2. `python3 $FORGE/trigger_eval.py --description-file skills/<name>/SKILL.md
    --cases <c> --semantic-config <s>` → P = R = 1.0 才继续
    (直接喂 SKILL.md 即可,`>-` 折叠块解析已在 vendored 版修复)。
-3. `python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills
-   --output-dir /tmp/atlas` → 与全舰无 ≥0.42 重叠。
+3. `python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills` → 与全舰
+   无 ≥0.42 重叠。产物默认写 `~/.claude/observability/skill-atlas/`(和 ccobs
+   的账本放一起),不落仓、不落 /tmp;要一次性结果才传 `--output-dir`。
 4. 评测服务描述,不绑架描述:描述瘦身后概念锚不齐 → semantic_config 加
    `fallback_positive_concepts`,不准往描述里塞词凑分。
 

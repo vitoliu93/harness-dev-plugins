@@ -129,7 +129,7 @@ Three checks against this task's experience:
    of defect and the same fix — they just don't look like skills.
 
    Special case when this task used `dispatch-vendors`: read
-   `~/.claude/dispatch/ledger.md` and check the result column — **split by the
+   `~/.claude/observability/dispatch/ledger.md` and check the result column — **split by the
    `why:` column first**: `why:obs` rows were dispatched under the economics
    floor on purpose (the user's standing observation directive) and must not be
    scored against the gate; only `why:econ` rows judge it (rows with no `why:`

@@ -9,10 +9,14 @@ argument-hint: "[optional: skill name to focus on]"
 
 # skill-atlas
 
-Engine is vendored in skill-forge (upstream yao-meta-skill no longer tracked) — set once:
+Engine is vendored in skill-forge (upstream yao-meta-skill no longer tracked).
+`PLUGIN` is the source repo; `ATLAS` is where run state lives — **never inside
+the repo**: the plugin repo is source, the ledger sits next to ccobs' data
+(override with `SKILL_ATLAS_DIR`, same shape as `CCOBS_DIR`). Set once:
 
 ```bash
 PLUGIN=~/codebase/projects/agent-plugins
+ATLAS=${SKILL_ATLAS_DIR:-~/.claude/observability/skill-atlas}
 ```
 
 Run the four checks, then report. A description edit without re-running its
@@ -21,11 +25,12 @@ eval is a lint failure — say so when you see one.
 ## 1. Route overlap (all skills, no fixtures needed)
 
 ```bash
-python3 $PLUGIN/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $PLUGIN/skills \
-  --output-dir /tmp/atlas
+python3 $PLUGIN/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $PLUGIN/skills
 ```
 
-Read `route_overlap_matrix.csv`: any pair ≥ 0.42 = collision → propose
+Writes `$ATLAS/atlas/` (CSV + JSON views) plus `$ATLAS/skill_atlas.{json,html}`;
+the paths are the script's defaults, so don't pass `--output-dir` unless you
+want a throwaway run. Read `$ATLAS/atlas/route_overlap_matrix.csv`: any pair ≥ 0.42 = collision → propose
 tightening one description or merging the skills. Point `--workspace-root` at
 `$PLUGIN` instead to include `archive/` (useful before un-archiving something).
 
