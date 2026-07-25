@@ -5,6 +5,7 @@ Each case pipes a fixture payload into the hook and asserts on stdout.
 No framework, no fixtures dir — the smallest thing that fails if the logic breaks.
 """
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -75,8 +76,35 @@ def test_security_relay():
     print("security-relay   ok")
 
 
+def test_compact_audit():
+    with tempfile.TemporaryDirectory() as d:
+        obs = Path(d) / "obs"
+        plan = Path(d) / "docs" / "advanced-plans" / "2026-07-25-demo"
+        plan.mkdir(parents=True)
+        (plan / "goal.md").write_text(
+            "## 参考真源\ndocs/refs/demo/proto.html · 判定=并排截图\n\n"
+            "## Done means\n- IK3L2X 的控件全部可编辑\n")
+        (plan / "prototype.html").write_text("<html></html>")
+
+        env = dict(os.environ, CCOBS_DIR=str(obs))
+        payload = {"session_id": "t-c", "cwd": d, "trigger": "auto",
+                   "compact_summary": "Work continued on prototype.html and IK3L2X."}
+        p = subprocess.run([sys.executable, str(HERE / "compact-audit.py")],
+                           input=json.dumps(payload), capture_output=True, text=True, env=env)
+        assert p.returncode == 0, p.stderr
+        row = json.loads((obs / "compaction.jsonl").read_text().strip())
+        plans = row["plans"][0]
+        assert "docs/refs/demo/proto.html" in plans["dropped"], plans   # neither path nor basename in summary
+        assert "2026-07-25-demo" in plans["dropped"], plans     # slug absent
+        assert "prototype.html" in plans["survived"], plans
+        assert "IK3L2X" in plans["survived"], plans
+        assert Path(row["summary_file"]).read_text().startswith("Work continued")
+    print("compact-audit    ok")
+
+
 if __name__ == "__main__":
     test_plan_anchor()
     test_standby_watchdog()
     test_security_relay()
+    test_compact_audit()
     print("all hook self-checks passed")

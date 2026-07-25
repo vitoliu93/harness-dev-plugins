@@ -139,6 +139,21 @@ Three checks against this task's experience:
    forgot) — an all-`pass` ledger over a collapsed second half reads as
    "healthy" and isn't.
 
+   Special case when the session got compacted: the `compact-audit` hook logs
+   每次压缩丢了哪些计划锚点 —— 收盘时读一眼本 session 的行：
+
+   ```bash
+   grep '"<session-id>"' ~/.claude/observability/compaction.jsonl \
+     | python3 -c "import json,sys; [print(r['ts'], p['dropped']) for l in sys.stdin
+       for r in [json.loads(l)] for p in r['plans']]"
+   ```
+
+   同一个锚点(参考真源路径、prototype.html、完成判据里的 ident)**连续多次
+   `dropped`** = 它已经不在工作上下文里了,后半程的判断都是在没有它的情况下做的
+   —— 这正是 1.4 剪辑器那次的失效路径(8 次压缩,原型路径 0 次幸存)。修法不是
+   写更长的摘要,是让锚点有个压缩之外的落点(plan-anchor hook / goal.md 的
+   `参考真源` 段)。没装 ccobs 目录 / 无该 session 行 → 跳过。
+
 3. **审计信号**(cto-audit 的信号层——只提醒,不发动):两个便宜指标,任一命中
    就在收盘报告末尾加一句「建议召集 cto-audit:<原因>」:
    - 本项目 LEARNED.md / SKILL-CANDIDATES.md 里同一结构性主题(分层/重复实现/
