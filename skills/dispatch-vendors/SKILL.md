@@ -51,10 +51,23 @@ written into the brief** (variants sheet has the exact pattern).
   `--mode plan` and put "read-only, change no file in the repo" in the brief,
   or `--resume <session> -p 'write the report to <path>'` after.**
 
-**Q has a floor.** The vendor must plausibly run **≥20 min** or produce
-**≥300 lines**. Below that, writing the brief + verifying the result costs more
-than the generation it saves — measured: a batch of 5–8 minute UI-component
-dispatches was net-negative. Under the floor → inline or subagent.
+**Q has a floor — an economics floor, not a ban.** The vendor must plausibly
+run **≥20 min** or produce **≥300 lines**. Below that, writing the brief +
+verifying the result costs more than the generation it saves — measured: a batch
+of 5–8 minute UI-component dispatches was net-negative. Under the floor →
+inline or subagent.
+
+**The floor yields to a standing observation directive.** The user has asked for
+vendor use to continue *specifically to observe orchestration and collaboration*
+— that purpose is not token economics, and the token-economics floor does not
+get to veto it. When the user has said so, dispatch under the floor is correct;
+what's required is that the ledger row say **why** (`why:obs` vs `why:econ`),
+because an under-floor batch dispatched deliberately will drag the pass/fixup
+numbers down and, unmarked, reads as evidence the gate was right. Two
+populations, two verdicts: `econ` rows judge the floor, `obs` rows judge whether
+non-Anthropic collaboration produces anything a subagent wouldn't. Never cite
+"token 没省下来" as a reason to stop dispatching — that conclusion is already
+in hand (2026-07-25) and is not what the observation is measuring.
 
 **A — acceptance-decidable, a veto (not a reason to dispatch).** Dispatch only
 if "did it work" is answerable by a command. When success is judged by *does it
@@ -126,7 +139,7 @@ write doing it yourself.
 3. Verify yourself — run the acceptance, read the artifact; never accept the
    vendor's self-report. Fix round = resume by session id with one
    consolidated list. Two resumes max, then take it back inline.
-4. Append `date | vendor | scenario | pass/fail(+fixups) | resumes:N` to
+4. Append `date | vendor | scenario | why:econ|obs | pass/fail(+fixups) | resumes:N` to
    `~/.claude/dispatch/ledger.md` (debrief reads it at 收盘). **Write the row
    in the same Bash call that launches** (`… | dispatched`), then amend the
    verdict on return — rows recorded only on success go missing exactly when
