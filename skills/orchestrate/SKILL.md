@@ -1,11 +1,9 @@
 ---
 name: orchestrate
 description: >-
-  Delegation discipline for coding work: route across vendor / subagent /
-  host, write spec + acceptance, gate parallel workers. Use when
-  委派/delegate/派活, 编排/fan out workers, "这个任务适合委派吗", a spec pack
-  for a worker, or before fanning out coding work yourself. NOT vendor CLI
-  transport (dispatch-vendors).
+  expert at delegation discipline for coding work: route across vendor / subagent /
+  host, write spec + acceptance, gate parallel workers。Use when 委派/派活、
+  编排/fan out、并行开发别让 worker 撞车、"这批活分给 vendor 和 subagent 做吗"。
 argument-hint: "[task or batch to delegate]"
 ---
 

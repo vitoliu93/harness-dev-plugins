@@ -1,6 +1,6 @@
 ---
 name: cto-audit
-description: CTO 慢循环退火审计——这轮演化后系统更收敛还是更漂移;产出 harness 补丁。仅 /cto-audit 显式召集。
+description: 从 CTO 视角审计项目
 disable-model-invocation: true
 argument-hint: "[目标项目目录] [engineering|algorithm|delivery]"
 ---

@@ -3,14 +3,7 @@ name: dispatch-vendors
 description: >-
   Dispatch a whole self-contained task — repo recon/影响面勘察, bug repro,
   红队/独立 review, test authoring, E2E, docs, research, dependency migration
-  — to a
-  standalone vendor agent CLI (dscode / arkcode / kicode / cursor-agent)
-  running
-  unattended on its own quota, resumable by session id. Trigger when the user
-  names a vendor ("让 cursor 跑/kicode 试试"), signals independence
-  ("后台跑/顺便/不急/别占主线"), or you spot a parallelizable side-quest or a
-  non-Anthropic model-diversity win (别的模型家族挑毛病/找盲点). NOT for the module
-  the main session is actively building.
+  — to a standalone vendor agent CLI
 argument-hint: "[vendor + task | task brief]"
 ---
 

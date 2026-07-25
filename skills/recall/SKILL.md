@@ -2,8 +2,7 @@
 name: recall
 description: >-
   开工前查先例:检索 ccobs 观测账本,返回至多 5 条"过去会话碰过这个问题"的
-  线索,不搬运原文。Use when "以前查过吗/有没有先例/recall <主题>",
-  或 research 任务开工时主动跑一次。
+  线索,不搬运原文
 argument-hint: "[主题关键词]"
 ---
 

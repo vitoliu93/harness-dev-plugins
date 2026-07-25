@@ -1,12 +1,7 @@
 ---
 name: campaign
 description: >-
-  Run a multi-issue module/version as one tracked campaign — the layer above
-  单个 issue: 北极星、参考真源、单与单的依赖序、以及唯一有权宣布「模块交付」的判据。
-  Use when 一个版本/模块要拆成 ≥3 张异构工单、预期跨 ≥2 天、或跨多个仓协同
-  ("做 1.4 模块一"、"这个版本的这一块"、"module rollout"、"campaign"),
-  and to resume one ("继续 <campaign>")。NOT for a single issue (→ ship /
-  advanced-plan), NOT for ≥10 条同构条目的批量执行 (→ L 档矩阵)。
+  Run a multi-issue module/version as one tracked campaign
 argument-hint: "[new <version>-<module> | resume <slug> | close <slug>]"
 ---
 

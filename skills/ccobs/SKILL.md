@@ -1,9 +1,7 @@
 ---
 name: ccobs
 description: >-
-  agent 工具可观测账本:七源 session 灌入 SQLite,出用量/技能使用率/token
-  经济等观测视图。Use when "观测报告/usage report/ccobs",
-  或 skill-atlas/debrief 要会话统计。
+  build agent 工具可观测账本, 并适用于读取某个指定 session 的内容
 ---
 
 # ccobs — agent observability ledger

@@ -2,13 +2,8 @@
 name: plan-prototype
 description: >-
   Render what you are about to build as an interactive prototype.html — the user
-  approves the target instead of reading the plan. Use when 立项/planning a
-  non-trivial task that already has a design source (原型 / 设计稿 / PRD /
-  Figma 导出), on a user-visible UI change (界面 / 布局 / 交互 改造), on a backend
-  change worth showing as 架构 / 数据流 / 实体关系 before coding, or on "目标原型"、
-  "先给我看看你要做成什么样"、"按原型实现"、"先让我确认"; advanced-plan calls it
-  before locking the plan. NOT a visual explainer of something that already
-  exists (→ create-readable-html), not a report, not for a trivial 改个错别字 fix.
+  approves the target instead of reading the plan。Use when 有设计源(原型 / 设计稿 /
+  PRD / Figma),或界面 / 布局 / 交互 改造("按原型实现"、"先给我看看你要做成什么样")。
 argument-hint: "[plan slug or what is being built]"
 ---
 

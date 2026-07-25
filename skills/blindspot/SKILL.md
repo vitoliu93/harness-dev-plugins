@@ -5,6 +5,7 @@ description: >-
   knowledge a task touches, return a ranked briefing of 5-10 unknown unknowns
   — hidden couplings, conventions, landmines, prior art.
 argument-hint: "[task + the territory you're blind on]"
+disable-model-invocation: true
 ---
 
 # /blindspot

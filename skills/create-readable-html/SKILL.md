@@ -1,12 +1,8 @@
 ---
 name: create-readable-html
 description: >-
-  Produce a single self-contained HTML file as a visual explainer —
-  infographic-style with diagrams and spatial layout, not restyled prose. Use
-  when output should be grasped at a glance: architecture, comparisons, flows,
-  dashboards, PR/code visualizations. Trigger: "make an HTML file", "visualize
-  this", "diagram this", "可视化", "信息图", "画个架构图". Formerly html-doc —
-  that word still routes here.
+  Produce a single self-contained HTML file as a visual explainer — architecture,
+  comparison, flow, dashboard 该被一眼看懂时("可视化"、"画个图")。
 argument-hint: [what the artifact should show]
 ---
 

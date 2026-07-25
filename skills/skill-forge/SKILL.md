@@ -1,10 +1,7 @@
 ---
 name: skill-forge
 description: >-
-  铸造或改良一个 skill:资格门(该不该建)、invocation 经济学、trigger-first
-  评测、资源边界。自带 vendored 评测工具链,供 skill-atlas 复用。
-  Use when "铸造/建个 skill/create a skill/improve this skill",
-  或 debrief 候选毕业。
+  铸造或改良一个 skill,或让攒够的候选毕业
 ---
 
 # skill-forge

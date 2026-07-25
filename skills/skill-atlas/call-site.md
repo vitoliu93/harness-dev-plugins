@@ -14,7 +14,7 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 
 | 原子 | 形态 | 调用点 | 类型 |
 |---|---|---|---|
-| blindspot | atom | ship(kox) Stage 1(计划前盲区扫描) | ① |
+| blindspot | atom | 用户输入 /blindspot(2026-07-26 起 `disable-model-invocation`,ship(kox) Stage 1 只能由用户显式召集) | ③ ⚠原 ① 工作流位已断,观察是否还记得手动跑 |
 | advanced-plan | sop | ship(kox) 可验收计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |

@@ -2,8 +2,7 @@
 name: grill-me
 description: >-
   开工前的决策盘问:建决策树,细节自决并公示,只把高风险决策(破坏性/稳定性/
-  功能大变/花钱)一次一个升级给 CEO 拍板,每问带推荐答案。Use when "grill me/盘问",
-  或 advanced-plan 定稿前;单个孤立决策直接 AskUserQuestion,不用建树。
+  功能大变/花钱)一次一个升级给 CEO 拍板,每问带推荐答案。
 ---
 
 # grill-me
