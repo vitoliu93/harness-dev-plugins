@@ -53,6 +53,26 @@
     {
       "text": "基准测试挂到独立进程后台跑一晚上,明早看中位数",
       "family": "independence"
+    },
+    {
+      "text": "用 opus 好好想想这个架构怎么设计",
+      "family": "advisory"
+    },
+    {
+      "text": "给我个第二意见,这个方案我拿不准",
+      "family": "advisory"
+    },
+    {
+      "text": "校审一下这份计划再动手",
+      "family": "advisory"
+    },
+    {
+      "text": "卡住了,两个假设都不对,找个新鲜上下文帮我看看",
+      "family": "advisory"
+    },
+    {
+      "text": "get an ultra review on this design before I commit to it",
+      "family": "advisory"
     }
   ],
   "should_not_trigger": [
@@ -81,10 +101,6 @@
     {
       "text": "spawn 个 subagent 去搜一下代码库",
       "family": "normal_subagent"
-    },
-    {
-      "text": "用 opus 好好想想这个架构怎么设计",
-      "family": "second_opinion"
     },
     {
       "text": "做个深度调研,多找些网页来源交叉验证",

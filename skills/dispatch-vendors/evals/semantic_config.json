@@ -42,7 +42,18 @@
         "找盲点",
         "挑毛病",
         "两个 vendor",
-        "各写一版"
+        "各写一版",
+        "第二意见",
+        "second opinion",
+        "校审",
+        "ultra review",
+        "advisor",
+        "好好想想",
+        "拿不准",
+        "卡住了",
+        "新鲜上下文",
+        "再动手",
+        "before I commit"
       ]
     },
     "self_contained_task": {
@@ -98,7 +109,6 @@
         "subagent",
         "搜一下代码库",
         "帮我 review",
-        "好好想想",
         "深度调研",
         "网页来源",
         "Workflow",

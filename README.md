@@ -33,7 +33,7 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 |---|---|
 | advanced-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
-| dispatch-vendors | Dispatch a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a standalone vendor agent CLI (dscode / arkcode / kicode / cursor-agent) — unattended, resumable, on someone else's quota. |
+| dispatch-vendors | Delegate to a separate AI process, two classes. **Execution**: a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a vendor agent CLI (dscode / arkcode / kicode / cursor-agent) — unattended, resumable, on someone else's quota. **Advisory**: a 第二意见/校审 to a fresh subagent, headless fable, or a foreign family — a verdict, not a diff, so the execution floor and acceptance gate don't apply. |
 | blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
 | handoff | Save / pick up task state in global `~/tmp/` for cross-session, cross-agent transfer. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
@@ -54,14 +54,13 @@ on plan acceptance clauses + the project's E2E stage.
 
 ## Subagents
 
-Four subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
+Three subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
 Each runs noisy work in an isolated context so search dumps, engine transcripts,
 and upload logs never enter the main session; only a distilled answer comes back.
 
 | Agent | Model | Role |
 |---|---|---|
 | general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `create-readable-html`, `lark-*`), runs it end-to-end, returns only the distilled result. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
-| second-opinion | opus | Mid-task strategic guidance + clean-context second opinion (当局者迷,旁观者清). Mode opus: advises itself; mode ultra: mediates Claude headless on fable. |
 | code-search | sonnet | Token-efficient codebase explorer — prefers auggie-mcp semantic search, `rg`/`fd` for exact matches; returns terse located results, not raw file dumps. |
 | investigator | sonnet (opus for hard incidents) | Debug-scenario agent — one spawn per incident; correlates clues across the project's evidence sources (logs / DB / code / tickets / docs, loaded lazily via the project's own skills) inside its own context, returns root cause + evidence chain + reproduction commands. Complements built-in Explore/Plan; replaces per-source fan-out whose clues would otherwise be joined in the expensive main context. |
 

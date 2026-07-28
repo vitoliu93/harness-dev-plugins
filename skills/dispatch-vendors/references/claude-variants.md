@@ -65,6 +65,10 @@ credentials, no separate headless tier). Use only when the task genuinely
 needs Anthropic models AND the main session must stay free.
 `--max-budget-usd <n>` caps spend.
 
+**The one sanctioned use is advisory dispatch** — `claude -p --model fable`
+for a stronger-reasoning second opinion (SKILL.md → Advisory dispatch;
+`references/advisory.md` for the incantation). Verified live 2026-07-28.
+
 ## Shared flags (all three)
 
 - Run: `-p/--print`, prompt as positional arg or stdin.

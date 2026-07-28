@@ -25,7 +25,7 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
 | agent-reach | atom | "YouTube 字幕/平台触达"(skill-guard→executor) | ③ 低频天性 |
 | media-understanding | atom | "转写这段音视频"(skill-guard→executor) | ③ 低频天性 |
-| dispatch-vendors | sop | "派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · advanced-plan 路由 ② · orchestrate 传输层下游 ① | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16 |
+| dispatch-vendors | sop | **execution**:"派给 vendor/让 cursor 跑/后台跑" · 模型主动(独立侧枝任务/模型多样性机会) · advanced-plan 路由 ② · orchestrate 传输层下游 ①;**advisory**:"第二意见/校审/ultra review" · 模型主动三时刻(开工前 / 卡住 2+ 假设 / 宣布完成前) | ①③ ⚠ 2026-07-16 重定位(原 dispatch 廉价打字员定位六周仅 3 用),观察期至 08-16;2026-07-28 并入 second-opinion(同名 agent 已删),advisory 档带来一条与任务类型无关的常驻调用点——观察它能否把使用率拉起来 |
 | orchestrate | sop | "委派/编排/派活/适合委派吗/spec pack" · 模型主动(准备 fan out 编码工作前) · 传输链到 dispatch-vendors | ①③ ⚠ 2026-07-24 新增(消化自三方编排设计文档),观察期:先行件(pre-red gate/receipt/账本)未建前是纯纪律层 |
 | cto-audit | sop | 用户输入 /cto-audit(`disable-model-invocation` 已把"仅用户召集"机械化)· debrief Move 3 审计信号层提醒 | ①③ ⚠观察 debrief 提醒是否真发生 |
 | grill-me | atom | blindspot 收尾链下一步 · advanced-plan `new` 步骤 1 点名 · ship(kox) Stage 2 · "grill me/盘问我/要我拍板的" | ①③ |
