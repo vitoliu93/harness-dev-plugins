@@ -1,0 +1,31 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": [
+    "接手",
+    "save progress",
+    "交接"
+  ],
+  "should_trigger": [
+    { "text": "存档", "family": "archive" },
+    { "text": "今天到这吧,存个档", "family": "archive" },
+    { "text": "学完了,收工", "family": "archive" },
+    { "text": "这块代码我看懂了,存档", "family": "archive_code" },
+    { "text": "读档", "family": "resume" },
+    { "text": "继续学习", "family": "resume" },
+    { "text": "继续 micrograd", "family": "resume" },
+    { "text": "继续看那个鉴权模块,上次到哪了", "family": "resume_code" },
+    { "text": "我想搞懂这个代码库,先把上次的进度捡起来", "family": "resume_code" }
+  ],
+  "should_not_trigger": [
+    { "text": "接手一下这个任务", "family": "work_handoff" },
+    { "text": "save progress 一下,我要换个会话", "family": "work_handoff" },
+    { "text": "交接给下一个 session", "family": "work_handoff" },
+    { "text": "解释一下 resume-learning 是什么", "family": "explain_only" }
+  ],
+  "near_neighbor": [
+    { "text": "继续 IJ4GSE 那个开发计划", "family": "plan_resume" },
+    { "text": "以前查过这个问题吗", "family": "recall" },
+    { "text": "帮我出两道题练一下偏导数", "family": "quiz_me" },
+    { "text": "该不该学这个材料,帮我审计一下学习目标", "family": "study_coach" }
+  ]
+}

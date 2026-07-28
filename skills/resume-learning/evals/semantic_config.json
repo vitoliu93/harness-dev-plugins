@@ -1,0 +1,75 @@
+{
+  "positive_concepts": {
+    "archive": {
+      "weight": 0.5,
+      "phrases": [
+        "存档",
+        "学完了",
+        "今天到这",
+        "这块看懂了",
+        "看懂了"
+      ]
+    },
+    "resume": {
+      "weight": 0.5,
+      "phrases": [
+        "读档",
+        "继续学习",
+        "继续 micrograd",
+        "继续看",
+        "上次",
+        "捡起来"
+      ]
+    },
+    "learning_context": {
+      "weight": 0.45,
+      "phrases": [
+        "学习",
+        "搞懂",
+        "代码库",
+        "RESUME.md",
+        "主动回忆",
+        "学习主题"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "work_handoff": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "接手",
+        "save progress",
+        "交接",
+        "换个会话",
+        "下一个 session"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "是什么",
+        "什么意思"
+      ]
+    },
+    "sibling_skills": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "开发计划",
+        "以前查过",
+        "出两道题",
+        "练一下",
+        "审计一下",
+        "该不该学"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "archive",
+    "resume",
+    "learning_context"
+  ]
+}

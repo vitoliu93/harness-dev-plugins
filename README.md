@@ -45,6 +45,19 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 | skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget. |
 | ccobs | SQLite observability ledger over session transcripts: skill usage, spawn model discipline, token economy, hook health. |
 
+### Learning (merged from study-kit, 2026-07-28)
+
+North star: **让下一次学习会话更容易发生** (`docs/study/north-star.md`). The
+boundary against the work skills is *learning vs shipping*, not hobby vs job —
+reading a work codebase to understand it is learning, and these apply.
+
+| Skill | What it does |
+|---|---|
+| resume-learning | 学习存档/读档:结束时三路取证(跨 CLI 会话/git/文件扫描)+ 2-4 个主动回忆追问 → 代写 `RESUME.md`;下次"读档"30 秒重启。重启成本恒定,不随中断时长增长。 |
+| study-coach | 第一性原理学习教练:目标审计(Musk 五步法倒推 + 新摊子闸门)/ 迷茫急救 / 进度分析(读存档历史做证据式盘点)。 |
+| quiz-me | 概念练习出题人:情境应用题而非计算题,题面不出现术语,一题一判,transfer 阶梯(贴材料→跨域→边界陷阱)。 |
+| stepping-stone | 先导知识"够用就走"讲解人:抓单一本质、给图不给想象、只讲先导本身,连回主线的 gap 留给用户。与 quiz-me 互补(搭地基 vs 验结构)。 |
+
 Moved out (v2.0): `ship` — now a five-stage lifecycle skill in
 `kox-agent-plugins` (context collection → acceptance-bearing plan →
 implementation → E2E acceptance → finalize), where the issue tracker, E2E

@@ -33,6 +33,10 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | campaign | sop | ship(kox) Stage 0 尺寸门第三档(≥3 张异构单 或 跨 ≥2 天 → 先起 charter)· "做 xx 模块/这个版本这一块" · resume "继续 <campaign>" | ①③ ⚠ 2026-07-25 新增(消化自 1.4 剪辑器复盘:5 次逐单收盘全绿 + 1 次模块级失败无归口),观察期至 08-25 |
 | skill-forge | meta | debrief Move 3 候选满 3 毕业 · "铸造/建个 skill" | ①③ ⚠新增(消化自 yao-meta-skill,vendored 工具链供 skill-atlas) |
 | report | atom | 收尾汇报前必载(CLAUDE.md 指路)· "汇报/report" | ②③ |
+| resume-learning | sop | "存档/学完了/今天到这" · "读档/继续 <学习主题>" | ③ 2026-07-28 并入自 study-kit(用户自评"非常实用",是四个里唯一有既成肌肉记忆的) |
+| study-coach | sop | "为什么学/该学什么/学习路线合理吗" · "不想学/又断了/迷茫" · "学习盘点/进度分析" | ③ 2026-07-28 并入 |
+| quiz-me | atom | "出题/练一下 <概念>/考考我" | ③ 2026-07-28 并入 ⚠ 低频天性,且依赖用户主动想练 |
+| stepping-stone | atom | 先导知识卡壳时用户说"这个我不懂/先讲讲 <前置概念>" · quiz-me/study-coach 判定地基缺失时转介 | ③ 2026-07-28 并入 ⚠ 观察转介是否真发生,否则是纯触发词原子 |
 | audit-context | sop | "audit CLAUDE/prune memory" | orphan · 月度卫生(豁免:低频天性) |
 | docs-organize | sop | "整理文档/docs organize" | orphan · 月度卫生(豁免:低频天性) |
 
@@ -72,6 +76,13 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 - **cto-audit** — 2026-07-15 新增。发动权刻意只给用户(③),debrief Move 3 的审计信号层
   是它的提醒线(①)。观察期:两次收盘后看提醒是否真的触发过;若从未触发且用户也从未召集,
   按其自己的"有生有灭"律处理。
+
+- **学习四原子(resume-learning / study-coach / quiz-me / stepping-stone)** — 2026-07-28
+  study-kit 整仓并入,理由是"学习"和"干活"共用同一批人和同一个上下文,分两个 kit 只是
+  历史包袱。**边界从"业余 vs 工作"改判为"学习 vs 交付"**:读懂一个公司代码库也是学习,
+  也该有存档。风险点即观察项:resume-learning 的"继续"和 handoff/advanced-plan 的"继续"
+  在同一个会话里争路由——描述里已写死"裸说继续不触发本 skill",证伪条件是**用户说"读档"
+  却被路由去 handoff,或反过来**;真出现就把触发词收紧到只认"读档"。
 
 新增/改名任何原子 → 本表补一行(**接线点 = 新原子的准入证**)。空格子就是待接线清单。
 

@@ -25,8 +25,14 @@
 执行层   code-search · vendor CLI(dscode / arkcode / kicode / cursor-agent,sheets 见 dispatch-vendors 的 references/)
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
+学习层   resume-learning · study-coach · quiz-me · stepping-stone(2026-07-28 并入自 study-kit)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
+
+**学习层自带北极星**(`docs/study/north-star.md`:让下一次学习会话更容易发生),与本文
+**并列而非从属**——它衡量的是"重启成本",本文衡量的是"每次收盘的复利",两把尺子不互相
+换算。并入的理由不是目标相同,而是同一个人、同一个上下文:读懂一个公司代码库既是学习也是
+工作,分两个 kit 只会让它掉进缝里。边界因此是**学习 vs 交付**,不是业余 vs 工作。
 
 ## 调研核心结论(2026-07-02 快照,当时的设计依据)
 
