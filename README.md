@@ -38,8 +38,7 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 | handoff | Save / pick up task state in global `~/tmp/` for cross-session, cross-agent transfer. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
 | create-readable-html | Single self-contained, infographic-style HTML explainer — output for readers far from the code. 原 html-doc. |
-| agent-reach | Platform reach wrapper — YouTube subtitle/transcript extraction (yt-dlp). |
-| media-understanding | Local audio/video → Gemini transcription + digest; agent-reach's no-subtitle fallback. |
+| media-understanding | Local audio/video → Gemini transcription + digest. |
 | docs-organize | 文档—事实—代码锚点体检 + docs/ placement 约定落地. |
 | audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
 | skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget. |
@@ -111,7 +110,6 @@ inline reading when nesting is unavailable.
   | `exa-code` | general-skills-executor | sonnet |
   | `create-readable-html` | general-skills-executor | sonnet |
   | `lark-*` | general-skills-executor | haiku |
-  | `agent-reach` | general-skills-executor | sonnet |
   | `media-understanding` | general-skills-executor | sonnet |
 
   `lark-skill-maker` and `lark-im` are exempt (skill development and outbound

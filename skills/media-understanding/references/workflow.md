@@ -2,7 +2,7 @@
 
 ## Subagent prompt template (fallback role)
 
-When [[agent-reach]] finds no subtitles, the content-understanding subagent
+When an online video has no subtitles, the content-understanding subagent
 (`general-skills-executor`, model: sonnet) downloads the media and runs this
 script itself, so the file and full transcript stay out of the main window.
 

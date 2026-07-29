@@ -34,7 +34,6 @@ DELEGATE=(
   "exa-code|general-skills-executor|sonnet|Exa 网页搜索与代码查找|"
   "create-readable-html|general-skills-executor|sonnet|HTML 可视化/信息图/架构图|"
   "lark-*|general-skills-executor|haiku|飞书操作 通知/留档/日程/读取|硬规则：涉及内容创作（OKR 措辞、文档正文、评论文案等核心交付）时，主模型必须先拟好最终全文、逐字放进 prompt，executor 只执行 API 调用、不得代拟内容——判断密集的部分不外包。"
-  "agent-reach|general-skills-executor|sonnet|平台内容触达 YouTube 字幕/搜索|"
   "media-understanding|general-skills-executor|sonnet|音视频文件 Gemini 转写理解|"
 )
 # Skills that match a glob above but must stay in the main context.

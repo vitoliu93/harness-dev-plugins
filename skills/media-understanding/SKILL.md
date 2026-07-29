@@ -15,8 +15,8 @@ demos) that a pure ASR transcript would miss.
 Two roles:
 
 1. **Direct** — the user hands over a recording/screencast/video file to understand.
-2. **Fallback** — when [[agent-reach]] hits a video with no
-   usable subtitles, download the media and route it here instead of giving up.
+2. **Fallback** — when an online video has no usable subtitles, download the
+   media and route it here instead of giving up.
 
 ## Prerequisites
 
