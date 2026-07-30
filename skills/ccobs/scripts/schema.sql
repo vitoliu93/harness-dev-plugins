@@ -1,5 +1,6 @@
 -- ccobs schema — derived, rebuildable index over agent observability JSONL/SQLite.
--- Facts + pointers only: no message bodies, no secrets. Drop the DB and re-ingest at will.
+-- Facts + pointers for every source; locally available Cursor message parts are also retained.
+-- Drop the DB and re-ingest at will.
 -- Seven sources: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
 
 PRAGMA journal_mode = WAL;
@@ -49,10 +50,34 @@ CREATE TABLE IF NOT EXISTS tool_calls (
   model_param   TEXT,                    -- explicit model on Agent spawn (NULL = missing!)
   background    INTEGER,                 -- run_in_background
   is_error      INTEGER DEFAULT 0,       -- set from matching tool_result
-  error_snippet TEXT                     -- first 300 chars of the error tool_result — the one deliberate exception to "no bodies"
+  error_snippet TEXT                     -- first 300 chars of an error result for legacy summary queries
 );
 CREATE INDEX IF NOT EXISTS idx_tools_session ON tool_calls(session_id);
 CREATE INDEX IF NOT EXISTS idx_tools_tool ON tool_calls(tool);
+
+-- Locally readable Cursor transcript parts. A message may contain text, reasoning, several
+-- tool calls, and tool results, so it cannot be represented by one turns row.
+-- seq is NULL when the source's authoritative ordering chain is not decoded.
+CREATE TABLE IF NOT EXISTS message_parts (
+  part_id       TEXT PRIMARY KEY,
+  session_id    TEXT NOT NULL,
+  message_id    TEXT,
+  seq           INTEGER,
+  part_index    INTEGER NOT NULL,
+  ts            TEXT,
+  role          TEXT NOT NULL,           -- system | user | assistant | tool
+  part_type     TEXT NOT NULL,           -- text | reasoning | tool_call | tool_result | source-specific
+  model         TEXT,
+  tool_call_id  TEXT,
+  tool_name     TEXT,
+  content       TEXT,                    -- text/reasoning or scalar tool result
+  data_json     TEXT,                    -- structured tool args/results and source metadata
+  is_error      INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_message_parts_session_seq
+  ON message_parts(session_id, seq, part_index);
+CREATE INDEX IF NOT EXISTS idx_message_parts_tool_call
+  ON message_parts(tool_call_id);
 
 CREATE TABLE IF NOT EXISTS hook_runs (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,

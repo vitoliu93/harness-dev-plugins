@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // ccobs ingest — incremental, idempotent sweep of agent observability data into obs.db.
 // Seven adapters: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
-// Facts + pointers only; message bodies never enter the DB.
+// Facts + pointers for every source; locally available Cursor transcript parts are retained.
 // Safe to re-run any time; safe to delete the DB and rebuild.
 //
 // Usage:
@@ -60,6 +60,21 @@ function encodeProject(cwd: string | null | undefined): string {
   return cwd.replaceAll("/", "-")
 }
 
+function isoTimestamp(value: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date.toISOString()
+}
+
+function textValue(value: unknown): string | null {
+  return typeof value === "string" && value.length > 0 ? value : null
+}
+
+function jsonValue(value: unknown): string | null {
+  if (value == null) return null
+  try { return JSON.stringify(value) } catch { return null }
+}
+
 // ===================== shared prepared statements =====================
 
 function prepStmts(db: Database) {
@@ -68,12 +83,44 @@ function prepStmts(db: Database) {
     getSession: db.prepare("SELECT session_id FROM sessions WHERE session_id = ?"),
     putState: db.prepare("INSERT OR REPLACE INTO ingest_state VALUES (?,?)"),
     turn: db.prepare(
-      "INSERT OR IGNORE INTO turns(message_id, session_id, ts, model, input_tokens, output_tokens, cache_read, cache_create, stop_reason) VALUES (?,?,?,?,?,?,?,?,?)",
+      `INSERT INTO turns(message_id, session_id, ts, model, input_tokens, output_tokens, cache_read, cache_create, stop_reason)
+       VALUES (?,?,?,?,?,?,?,?,?)
+       ON CONFLICT(message_id) DO UPDATE SET
+         ts            = COALESCE(excluded.ts, turns.ts),
+         model         = COALESCE(excluded.model, turns.model),
+         input_tokens  = COALESCE(excluded.input_tokens, turns.input_tokens),
+         output_tokens = COALESCE(excluded.output_tokens, turns.output_tokens),
+         cache_read    = COALESCE(excluded.cache_read, turns.cache_read),
+         cache_create  = COALESCE(excluded.cache_create, turns.cache_create),
+         stop_reason   = COALESCE(excluded.stop_reason, turns.stop_reason)`,
     ),
     tool: db.prepare(
-      "INSERT OR IGNORE INTO tool_calls(id, session_id, ts, tool, skill, subagent_type, model_param, background) VALUES (?,?,?,?,?,?,?,?)",
+      `INSERT INTO tool_calls(id, session_id, ts, tool, skill, subagent_type, model_param, background)
+       VALUES (?,?,?,?,?,?,?,?)
+       ON CONFLICT(id) DO UPDATE SET
+         ts            = COALESCE(excluded.ts, tool_calls.ts),
+         tool          = COALESCE(excluded.tool, tool_calls.tool),
+         skill         = COALESCE(excluded.skill, tool_calls.skill),
+         subagent_type = COALESCE(excluded.subagent_type, tool_calls.subagent_type),
+         model_param   = COALESCE(excluded.model_param, tool_calls.model_param),
+         background    = COALESCE(excluded.background, tool_calls.background)`,
     ),
     toolErr: db.prepare("UPDATE tool_calls SET is_error = 1, error_snippet = COALESCE(?, error_snippet) WHERE id = ?"),
+    part: db.prepare(
+      `INSERT INTO message_parts(
+         part_id, session_id, message_id, seq, part_index, ts, role, part_type, model,
+         tool_call_id, tool_name, content, data_json, is_error
+       ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+       ON CONFLICT(part_id) DO UPDATE SET
+         seq          = COALESCE(excluded.seq, message_parts.seq),
+         ts           = COALESCE(excluded.ts, message_parts.ts),
+         model        = COALESCE(excluded.model, message_parts.model),
+         tool_call_id = COALESCE(excluded.tool_call_id, message_parts.tool_call_id),
+         tool_name    = COALESCE(excluded.tool_name, message_parts.tool_name),
+         content      = COALESCE(excluded.content, message_parts.content),
+         data_json    = COALESCE(excluded.data_json, message_parts.data_json),
+         is_error     = MAX(excluded.is_error, message_parts.is_error)`,
+    ),
     slash: db.prepare(
       "INSERT OR IGNORE INTO tool_calls(id, session_id, ts, tool, skill) VALUES (?,?,?,'SlashCommand',?)",
     ),
@@ -703,6 +750,7 @@ function ingestOpencode(stmts: Stmts): number {
 // ===================== adapter: cursor-ide =====================
 
 const CURSOR_IDE_DB = join(homedir(), "Library", "Application Support", "Cursor", "User", "globalStorage", "state.vscdb")
+const CURSOR_CONTENT_STATE_VERSION = "message-parts-v1"
 
 const cursorIde: Adapter = {
   name: "cursor-ide",
@@ -720,7 +768,9 @@ const cursorIde: Adapter = {
 }
 
 function ingestCursorIde(stmts: Stmts): number {
-  const row = stmts.getState.get(CURSOR_IDE_DB) as { offset: number } | null
+  // Version the state key so upgrading an existing facts-only DB performs one full content backfill.
+  const statePath = `${CURSOR_IDE_DB}#${CURSOR_CONTENT_STATE_VERSION}`
+  const row = stmts.getState.get(statePath) as { offset: number } | null
   const watermark = row?.offset ?? 0 // epoch-ms watermark over composerData.lastUpdatedAt
   let ide: Database
   try { ide = new Database(CURSOR_IDE_DB, { readonly: true }) } catch { return 0 }
@@ -744,37 +794,101 @@ function ingestCursorIde(stmts: Stmts): number {
       if (updated <= watermark) continue
       const sid = c.composerId ?? r.key.slice("composerData:".length)
       const cwd = c.workspaceIdentifier?.uri?.path ?? null
+      const seqByBubble = new Map<string, number>()
+      for (const [seq, header] of (Array.isArray(c.fullConversationHeadersOnly) ? c.fullConversationHeadersOnly : []).entries()) {
+        if (header?.bubbleId) seqByBubble.set(String(header.bubbleId), seq)
+      }
 
+      const bubbles: Array<{ b: any, bid: string, seq: number | null, ts: string | null }> = []
       for (const br of bubbleQ.all(sid, sid) as any[]) {
         let b: any
         try { b = JSON.parse(br.value) } catch { continue }
-        if (b.type !== 2) continue // type 1 = user; turns are assistant-only
         const bid = br.key.split(":")[2] ?? br.key
+        bubbles.push({
+          b,
+          bid,
+          seq: seqByBubble.get(bid) ?? null,
+          ts: isoTimestamp(b.createdAt),
+        })
+      }
+      bubbles.sort((a, b) =>
+        (a.seq ?? Number.MAX_SAFE_INTEGER) - (b.seq ?? Number.MAX_SAFE_INTEGER)
+        || (a.ts ?? "").localeCompare(b.ts ?? "")
+        || a.bid.localeCompare(b.bid),
+      )
+
+      let currentModel: string | null = null
+      for (const bubble of bubbles) {
+        const { b, bid, seq, ts } = bubble
+        if (b.type !== 1 && b.type !== 2) continue
+        const role = b.type === 1 ? "user" : "assistant"
+        const ownModel = b.modelInfo?.modelName ?? null
+        if (b.type === 1 && ownModel) currentModel = ownModel
+        // Only inherit across bubbles that are in the authoritative conversation headers.
+        // Unordered branch/orphan bubbles must not receive the composer's latest model by guesswork.
+        const model = ownModel ?? (seq !== null ? currentModel : null)
+        let partIndex = 0
+
+        if (b.type === 2) {
+          const thinkingText = typeof b.thinking === "string" ? b.thinking : b.thinking?.text
+          if (textValue(thinkingText)) {
+            stmts.part.run(
+              `cursor-ide:${sid}:${bid}:reasoning`, sid, bid, seq, partIndex++, ts,
+              role, "reasoning", model, null, null, thinkingText, jsonValue(b.thinking), 0,
+            )
+          }
+        }
+
+        const text = textValue(b.text) ?? textValue(b.richText)
+        if (text) {
+          stmts.part.run(
+            `cursor-ide:${sid}:${bid}:text`, sid, bid, seq, partIndex++, ts,
+            role, "text", model, null, null, text, null, 0,
+          )
+        }
+
+        if (b.type !== 2) continue
         // tokenCount is present on every bubble but almost always all-zero — zero means "not recorded"
         const tin = b.tokenCount?.inputTokens ?? 0
         const tout = b.tokenCount?.outputTokens ?? 0
         const hasTok = tin + tout > 0
-        // no epoch timestamp on bubbles (timingInfo is app-relative) — ts stays NULL
-        stmts.turn.run(bid, sid, null, b.modelInfo?.modelName ?? null,
+        stmts.turn.run(bid, sid, ts, model,
           hasTok ? tin : null, hasTok ? tout : null, null, null, null)
         total++
         const tf = b.toolFormerData
         if (tf?.name) {
-          stmts.tool.run(bid, sid, null, tf.name, null, null, null, null)
-          if (tf.status === "error") stmts.toolErr.run(null, bid)
+          stmts.tool.run(bid, sid, ts, tf.name, null, null, null, null)
+          const { result, error, status, ...callData } = tf
+          stmts.part.run(
+            `cursor-ide:${sid}:${bid}:tool-call`, sid, bid, seq, partIndex++, ts,
+            "assistant", "tool_call", model, bid, tf.name, null, jsonValue(callData), 0,
+          )
+          const hasResult = Object.hasOwn(tf, "result") || Object.hasOwn(tf, "error") || status === "error"
+          if (hasResult) {
+            const resultValue = error ?? result
+            const isError = status === "error" || error != null
+            stmts.part.run(
+              `cursor-ide:${sid}:${bid}:tool-result`, sid, bid, seq, partIndex++, ts,
+              "tool", "tool_result", model, bid, tf.name,
+              typeof resultValue === "string" ? resultValue : null,
+              jsonValue({ status, result: typeof resultValue === "string" ? undefined : resultValue }),
+              isError ? 1 : 0,
+            )
+            if (isError) stmts.toolErr.run(textValue(error)?.slice(0, 300) ?? null, bid)
+          }
           total++
         }
       }
 
-      const startedAt = c.createdAt ? new Date(c.createdAt).toISOString() : null
-      const endedAt = updated ? new Date(updated).toISOString() : null
+      const startedAt = isoTimestamp(c.createdAt)
+      const endedAt = isoTimestamp(updated)
       stmts.session.run(sid, "main", null, null, encodeProject(cwd), cwd, null, null,
         startedAt, endedAt, CURSOR_IDE_DB, "cursor-ide")
       if (updated > maxWatermark) maxWatermark = updated
     }
 
     if (maxWatermark > watermark) {
-      stmts.putState.run(CURSOR_IDE_DB, maxWatermark)
+      stmts.putState.run(statePath, maxWatermark)
     }
     return total
   } finally {
@@ -805,7 +919,9 @@ function ingestCursorAgentSession(path: string, stmts: Stmts): number {
   let metaJson: any = {}
   try { metaJson = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8")) } catch {}
   const updated = metaJson.updatedAtMs ?? 0
-  const row = stmts.getState.get(path) as { offset: number } | null
+  // Version the state key so upgrading an existing facts-only DB performs one full content backfill.
+  const statePath = `${path}#${CURSOR_CONTENT_STATE_VERSION}`
+  const row = stmts.getState.get(statePath) as { offset: number } | null
   if (updated && updated <= (row?.offset ?? 0)) return 0
 
   let db: Database
@@ -830,33 +946,89 @@ function ingestCursorAgentSession(path: string, stmts: Stmts): number {
     try { blobs = db.prepare("SELECT id, data FROM blobs").all() as any[] } catch { return 0 }
     for (const b of blobs) {
       let o: any
-      // non-JSON blobs are the protobuf ordering chain — aggregates don't need order, skip
+      // Non-JSON blobs are the protobuf ordering chain. JSON message content is retained below,
+      // but seq stays NULL until that chain has a stable local decoder.
       try { o = JSON.parse(Buffer.from(b.data).toString("utf8")) } catch { continue }
+      if (typeof o.role !== "string") continue
+      const blobId = String(b.id)
+      const messageId = String(o.id ?? blobId)
+      const role = o.role
       if (o.role === "assistant") {
         // blob ids are content-addressed (sha256) — prefix with sid to avoid cross-session PK collisions
-        stmts.turn.run(`${sid}-${String(b.id).slice(0, 12)}`, sid, null, model, null, null, null, null, null)
+        stmts.turn.run(`${sid}-${blobId.slice(0, 12)}`, sid, null, model, null, null, null, null, null)
         n++
-      } else if (o.role === "user" && cwd === null && typeof o.content === "string") {
-        cwd = /Workspace Path: (.+)/.exec(o.content)?.[1]?.trim() ?? null
-      } else if (o.role === "tool" && Array.isArray(o.content)) {
-        for (const part of o.content) {
-          if (part?.type === "tool-result" && part.toolName) {
-            stmts.tool.run(`${sid}-${part.toolCallId ?? String(b.id).slice(0, 12)}`, sid, null,
-              part.toolName, null, null, null, null)
+      }
+
+      const contentParts = Array.isArray(o.content)
+        ? o.content
+        : (typeof o.content === "string" ? [{ type: "text", text: o.content }] : [{ type: "content", value: o.content }])
+      for (const [partIndex, rawPart] of contentParts.entries()) {
+        const part = typeof rawPart === "string" ? { type: "text", text: rawPart } : (rawPart ?? {})
+        const rawType = typeof part.type === "string" ? part.type : "content"
+        const isReasoning = rawType === "reasoning" || rawType === "redacted-reasoning"
+        const partType = isReasoning ? "reasoning" : rawType.replaceAll("-", "_")
+        const toolCallId = part.toolCallId
+          ? `${sid}-${part.toolCallId}`
+          : ((rawType === "tool-call" || rawType === "tool-result") ? `${sid}-${blobId.slice(0, 12)}` : null)
+        const toolName = textValue(part.toolName)
+        let content: string | null = null
+        let dataJson: string | null = null
+        let isError = 0
+
+        if (rawType === "text") {
+          content = textValue(part.text)
+          dataJson = part.providerOptions ? jsonValue({ providerOptions: part.providerOptions }) : null
+        } else if (isReasoning) {
+          content = textValue(part.text) ?? textValue(part.data)
+          dataJson = jsonValue({
+            sourceType: rawType,
+            providerOptions: part.providerOptions,
+          })
+        } else if (rawType === "tool-call") {
+          dataJson = jsonValue({
+            args: part.args,
+            providerOptions: part.providerOptions,
+          })
+          if (toolName && toolCallId) {
+            stmts.tool.run(toolCallId, sid, null, toolName, null, null, null, null)
             n++
           }
+        } else if (rawType === "tool-result") {
+          content = textValue(part.result)
+          isError = part.isError || part.is_error || part.error ? 1 : 0
+          dataJson = jsonValue({
+            result: typeof part.result === "string" ? undefined : part.result,
+            experimental_content: part.experimental_content,
+            providerOptions: part.providerOptions,
+            error: part.error,
+          })
+          if (toolName && toolCallId) {
+            stmts.tool.run(toolCallId, sid, null, toolName, null, null, null, null)
+            if (isError) stmts.toolErr.run(content?.slice(0, 300) ?? null, toolCallId)
+            n++
+          }
+        } else {
+          dataJson = jsonValue(part.value ?? part)
         }
+
+        if (o.role === "user" && cwd === null && content) {
+          cwd = /Workspace Path: (.+)/.exec(content)?.[1]?.trim() ?? null
+        }
+        stmts.part.run(
+          `cursor-agent:${sid}:${blobId}:${partIndex}`, sid, messageId, null, partIndex, null,
+          role, partType, model, toolCallId, toolName, content, dataJson, isError,
+        )
       }
     }
   } finally {
     db.close()
   }
 
-  const startedAt = metaJson.createdAtMs ? new Date(metaJson.createdAtMs).toISOString() : null
-  const endedAt = updated ? new Date(updated).toISOString() : null
+  const startedAt = isoTimestamp(metaJson.createdAtMs)
+  const endedAt = isoTimestamp(updated)
   stmts.session.run(sid, "main", null, null, encodeProject(cwd), cwd, null, null,
     startedAt, endedAt, path, "cursor-agent")
-  if (updated) stmts.putState.run(path, updated)
+  if (updated) stmts.putState.run(statePath, updated)
   return n
 }
 

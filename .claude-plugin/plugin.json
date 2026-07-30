@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.16.0",
+  "version": "2.16.1",
   "description": "Vito's atom library for Claude Code: project-agnostic, agent-facing. 26 skills covering both halves of the day — work (planning, reporting, delegation, retrieval, skill/context upkeep) and learning (resume-learning 存档读档 / study-coach 第一性原理教练 / quiz-me 出题 / stepping-stone 先导知识, merged from study-kit 2026-07-28; the boundary is learning vs shipping, so they apply to reading a work codebase too); 3 subagents (general-skills-executor, code-search, investigator); 3 PreToolUse hooks that push noisy skills into subagents and guard worktrees. The ship SOP lives in kox-agent-plugins, next to the infra it binds to.",
   "author": {
     "name": "vito",
