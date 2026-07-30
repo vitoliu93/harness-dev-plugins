@@ -51,7 +51,7 @@ WHERE t.model LIKE 'deepseek%'
 - DB / 队列 / 日志：`~/.claude/observability/`（`CCOBS_DIR` 可覆盖）。这个目录是
   全部 agent 运行记录的共同家:ccobs 的库、dispatch 账本、compaction 日志、
   skill-atlas 产物都在这儿——**动态记录一律不落源码仓**。例外是临时且跨 CLI 的
-  中转件(handoff → `~/tmp/`):它们不是账本,也不该锁在 Claude 自己的目录里
+  中转件(take-over 的 save 存档 → `~/tmp/`):它们不是账本,也不该锁在 Claude 自己的目录里
 - `message_parts.content/data_json` 含原始 prompt、thinking、工具参数/结果，可能夹带
   凭证、绝对路径和业务数据；只在本机查询，对外复制或分享前必须脱敏。
 - `scripts/schema.sql` — 统计表、Cursor `message_parts` 明细表 + 7 个视图，views 即报告（视图用 DROP+CREATE，改定义后跑一次 ingest 即生效）

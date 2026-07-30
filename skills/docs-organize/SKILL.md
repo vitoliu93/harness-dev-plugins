@@ -20,7 +20,7 @@ argument-hint: "[audit | adopt]"
 | **活文档** | 描述"现状"（现状总览、字段表、环境归属、Runbook） | 必须与代码一致：核验失真 → fix；骨架性失真（描述的机制已不存在）→ delete/重写 |
 | **快照类** | dated 方案/决策记录（"YYYY-MM-DD 定稿"、方案 vN） | 本身是历史事实，代码演进≠删除理由；被新版取代 → 移 `_archive/`，不改写 |
 | **参考资料** | pdf/pptx/厂商大 HTML，外部知识的本地副本 | 不核验内容，只问"还被需要吗" → `references/` 或预删 |
-| **临时/handoff** | 跨 session 交接、一次性审计产物 | handoff 类 → 全局 `~/tmp/`（见 handoff skill）；一次性 dump → 项目 `tmp/`（纯 scratch，随时可清）或预删 |
+| **临时/handoff** | 跨 session 交接、一次性审计产物 | handoff 类 → 全局 `~/tmp/`（见 take-over skill 的 save 模式）；一次性 dump → 项目 `tmp/`（纯 scratch，随时可清）或预删 |
 | **非项目文档** | 与本 workspace 任何需求都不发生联系（学习材料、面试题） | 外迁 `~/Documents/claude-code/docs/`，workspace 里零容忍 |
 
 ## Placement 约定（adopt 落地的内容）

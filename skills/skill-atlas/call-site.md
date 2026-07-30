@@ -19,7 +19,7 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
 | skill-atlas | meta | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |
-| handoff | atom | "接手/take over/继续 <session·任务·issue>" · "handoff/交接"(save) | ③ |
+| take-over | atom | "接手/take over/继续 <session·任务·issue>" · "handoff/交接"(save) | ③ |
 | create-readable-html | atom | "可视化/画个图/信息图"(skill-guard→executor) | ③ |
 | ccobs | atom | "观测报告/usage report" ·(debrief/skill-atlas 取使用率) | ③ |
 | recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
@@ -79,9 +79,9 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 - **学习四原子(resume-learning / study-coach / quiz-me / stepping-stone)** — 2026-07-28
   study-kit 整仓并入,理由是"学习"和"干活"共用同一批人和同一个上下文,分两个 kit 只是
   历史包袱。**边界从"业余 vs 工作"改判为"学习 vs 交付"**:读懂一个公司代码库也是学习,
-  也该有存档。风险点即观察项:resume-learning 的"继续"和 handoff/advanced-plan 的"继续"
+  也该有存档。风险点即观察项:resume-learning 的"继续"和 take-over/advanced-plan 的"继续"
   在同一个会话里争路由——描述里已写死"裸说继续不触发本 skill",证伪条件是**用户说"读档"
-  却被路由去 handoff,或反过来**;真出现就把触发词收紧到只认"读档"。
+  却被路由去 take-over,或反过来**;真出现就把触发词收紧到只认"读档"。
 
 新增/改名任何原子 → 本表补一行(**接线点 = 新原子的准入证**)。空格子就是待接线清单。
 

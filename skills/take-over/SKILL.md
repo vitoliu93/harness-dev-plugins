@@ -1,16 +1,16 @@
 ---
-name: handoff
+name: take-over
 description: >-
   接手前一个 agent 的未竟任务:给一个 session id、大致任务描述或 Gitee issue,借
   ccobs 账本定位原会话,读透其目标/边界/进度/失败尝试后继续干活。Use when the user
   says "take over", "接手", "pick up", "continue <session/任务>", "上个 agent
   额度用完了/挂了,你来继续", or pastes a session id / issue to continue. 次要模式:
-  主动交接存档("handoff", "交接", "save progress")。Works across agent CLIs
-  (claude-code/codex/cursor/...)。
+  主动交接存档("handoff", "交接", "save progress")。Formerly handoff — that word
+  still routes here. Works across agent CLIs (claude-code/codex/cursor/...)。
 argument-hint: "[session-id | 任务关键词 | IJxxxx]"
 ---
 
-# handoff — 接手上一个 agent 的活
+# take-over — 接手上一个 agent 的活
 
 核心事实:**会话 transcript 本身就是交接文档,ccobs 是它的索引。** 上个 agent
 额度耗尽或会话中断时不会留下交接文档——也不需要:定位 session,读透,接着干。

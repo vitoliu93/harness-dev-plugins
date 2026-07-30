@@ -35,7 +35,7 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
 | dispatch-vendors | Delegate to a separate AI process, two classes. **Execution**: a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a vendor agent CLI (dscode / arkcode / kicode / cursor-agent) — unattended, resumable, on someone else's quota. **Advisory**: a 第二意见/校审 to a fresh subagent, headless fable, or a foreign family — a verdict, not a diff, so the execution floor and acceptance gate don't apply. |
 | blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
-| handoff | Take over an interrupted agent's task: locate the session via ccobs (id / 描述 / Gitee issue), read goal-boundary-progress from the transcript, continue. Secondary: save a handoff doc to `~/tmp/`. |
+| take-over | Take over an interrupted agent's task: locate the session via ccobs (id / 描述 / Gitee issue), read goal-boundary-progress from the transcript, continue. Secondary: save a handoff doc to `~/tmp/`. Formerly handoff. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
 | create-readable-html | Single self-contained, infographic-style HTML explainer — output for readers far from the code. 原 html-doc. |
 | media-understanding | Local audio/video → Gemini transcription + digest. |
@@ -77,7 +77,7 @@ and upload logs never enter the main session; only a distilled answer comes back
 | investigator | sonnet (opus for hard incidents) | Debug-scenario agent — one spawn per incident; correlates clues across the project's evidence sources (logs / DB / code / tickets / docs, loaded lazily via the project's own skills) inside its own context, returns root cause + evidence chain + reproduction commands. Complements built-in Explore/Plan; replaces per-source fan-out whose clues would otherwise be joined in the expensive main context. |
 
 The other skills are deliberately *not* delegated: they either need the live
-session conversation (handoff), are interactive end-to-end (audit-context), or
+session conversation (take-over), are interactive end-to-end (audit-context), or
 are methodologies the main agent itself must drive (advanced-plan).
 
 Note: nested subagent spawning requires Claude Code ≥ 2.1.172. On older
