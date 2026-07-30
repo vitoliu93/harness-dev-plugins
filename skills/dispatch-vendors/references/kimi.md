@@ -1,4 +1,6 @@
-> ⚠️ **下舰存档(2026-07-22)** — 不在现役 vendor 名单(名单见 ../SKILL.md),留档供重新上舰或历史排查参考。
+> **重新上舰(2026-07-31)** — kimi-k3 的主 carrier(链:kimi-code →
+> cursor `kimi-k3-high` → subagent,见 ../SKILL.md 模型名册)。2026-07-22
+> 曾下舰;下面的实测记录仍然有效。
 
 # kimi — Kimi Code CLI (k3 / K2.7, Moonshot quota)
 

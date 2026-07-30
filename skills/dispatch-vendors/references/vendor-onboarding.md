@@ -87,7 +87,9 @@ scenarios.md 路由行 + ledger 记账习惯 + 观察期(一个月真实使用�
 | arkcode × glm-5.2[1m] | ✅(探针级) | ❌ **致命 400** → 图像任务必须走兜底 | 同上 | dscode 限流备胎,禁图像直投 |
 | cursor × composer-2.5 | ✅(勘察+写) | ✅ 完美 | json 会挂死,**用 stream-json/text** | 勘察主力+视觉主力(≈sonnet 档) |
 | cursor × grok-4.5-high | ✅ 对抗审计 6 发现全带算证 | ✅ 完美 | 同 cursor;plan 模式交付物在 `createPlanToolCall` 事件里,不在 result 字段 | 硬任务/红队升级位(≈opus 档) |
-| cursor × gpt-5.5 | 未测(premium) | 官方支持,未实测 | 同 cursor | grok 的同档替补 |
+| cursor × gpt-5.6-sol-high | 未测(premium) | 官方支持,未实测 | 同 cursor | 硬任务档首选模型(models.md),待实测 |
+| kimi(-code CLI) × k3[1m] | ✅ 真实写任务+红队实测(kimi.md) | ✅ 精确 | stream-json;stdout 块缓冲、退出才 flush(kimi.md) | kimi-k3 主 carrier;cursor `kimi-k3-high` 是备胎 |
+| grok CLI × grok-4.5 | **未爬梯** | 未测 | `--output-format streaming-json`;headless 走 `grok agent` 子命令 | grok-4.5 的备胎 carrier;需 login + 本梯子全爬后才可派活 |
 
 **图像兜底(media-understanding)**:text-only 单元(dscode/arkcode)派图像/音
 视频任务时,简报让 vendor 先跑 media-understanding 脚本(Gemini → 文本)再对

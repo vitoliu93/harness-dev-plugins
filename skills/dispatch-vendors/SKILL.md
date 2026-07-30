@@ -26,14 +26,31 @@ never a slice of the module being built here; that's subagent/Workflow
 territory.
 
 **Once the gate says yes → `references/protocol.md`** (brief · probe · launch ·
-verify · ledger · quota-limited recovery). Vendor sheets:
-`claude-variants.md` (dscode/arkcode/kicode) · `cursor-agent.md`. Scenario
-catalog with brief shapes and picks: `scenarios.md`. New vendor:
-`vendor-onboarding.md` — also the CLI×model capability matrix; **image-bearing
-tasks need a vision-capable cell (cursor composer/grok, kicode k3) or the
-media-understanding fallback written into the brief.** Default pick
-(2026-07-22 quota economics): **cursor-agent + `cursor-grok-4.5-high`**;
-kicode's Kimi quota is small — reserve it for diversity-core or true 1M ctx.
+verify · ledger · quota-limited recovery). Scenario catalog with brief shapes
+and picks: `scenarios.md`. New carrier: `vendor-onboarding.md`.
+
+## Model roster — dispatch a MODEL, not a CLI
+
+Pick the model for the task; the CLI is just the carrier. Each model has a
+fallback carrier chain, and **every chain floors on an Anthropic subagent**
+(Agent tool — no vendor process). Powers/weaknesses + routing verdicts:
+`references/models.md`. Carrier mechanics: `cursor-agent.md` · `kimi.md`
+(kimi-code) · `claude-variants.md` (dscode/arkcode).
+
+| Model | Route here for | Carrier chain |
+|---|---|---|
+| gpt-5.6-sol | hard tier: day-long unattended runs, precision review; weak UI taste | cursor-agent `gpt-5.6-sol-high\|-xhigh` → subagent |
+| grok-4.5 | default Q workhorse: cheap high-volume repo work; review needs a verifier | cursor-agent `cursor-grok-4.5-high` → grok CLI (未爬梯) → subagent |
+| composer-2.5 | fast/light tier: cheap edits, vision (sonnet 档) | cursor-agent `composer-2.5` → subagent |
+| kimi-k3 | 1M-ctx digestion, vision, frontend; verify facts, quota small | kimi-code → cursor-agent `kimi-k3-high` → subagent |
+| deepseek-v4 | bulk codegen / tests, cheap; text-only | dscode → arkcode (sonnet/haiku slots) → subagent |
+| anthropic family | needs this session's ecosystem, or all carriers down | subagent — the floor of every chain |
+
+**Image-bearing tasks** need a vision-capable model (composer-2.5 / kimi-k3
+verified; grok-4.5 per docs) or the media-understanding fallback in the brief
+(`vendor-onboarding.md` matrix). Quota economics 2026-07-31: cursor Ultra is
+the big pool → grok-4.5 default, gpt-5.6-sol the hard tier; kimi-k3 quota
+small → diversity-core / true-1M / vision only.
 
 ## Advisory dispatch — 第二意见 / 校审 / plan check
 
