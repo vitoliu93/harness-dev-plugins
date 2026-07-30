@@ -35,7 +35,7 @@ Then restart the session. Skills become available as `dev-kit:<skill>`
 | debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
 | dispatch-vendors | Delegate to a separate AI process, two classes. **Execution**: a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a vendor agent CLI (dscode / arkcode / kicode / cursor-agent) — unattended, resumable, on someone else's quota. **Advisory**: a 第二意见/校审 to a fresh subagent, headless fable, or a foreign family — a verdict, not a diff, so the execution floor and acceptance gate don't apply. |
 | blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
-| handoff | Save / pick up task state in global `~/tmp/` for cross-session, cross-agent transfer. |
+| handoff | Take over an interrupted agent's task: locate the session via ccobs (id / 描述 / Gitee issue), read goal-boundary-progress from the transcript, continue. Secondary: save a handoff doc to `~/tmp/`. |
 | exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
 | create-readable-html | Single self-contained, infographic-style HTML explainer — output for readers far from the code. 原 html-doc. |
 | media-understanding | Local audio/video → Gemini transcription + digest. |

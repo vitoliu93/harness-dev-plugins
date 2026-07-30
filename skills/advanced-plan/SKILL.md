@@ -158,5 +158,5 @@ Documents that lie are worse than no documents. Keep them honest:
 
 `grill-me` (interview before locking `goal.md`) · `plan-prototype` (step 7) ·
 `agent-browser` (default frontend verification) · `dispatch-vendors` (execute
-route ②) · `debrief` (sedimentation at review) · `handoff` (point-in-time dump;
-a tracked plan just points at its dir).
+route ②) · `debrief` (sedimentation at review) · `handoff` (take over an untracked
+session via ccobs; a tracked plan just points at its dir).

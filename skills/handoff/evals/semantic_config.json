@@ -1,0 +1,97 @@
+{
+  "positive_concepts": {
+    "takeover_verb": {
+      "weight": 0.4,
+      "phrases": [
+        "接手",
+        "take over",
+        "pick up",
+        "继续做完",
+        "继续它的活",
+        "接着做",
+        "接着干",
+        "left off",
+        "continue the job"
+      ]
+    },
+    "session_locate": {
+      "weight": 0.35,
+      "phrases": [
+        "session",
+        "session id",
+        "会话",
+        "原会话",
+        "ccobs"
+      ]
+    },
+    "interrupted_agent": {
+      "weight": 0.35,
+      "phrases": [
+        "上个 agent",
+        "前一个 agent",
+        "previous agent",
+        "last session",
+        "额度用完",
+        "额度耗尽",
+        "挂了"
+      ]
+    },
+    "gitee_issue": {
+      "weight": 0.2,
+      "phrases": [
+        "issue",
+        "IJ"
+      ]
+    },
+    "save_handoff": {
+      "weight": 0.3,
+      "phrases": [
+        "handoff",
+        "交接",
+        "save progress"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么意思",
+        "是干嘛的",
+        "是什么"
+      ]
+    },
+    "learning": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "读档",
+        "继续学",
+        "学习"
+      ]
+    },
+    "advanced_plan": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "恢复计划",
+        "这个 plan",
+        "下一阶段"
+      ]
+    },
+    "human_transfer": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "转交给同事",
+        "给同事"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "takeover_verb",
+    "session_locate"
+  ]
+}

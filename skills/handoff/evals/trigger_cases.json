@@ -1,0 +1,75 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": [
+    "解释",
+    "读档",
+    "学习",
+    "恢复计划"
+  ],
+  "should_trigger": [
+    {
+      "text": "接手 3f2a91b4 这个 session,继续做完",
+      "family": "session_id"
+    },
+    {
+      "text": "take over the previous agent's session and continue the job",
+      "family": "explicit_en"
+    },
+    {
+      "text": "上个 agent 额度用完了,你来继续它的活",
+      "family": "quota_died"
+    },
+    {
+      "text": "pick up where the last session left off",
+      "family": "pickup_en"
+    },
+    {
+      "text": "继续 IJ8XK21 这个 issue,之前有个会话做了一半",
+      "family": "gitee_issue"
+    },
+    {
+      "text": "帮我找到昨天那个改 ingest 脚本的会话,接着做",
+      "family": "description_locate"
+    },
+    {
+      "text": "handoff 一下,把当前任务交接给下一个 session",
+      "family": "save_mode"
+    },
+    {
+      "text": "save progress,把进度写下来给下个 session 接手",
+      "family": "save_mode"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "解释一下 handoff 这个 skill 是干嘛的",
+      "family": "explain_only"
+    },
+    {
+      "text": "继续",
+      "family": "bare_continue"
+    },
+    {
+      "text": "帮我把这个 bug 修了",
+      "family": "inline_work"
+    },
+    {
+      "text": "把这个 PR 转交给同事 review",
+      "family": "human_transfer"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "读档,继续学 micrograd",
+      "family": "resume_learning"
+    },
+    {
+      "text": "恢复计划,继续 kox-export 这个 plan 的下一阶段",
+      "family": "advanced_plan"
+    },
+    {
+      "text": "查一下之前有没有会话碰过这个问题",
+      "family": "recall"
+    }
+  ]
+}

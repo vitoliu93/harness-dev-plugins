@@ -19,7 +19,7 @@ model-invoked)· **sop**(固化流程,通常 user-invoked)——形态定 invoca
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | blindspot 领域扫描 · 搜索需求(skill-guard→executor) | ①③ |
 | skill-atlas | meta | PreToolUse skill-atlas-guard(commit 碰 SKILL.md 必先跑)· 季度搭北极星扫 staleness · "skill 体检" | ②③ |
-| handoff | atom | "handoff/交接/接手/继续 <slug>" | ③ |
+| handoff | atom | "接手/take over/继续 <session·任务·issue>" · "handoff/交接"(save) | ③ |
 | create-readable-html | atom | "可视化/画个图/信息图"(skill-guard→executor) | ③ |
 | ccobs | atom | "观测报告/usage report" ·(debrief/skill-atlas 取使用率) | ③ |
 | recall | atom | "以前查过吗/recall/我是不是研究过" · research 开工 | ③ ⚠新增,观察触发习惯是否形成 |
