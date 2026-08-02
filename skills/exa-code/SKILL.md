@@ -51,4 +51,4 @@ Full correction table: `references/pitfalls.md`. The ones that bite most:
 4. `category` has a fixed set — **never invent `github`/`docs`/`pdf`**. Use `context` or `type:"fast"` for code.
 5. Dead params: `useAutoprompt`, `numSentences`, `highlightsPerUrl`, `includeUrls`/`excludeUrls`. Prefer `maxAgeHours` over `livecrawl`.
 6. `/contents` doesn't stream, and returns 200 with partial failures. `/agent` isn't synchronous.
-7. **Never fan out search calls in parallel** — 5 concurrent `web_search` = instant HTTP 429 burst (measured 2026-07-30). Serialize or space ≥1s apart; on 429 back off and retry once.
+7. **Never fan out search calls in parallel** — concurrent `web_search` calls 429 instantly. Serialize or space ≥1s apart; on 429 back off and retry once.

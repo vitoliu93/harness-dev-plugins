@@ -78,11 +78,9 @@ make agree with you.
 ## Resident advisor — 长战役的常驻审查人
 
 One-shot consults don't fit a multi-hour/-day campaign (采集战役、无人值守监控、
-长 issue 队列): the advisor needs the campaign's history to catch drift. Pattern
-proven 2026-07-31 小米采集 (11 rounds; caught a 96% under-collection the worker
-had mis-attributed to the platform, a budget-counter bug that would have
-false-stopped the run overnight, and two fake-denominator metrics in the
-deliverable):
+长 issue 队列): the advisor needs the campaign's history to catch drift — the
+kind of miss a worker can't see in itself (under-collection blamed on the
+platform, a counter bug that false-stops overnight, fake denominators):
 
 - **Fixed session, resumed** — create once with `claude -p --session-id <uuid>
   --model fable "<开局审查 brief>"`, continue every round with `claude -p -r

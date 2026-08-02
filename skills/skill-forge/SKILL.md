@@ -36,6 +36,10 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 - 模型要自主触达、或被别的 skill 链到 → model-invoked。description 只写
   身份一句 + 每个分支一个触发锚词(信任模型泛化,不枚举同义词),近邻负例
   至多一条——其余负例迁进 evals 的 negative_concepts,那里零 context 费。
+- **禁叙事律(desc 与正文同管)**:不写来历/学费故事/重建次数/战果数字/
+  评价语("实证为准""最大件""这就是那笔学费")——描述只管路由,正文只管
+  怎么做,规则不在正文里为自己辩护。范式:grill-me(一句成文)、
+  exa-code / agent-browser(能力一句 + 触发枚举 + 边界一句)。
 - 只被用户点名、或由 hook 指路 → `disable-model-invocation: true`,
   description 一行写给人,零 context 费("仅限用户召集"类规则由此机械化,
   例:cto-audit)。此类不建 evals——没有路由可测。
@@ -62,6 +66,8 @@ job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:
 
 正文 ≤700 tokens(`python3 $FORGE/context_sizer.py <dir> --json` 验证);
 深度进 `references/`,确定性步骤进 `scripts/`,评测进 `evals/`。
+正文只写怎么做:操作参数、阈值这类数字保留,"为什么/踩过什么坑"的叙述
+默认删——非留不可的证据链进 `references/`,不占每回合正文。
 本仓公开:示例里的内部标识(函数名/工单号/人名)一律虚构化,只留形状。
 
 ## 5. 收尾 — 首版即基线

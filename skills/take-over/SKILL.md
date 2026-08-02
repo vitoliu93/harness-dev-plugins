@@ -110,8 +110,7 @@ sqlite3 -header ~/.claude/observability/obs.db \
 ## Save(次要:主动交接存档)
 
 Trigger: "handoff" / "交接" / "save progress",以及**额度将尽预警**——用户说
-"额度/quota 快用完了"、"kimi 额度马上耗光"、"马上要限流" 时,不等追问,立刻
-主动写存档(实测案例:用户连问三次才拿到交接文件,预警本身就是触发词)。
+"额度/quota 快用完了"、"马上要限流" 时预警本身就是触发词,不等追问立刻写存档。
 额度已经耗尽、会话已死的场景轮不到它,走上面的 take over。
 
 写 `~/tmp/handoff-<YYYY-MM-DD>-<project>-<短标题>.md`(全局 `~/tmp/`:跨仓、
