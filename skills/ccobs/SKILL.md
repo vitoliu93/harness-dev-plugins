@@ -1,8 +1,9 @@
 ---
 name: ccobs
 description: >-
-  构建或查询 agent 可观测账本 obs.db；采集七种 CLI/IDE、统计 session/tool/token，或读取
-  Cursor IDE/Agent 的 message_parts 会话正文时使用。非 Cursor 正文仍在原始 JSONL/SQLite。
+  构建或查询 agent 可观测账本 obs.db；采集八种 CLI/IDE（含 kimi-code）、统计
+  session/tool/token，或读取 Cursor IDE/Agent 的 message_parts 会话正文时使用。
+  非 Cursor 正文仍在原始 JSONL/SQLite。
 ---
 
 # ccobs — agent observability ledger
@@ -30,7 +31,7 @@ SELECT * FROM v_tool_overview;
 WHERE t.model LIKE 'deepseek%'
 ```
 
-## 七个采集源
+## 八个采集源
 
 | source | 原始位置 | 增量机制 | tokens | 正文明细 | skill/subagent |
 |---|---|---|---|---|---|
@@ -41,6 +42,7 @@ WHERE t.model LIKE 'deepseek%'
 | opencode | `~/.local/share/opencode/opencode.db` | time_updated 水位线（只读打开） | ✅ 每 message + cost | ❌ | ✅（skill/task part） |
 | cursor-ide | `~/Library/.../Cursor/.../state.vscdb`（只读打开） | composerData.lastUpdatedAt 水位线 | ❌（字段在但≈全 0，非零才记） | ✅ `message_parts` | ❌（无 skill 概念） |
 | cursor-agent | `~/.cursor/chats/*/*/store.db` + `meta.json` | meta.json updatedAtMs 水位线 | ❌ | ✅ `message_parts` | ❌ |
+| kimi-code | `~/.kimi-code/sessions/wd_*/session_*/agents/*/wire.jsonl` | 字节偏移 | ✅ usage.record 事件 | ❌ | ✅（Skill/Agent·AgentSwarm 事件；`agents/agent-N` 记 subagent） |
 
 `project` 键全源统一为 CC 目录编码（`cwd.replaceAll('/','-')`），跨源
 `GROUP BY project` 直接可用；原始路径在 `cwd` 列。hook 是 claude-code 独占
@@ -55,7 +57,7 @@ WHERE t.model LIKE 'deepseek%'
 - `message_parts.content/data_json` 含原始 prompt、thinking、工具参数/结果，可能夹带
   凭证、绝对路径和业务数据；只在本机查询，对外复制或分享前必须脱敏。
 - `scripts/schema.sql` — 统计表、Cursor `message_parts` 明细表 + 7 个视图，views 即报告（视图用 DROP+CREATE，改定义后跑一次 ingest 即生效）
-- `scripts/ingest.ts` — 七 adapter 增量、幂等灌库（单文件注册表模式）；每次运行（手动或 launchd）
+- `scripts/ingest.ts` — 八 adapter 增量、幂等灌库（单文件注册表模式）；每次运行（手动或 launchd）
   append 一行带时间戳的 summary 到 `~/.claude/observability/ingest.log`
 - `scripts/obs-enqueue.ts` — Stop hook：只 append 一行到 queue.jsonl，毫秒级
 - `scripts/install.sh` — macOS(arm) 启动器：自动装 bun + launchd 每小时（灌库→蒸馏，RunAtLoad 开机补跑）+ 首次灌库
@@ -71,8 +73,8 @@ WHERE t.model LIKE 'deepseek%'
 bash scripts/install.sh
 
 # 手动灌库（增量，秒级；首次即全量回填）
-bun scripts/ingest.ts                       # 全部七源
-bun scripts/ingest.ts --source codex        # 单源调试
+bun scripts/ingest.ts                       # 全部八源
+bun scripts/ingest.ts --source codex        # 单源调试（--source kimi-code 同理）
 bun scripts/ingest.ts --source cursor-ide   # IDE 正文增量/首次回填
 bun scripts/ingest.ts --source cursor-agent # Agent 正文增量/首次回填
 bun scripts/ingest.ts --project kox         # 只扫匹配的 claude 项目目录（隐含 --source claude-code）
@@ -93,10 +95,10 @@ launchd 每小时兜底、Stop hook 每会话入队——但**很近的会话**�
 
 脚本路径用 `${CLAUDE_SKILL_DIR}`——Claude Code 在 skill 载入时把它替换成本 skill 的真实
 绝对目录（个人/项目/plugin cache 都对），跟 CWD 无关。ingest.ts 内部全程 homedir 锚定
-（DB、七源原始库），从任何目录跑都对：
+（DB、八源原始库），从任何目录跑都对：
 
 ```bash
-# 全量增量，最稳（七源都扫，只读新字节）
+# 全量增量，最稳（八源都扫，只读新字节）
 bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts
 # 只消费 Stop hook 队列（最便宜的准实时路径）
 bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
@@ -137,6 +139,17 @@ bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts --queue
   时 `seq/ts=NULL`（`part_index` 只保证单条消息内部顺序），且库中分支/孤儿 JSON blob 也
   可能被收录；少数 store.db SQLITE_CANTOPEN，跳过、下轮重试；cwd 从 user 消息的
   `Workspace Path:` 提取，提不到 → 'unknown'。
+- kimi-code：cwd 来自 `~/.kimi-code/workspaces.json` 的 wd 映射；kimi 早期走 CC harness 的
+  会话在 claude-code 源里以 model `k3` 出现，与 kimi-code 源可能是同一批工作的两份记录
+  （session_id 不同，不合并——跨源统计 k3 时注意别双计）；正文（turn.prompt/content.part）
+  未入 `message_parts`，要看原文回 wire.jsonl。
+- 同一 claude-code 会话偶见双条 main 记录（session fork/copy 使两个 JSONL 同 started_at 同
+  前段内容，如 31932951/fbfcf857）——按 (project, started_at) 去重后再数 session。
+- 心跳/合成会话污染：launchd 定时"预热"会话（首条 prompt 恒等、时长<20s、零 tool_calls，
+  如 playground-crontab-claude 的 'greeting from vito' 批）是账本里最大的同构噪声，
+  recall/统计前先按上述特征过滤。
+- turns.stop_reason 历史行全 NULL（旧 adapter 读错字段名，2026-08-02 已修）；此后新增量行
+  有值；历史行只有重建库（rm obs.db && ingest）才会回填，且仅覆盖原始 JSONL 仍在的会话。
 
 ## 加新源三步（Claude Desktop / Codex app 大概率共用现有存储，先验证格式再动手）
 
@@ -175,8 +188,8 @@ GROUP BY s.source, p.role, p.part_type;
 严格顺序；Cursor IDE 的 `state.vscdb` 还含尚未解析的 `agentKv:blob:*`。升级旧版 ccobs 后
 首次 Cursor ingest 会用版本化水位线自动全量回填正文，库体积会明显增大；之后恢复增量。
 
-## 接线（待办）
+## 接线
 
-1. Stop hook：`hooks/hooks.json` 的 Stop 数组追加 `bun obs-enqueue.ts`（发布需 bump version）。
-2. skill-atlas：体检报告新增「使用率」节，读 `v_skill_usage` / `v_agent_spawns`。
-3. debrief：收盘时读本 session 的 turns/tool_calls 统计作输入。
+已接：Stop hook（`hooks/hooks.json` → `obs-enqueue.ts`，准实时入队）；skill-atlas 使用率节
+（读 `v_skill_usage` / `v_agent_spawns` + 改后零触发信号）。
+待办：debrief 收盘时读本 session 的 turns/tool_calls 统计作输入。

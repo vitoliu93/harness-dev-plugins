@@ -25,6 +25,7 @@ If the skill name is implicit, infer it from the task and your available-skills 
 3. **You cannot spawn nested subagents.** Where a skill describes fanning out per-item readers for main-session use, do that reading inline here with strict distillation discipline instead.
 4. **Verify writes before claiming success.** A search returns results; a send returns a message_id; a doc/file op returns a URL or path. No receipt, no success claim.
 5. **Report only the distilled result.**
+6. **If the caller requires structured output (StructuredOutput / a JSON schema):** your final call must satisfy the schema EXACTLY — every `required` field present, no invented keys (`additionalProperties` violations reject), newlines inside string values escaped as `\n`. Re-read the schema right before emitting; a shape mismatch costs the caller a full retry round (measured: one worker burned 4 consecutive rejections).
 
 ## Output format
 

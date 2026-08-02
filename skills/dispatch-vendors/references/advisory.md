@@ -74,3 +74,31 @@ an unread verdict is a dispatch you paid for and threw away. **Two rounds
 max**: one ask, plus one counter-argument if the verdict misread something.
 Then decide. An advisor you argue with five times is one you are trying to
 make agree with you.
+
+## Resident advisor — 长战役的常驻审查人
+
+One-shot consults don't fit a multi-hour/-day campaign (采集战役、无人值守监控、
+长 issue 队列): the advisor needs the campaign's history to catch drift. Pattern
+proven 2026-07-31 小米采集 (11 rounds; caught a 96% under-collection the worker
+had mis-attributed to the platform, a budget-counter bug that would have
+false-stopped the run overnight, and two fake-denominator metrics in the
+deliverable):
+
+- **Fixed session, resumed** — create once with `claude -p --session-id <uuid>
+  --model fable "<开局审查 brief>"`, continue every round with `claude -p -r
+  <uuid>`; the advisor keeps history and can compare rounds. `--session-id` on
+  an existing session errors — resume (`-r`) is the continuation path.
+- **Briefs land on disk, fed via stdin** (`< brief.md`) — long briefs blow the
+  argv limit; answers archived next to the campaign data, not lost in scrollback.
+- **Sync on milestones, not on the clock** — phase done / anomaly / before any
+  irreversible step (spend, delete, publish). Escalate instead of stalling:
+  风控、超预算、通道判死 → brief the advisor and keep working the other lanes
+  (停摆本身就是成本).
+- **Three brief skeletons** — 开局审查 (plan + acceptance criteria, verbatim);
+  轮次回执 (facts since last sync + what changed + next irreversible step);
+  终局审计 (deliverable + per-criterion PASS/FAIL ask, "他点头才算完成").
+- **Two-rounds-max still holds per question** — the resident relationship is
+  many questions over one campaign, not re-arguing one verdict eleven times.
+- Quote the user's new constraints **verbatim** in the sync brief (逐字引用 +
+  冲突点), never paraphrased — the advisor audits against the words, and your
+  paraphrase carries your framing bias.

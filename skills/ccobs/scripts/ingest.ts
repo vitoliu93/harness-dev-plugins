@@ -192,7 +192,7 @@ function handleCcEvent(o: any, sid: string, meta: Meta, buf: Buf) {
         mid, sid, ts, m.model ?? null,
         u.input_tokens ?? null, u.output_tokens ?? null,
         u.cache_read_input_tokens ?? null, u.cache_creation_input_tokens ?? null,
-        o.stopReason ?? null,
+        m.stop_reason ?? o.stopReason ?? null,
       ])
     }
     for (const c of Array.isArray(m.content) ? m.content : []) {
@@ -1032,6 +1032,123 @@ function ingestCursorAgentSession(path: string, stmts: Stmts): number {
   return n
 }
 
+// ===================== adapter: kimi-code =====================
+
+const KIMI_ROOT = join(homedir(), ".kimi-code", "sessions")
+
+// wd_<name>_<hash> → root path, from ~/.kimi-code/workspaces.json (lazy, one read per run)
+let kimiWorkspaces: Record<string, string> | null = null
+function kimiCwd(path: string): string | null {
+  if (kimiWorkspaces === null) {
+    kimiWorkspaces = {}
+    try {
+      const j = JSON.parse(readFileSync(join(homedir(), ".kimi-code", "workspaces.json"), "utf8"))
+      for (const [k, v] of Object.entries(j.workspaces ?? {}) as [string, any][]) {
+        if (v?.root) kimiWorkspaces[k] = v.root
+      }
+    } catch {}
+  }
+  const wd = path.split(sep).find(p => p.startsWith("wd_"))
+  return (wd && kimiWorkspaces[wd]) || null
+}
+
+const kimiCode: Adapter = {
+  name: "kimi-code",
+  discover() { return scanGlob(KIMI_ROOT, "wd_*/session_*/agents/*/wire.jsonl") },
+  ingest(stmts: Stmts) {
+    let total = 0
+    for (const path of this._files) {
+      total += ingestKimiFile(path, stmts)
+    }
+    return total
+  },
+  _files: [] as string[],
+}
+
+function ingestKimiFile(path: string, stmts: Stmts): number {
+  // .../sessions/wd_*/session_<uuid>/agents/<main|agent-N>/wire.jsonl
+  const parts = path.split(sep)
+  const agentDir = parts[parts.length - 2]
+  const mainSid = parts[parts.length - 4].replace(/^session_/, "")
+  const isMain = agentDir === "main"
+  const sid = isMain ? mainSid : `${mainSid}-${agentDir}`
+
+  const row = stmts.getState.get(path) as { offset: number } | null
+  let offset = row?.offset ?? 0
+  const { size } = statSync(path)
+  if (size < offset) offset = 0
+  if (size === offset) return 0
+
+  const meta: Meta = { started_at: null, ended_at: null, cwd: kimiCwd(path), git_branch: null, cc_version: null, subagent_type: null }
+  const buf: Buf = { turns: [], tools: [], toolErrs: [], slashes: [], hooks: [], hookErrs: [] }
+
+  const fd = openSync(path, "r")
+  const chunk = Buffer.allocUnsafe(size - offset)
+  const bytesRead = readSync(fd, chunk, 0, size - offset, offset)
+  closeSync(fd)
+  const data = chunk.subarray(0, bytesRead)
+
+  let currentModel: string | null = null
+  let pos = 0
+  let n = 0
+  while (pos < data.length) {
+    const nl = data.indexOf(10, pos)
+    if (nl === -1) break
+    const line = data.toString("utf8", pos, nl)
+    pos = nl + 1
+    let o: any
+    try { o = JSON.parse(line) } catch { continue }
+    n++
+
+    const ts = isoTimestamp(o.time ?? o.created_at) // ms epoch on every event
+    if (ts) {
+      meta.started_at = meta.started_at && meta.started_at < ts ? meta.started_at : ts
+      meta.ended_at = meta.ended_at && meta.ended_at > ts ? meta.ended_at : ts
+    }
+
+    if (o.type === "llm.request") {
+      currentModel = o.model ?? currentModel // 'k3', not the 'kimi-code/k3' alias
+    } else if (o.type === "usage.record") {
+      const u = o.usage ?? {}
+      const fallback = typeof o.model === "string" ? o.model.replace(/^kimi-code\//, "") : null
+      buf.turns.push([
+        `km-${sid}-${offset + pos}`, sid, ts, currentModel ?? fallback,
+        u.inputOther ?? null, u.output ?? null,
+        u.inputCacheRead ?? null, u.inputCacheCreation ?? null, null,
+      ])
+    } else if (o.type === "context.append_loop_event") {
+      const ev = o.event ?? {}
+      if (ev.type === "tool.call") {
+        const name = ev.name ?? null
+        const a = ev.args ?? {}
+        const isAgent = name === "Agent" || name === "AgentSwarm"
+        buf.tools.push([
+          ev.toolCallId ?? `km-${sid}-${offset + pos}`, sid, ts, name,
+          name === "Skill" ? (a.skill ?? null) : null,
+          isAgent ? (a.subagent_type ?? a.agent_type ?? null) : null,
+          isAgent ? (a.model ?? null) : null,
+          a.run_in_background ? 1 : 0,
+        ])
+      } else if (ev.type === "tool.result") {
+        const r = ev.result
+        if (r && typeof r === "object" && ("error" in r || r.isError)) {
+          const snippet = typeof r.error === "string" ? r.error : jsonValue(r.error)
+          buf.toolErrs.push([snippet?.slice(0, 300) ?? null, ev.toolCallId ?? null])
+        }
+      }
+    }
+  }
+
+  for (const t of buf.turns) stmts.turn.run(...t)
+  for (const t of buf.tools) stmts.tool.run(...t)
+  for (const t of buf.toolErrs) stmts.toolErr.run(...t)
+
+  stmts.session.run(sid, isMain ? "main" : "subagent", isMain ? null : mainSid, null,
+    encodeProject(meta.cwd), meta.cwd, null, null, meta.started_at, meta.ended_at, path, "kimi-code")
+  stmts.putState.run(path, offset + pos)
+  return n
+}
+
 // ===================== adapter type + registry =====================
 
 type Adapter = {
@@ -1041,7 +1158,7 @@ type Adapter = {
   _files: string[]
 }
 
-const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode, cursorIde, cursorAgent]
+const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode, cursorIde, cursorAgent, kimiCode]
 
 // ===================== main =====================
 

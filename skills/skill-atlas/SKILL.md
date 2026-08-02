@@ -2,7 +2,8 @@
 name: skill-atlas
 description: >-
   Fleet health check for the skill collection: route-overlap matrix, staleness
-  signal, per-skill trigger eval, and context budget — powered by the vendored
+  signal, per-skill trigger eval, context budget, and obs.db usage rate
+  (dead skills + changed-but-untriggered alarm) — powered by the vendored
   toolchain in skill-forge/scripts (stdlib-only, offline).
 argument-hint: "[optional: skill name to focus on]"
 ---
@@ -100,6 +101,33 @@ done
 要么确认是同名巧合词/刻意的别名锚("Formerly X")。引用了已不存在 skill 名的
 文档 = lint failure。跨仓边(kox ship 链 advanced-plan/blindspot/debrief/recall)是本检查的盲区——动这几个原子的名字时,额外 grep kox-agent-plugins。
 
+## 7. Usage(obs.db — 使用率与改后零触发)
+
+需要 ccobs 的 `obs.db`(找不到 = 跳过本节,报告里注明)。两问:谁是死的,改完有没有人用。
+
+```bash
+DB=~/.claude/observability/obs.db
+# 近 30 天每个 skill 的使用量(含 subagent 内使用;SlashCommand 一并计)
+sqlite3 -header -column $DB "SELECT skill, COUNT(*) uses, MAX(ts) last_used
+  FROM tool_calls WHERE tool IN('Skill','SlashCommand') AND skill IS NOT NULL
+    AND ts >= datetime('now','-30 days') GROUP BY skill ORDER BY uses DESC"
+# 改后零触发:最近 14 天动过 SKILL.md 的 skill × 改后使用次数
+for d in $PLUGIN/skills/*/; do s=$(basename $d)
+  ch=$(git -C $PLUGIN log -1 --since='14 days ago' --format=%cI -- "skills/$s/SKILL.md")
+  [ -z "$ch" ] && continue
+  n=$(sqlite3 $DB "SELECT COUNT(*) FROM tool_calls WHERE (skill='$s' OR skill LIKE '%:$s') AND ts >= '$ch'")
+  printf '%-22s changed %s  uses-since %s\n' "$s" "${ch%%T*}" "$n"
+done
+```
+
+判读纪律:
+- 改后零触发 ≠ 判死。三态分诊:场景没出现(等)、场景出现了没触发(修 description——
+  唯一实锤法是从 obs.db 找到该场景的 session 证据,如 media-understanding 缺席录屏会话)、
+  被别的 skill 内联(ship 内联 recall/advanced-plan,其计数恒 0 是口径问题不是死亡)。
+- disable-model-invocation 的 slash-only skill 只有用户斜杠计数,天然低频,不按零使用论处。
+- 删除/退休决策对照 obs.db 实际调用而非仓内存在性:外源渠道可能把同名 skill 带回路由面
+  (agent-reach 2026-07-29 删除后仍有成功调用即此例)。
+
 ## Report
 
 ```
@@ -110,5 +138,6 @@ triggers: <per-skill P/R | which skills lack fixtures>
 budget  : <skills over 700 tokens | all within>
 callsite: <orphans/⚠ wanting a wiring point | all wired or exempt>
 xref    : <引用已消失 skill 名的文档 | clean>
+usage   : <近30天 top/零使用 | 改后零触发名单(附三态分诊) | obs.db absent>
 proposed: <merge/tighten/refresh/retire actions → feed debrief Move 3>
 ```

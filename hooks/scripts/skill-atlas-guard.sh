@@ -43,6 +43,6 @@ if [ -f "$atlas_out" ] && [ -z "$(find "$root"/skills/*/SKILL.md -newer "$atlas_
   exit 0   # atlas ran after the latest SKILL.md change → fresh → allow
 fi
 
-jq -n --arg r "本次 commit 改了 skills/*/SKILL.md,但 skill-atlas 事件档没重跑——route-overlap/trigger-eval/budget/call-site 可能过期。先跑 /skill-atlas(事件档),reconcile 完再 commit;它的输出刷新后本 hook 自动放行。(季度 staleness 体检不走这条,不受影响。)" \
+jq -n --arg r "本次 commit 改了 skills/*/SKILL.md,但 skill-atlas 事件档没重跑——route-overlap/trigger-eval/budget/call-site 可能过期。刷新命令(可直接复制): python3 $root/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $root/skills ;跑完按 /skill-atlas 的检查清单 reconcile 发现(有 evals/ 的 skill 补跑 trigger_eval),再重新 commit。注意本次 deny 已终止整条命令链——commit/push 要拆开单独重跑,别假设后半段执行过。(季度 staleness 体检不走这条,不受影响。)" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0

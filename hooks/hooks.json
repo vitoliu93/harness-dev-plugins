@@ -1,5 +1,5 @@
 {
-  "description": "skill-guard: redirect noisy inline skills to subagents. worktree-guard: enforce exit-safety order on git worktree remove. skill-atlas-guard: block a plugin-repo commit that edits a SKILL.md until skill-atlas re-runs (stale fleet-health gate). skill-path-fallback: deny a Bash command with an unexpanded ${CLAUDE_SKILL_DIR}/${CLAUDE_PLUGIN_ROOT} and tell the model how to resolve the real script path. learn-capture (Stop) + session-replay (SessionStart): the [LEARN] sedimentation loop — capture markers into .claude/LEARNED.md, replay last 5 at session start. plan-anchor (SessionStart source=compact): replay the live plan's locked constraints (reference source / done-means / out-of-scope) that compaction drops. standby-watchdog (Stop): one nudge when a session parks itself narrating a wait while background work runs — notify the user instead of hanging silently. security-warning-relay (PostToolUse Agent): a subagent's SECURITY WARNING gets surfaced to the user, not read past. compact-audit (PostCompact): record which plan anchors each compaction summary dropped, into ~/.claude/observability/compaction.jsonl — no model call, substring checks only.",
+  "description": "skill-guard: redirect noisy inline skills to subagents. worktree-guard: enforce exit-safety order on git worktree remove. skill-atlas-guard: block a plugin-repo commit that edits a SKILL.md until skill-atlas re-runs (stale fleet-health gate). skill-path-fallback: deny a Bash command with an unexpanded ${CLAUDE_SKILL_DIR}/${CLAUDE_PLUGIN_ROOT} and tell the model how to resolve the real script path. learn-capture (Stop) + session-replay (SessionStart): the [LEARN] sedimentation loop — capture markers into .claude/LEARNED.md, replay last 5 at session start. plan-anchor (SessionStart source=compact): replay the live plan's locked constraints (reference source / done-means / out-of-scope) that compaction drops. standby-watchdog (Stop): one nudge when a session parks itself narrating a wait while background work runs — notify the user instead of hanging silently. security-warning-relay (PostToolUse Agent): a subagent's SECURITY WARNING gets surfaced to the user, not read past. compact-audit (PostCompact): record which plan anchors each compaction summary dropped, into ~/.claude/observability/compaction.jsonl — no model call, substring checks only. obs-enqueue (Stop): append this session to ccobs' queue.jsonl for near-real-time ingest — one line, milliseconds, no model call.",
   "hooks": {
     "PreToolUse": [
       {
@@ -68,6 +68,11 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/standby-watchdog.py",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/skills/ccobs/scripts/obs-enqueue.ts",
+            "timeout": 5
           }
         ]
       }

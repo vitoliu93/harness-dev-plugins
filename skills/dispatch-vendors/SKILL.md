@@ -72,6 +72,10 @@ it is runnable.
 Five-section brief, engine flags, output contract: `references/advisory.md`.
 **Advice is a hypothesis until you check it** — a verdict naming a code path
 gets Read before it gets acted on. Ledger as `why:advice`.
+Multi-hour/-day campaign (采集战役、无人值守、长 issue 队列) → **resident
+advisor**: one fixed `claude -p --session-id` consult session resumed per
+milestone, briefs from disk, 终局 PASS/FAIL 审计 gate — `advisory.md` last
+section.
 
 ## Execution gate — dispatch only if at least ONE pays
 

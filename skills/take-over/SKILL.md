@@ -109,8 +109,10 @@ sqlite3 -header ~/.claude/observability/obs.db \
 
 ## Save(次要:主动交接存档)
 
-Trigger: "handoff" / "交接" / "save progress"——还有额度、想主动收尾时才用;
-额度耗尽的场景根本轮不到它,走上面的 take over。
+Trigger: "handoff" / "交接" / "save progress",以及**额度将尽预警**——用户说
+"额度/quota 快用完了"、"kimi 额度马上耗光"、"马上要限流" 时,不等追问,立刻
+主动写存档(实测案例:用户连问三次才拿到交接文件,预警本身就是触发词)。
+额度已经耗尽、会话已死的场景轮不到它,走上面的 take over。
 
 写 `~/tmp/handoff-<YYYY-MM-DD>-<project>-<短标题>.md`(全局 `~/tmp/`:跨仓、
 跨 CLI、不进任何 repo、worktree 删了也在)。结构:
@@ -120,4 +122,7 @@ Failed Attempts / Discoveries(业务规则、API 怪癖、用户明说的约束)
 Next Steps / Key Files / Gotchas
 
 铁律:为零上下文读者写;决策必须带 why;不藏问题;失败尝试必须记。
-写完输出路径,并提示接手指令:`接手 <短标题>`。
+写完输出两样:①接手指令 `接手 <短标题>`(同为 Claude Code 时);②一行可直接
+粘贴到任意其他 agent CLI(Cursor/codex/kimi)的接手话术——
+`读 ~/tmp/handoff-<...>.md,按 Next Steps 继续执行,用户约束以 Discoveries 节为准`
+——存档在 `~/tmp/` 正是为了跨工具可读,别让用户自己去编这句话。

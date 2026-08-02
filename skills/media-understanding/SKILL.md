@@ -1,7 +1,10 @@
 ---
 name: media-understanding
 description: >-
-  Understand any local audio/video content.
+  Understand any local audio/video content. Use whenever the user hands over a
+  local media file path or recording — 录屏、屏幕录制、.mp4/.mov/.mp3/.m4a 路径、
+  "我录了屏你能看到吗"、复现视频/bug 录像、会议音频 — instead of hand-rolling
+  ffmpeg/ffprobe frame extraction.
 allowed-tools: Bash(python3:*), Bash(yt-dlp:*), Bash(bili:*), Bash(ffmpeg:*)
 ---
 
