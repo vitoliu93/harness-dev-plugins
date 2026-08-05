@@ -1,0 +1,111 @@
+{
+  "positive_concepts": {
+    "visual_explainer": {
+      "weight": 0.5,
+      "phrases": [
+        "HTML file",
+        "self-contained HTML",
+        "html-doc",
+        "create-readable-html",
+        "visual explainer",
+        "visualize",
+        "visual",
+        "infographic",
+        "diagram",
+        "可视化",
+        "信息图",
+        "dashboard",
+        "timeline",
+        "comparison",
+        "architecture",
+        "架构",
+        "flow",
+        "数据流",
+        "review this PR"
+      ]
+    },
+    "target_prototype": {
+      "weight": 0.5,
+      "phrases": [
+        "plan-prototype",
+        "目标原型",
+        "先给我看看",
+        "你要做成什么样",
+        "先让我确认",
+        "prototype",
+        "prototype.html",
+        "approve",
+        "approval",
+        "before coding",
+        "before you start",
+        "about to build",
+        "原型",
+        "设计稿",
+        "PRD",
+        "Figma",
+        "按原型实现",
+        "UI",
+        "界面",
+        "布局",
+        "交互",
+        "立项",
+        "开始做"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "deploy_publish": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "部署",
+        "deploy",
+        "发布",
+        "分享链接"
+      ]
+    },
+    "frontend_dev": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "React 组件",
+        "css bug",
+        "渲染列表"
+      ]
+    },
+    "unrelated": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "翻译"
+      ]
+    },
+    "explain_existing": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "already exists",
+        "已经上线",
+        "讲给新人"
+      ]
+    },
+    "report": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "not a report",
+        "report",
+        "报告"
+      ]
+    },
+    "trivial": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "trivial",
+        "改个错别字"
+      ]
+    }
+  },
+  "fallback_positive_concepts": ["visual_explainer", "target_prototype"]
+}

@@ -1,143 +1,89 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code, packaged as a plugin. The repo root is
-the plugin root — skills under `skills/`, 4 subagents under `agents/`, hooks
-under `hooks/` are auto-discovered. Retired skills and their companion subagents
-are parked under `archive/` (out of auto-discovery, kept for reference).
-North star + roadmap: `docs/north-star.md`.
+the plugin root — 18 skills under `skills/`, 3 subagents under `agents/`, hooks
+under `hooks/` are auto-discovered. Retired skills live under `archive/`.
+North star: `docs/north-star.md`.
 
-**Design principle (v2.0)**: every entry here is a project-agnostic atom whose
-audience is the *agent* — it binds to no project infra. Workflow orchestration
-(the `ship` SOP) lives in the project plugin that owns the infra it binds to
-(currently `kox-agent-plugins`); it composes these atoms cross-plugin. Content
-written *for the user* (plans' goal.md, reports, HTML explainers) follows the
-audience rule: plain language, goal-aligned, no code archaeology — verification
-detail stays in the agent-facing layer.
+**Design principle (v2.0)**: project-agnostic atoms for the *agent* (`metadata.kind`:
+`meta` / `atom` / `sop`). Workflow SOPs that bind project infra (e.g. `ship`) live
+in the owning project plugin (`kox-agent-plugins`).
 
 ## Install
 
-This repo doubles as its own marketplace. From any machine with the repo checked
-out (e.g. at `~/codebase/projects/agent-plugins`):
+From any machine with the repo checked out at `<checkout-path>`:
 
 ```
-/plugin marketplace add ~/codebase/projects/agent-plugins
+/plugin marketplace add <checkout-path>
 /plugin install dev-kit@vito-agents
 ```
 
-Then restart the session. Skills become available as `dev-kit:<skill>`
-(e.g. `/dev-kit:advanced-plan`).
+Restart the session. Skills load as `dev-kit:<skill>` (e.g. `/dev-kit:advanced-plan`).
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| advanced-plan | Write the deterministic, acceptance-bearing plan for a non-trivial task and track it as a mini-project (goal/spec/todo + worktree isolation). Plan data stays under `docs/advanced-plans/` (fixed convention, shared with debrief and project finalize skills). |
-| debrief | 收盘 sedimentation: archive plan artifacts → distill one lifecycle-tagged memory → promote recurring patterns to skill candidates. |
-| dispatch-vendors | Delegate to a separate AI process, two classes. **Execution**: a whole self-contained task (recon/review/red-team/tests/E2E/docs/research) to a vendor agent CLI (dscode / arkcode / kicode / cursor-agent) — unattended, resumable, on someone else's quota. **Advisory**: a 第二意见/校审 to a fresh subagent, headless fable, or a foreign family — a verdict, not a diff, so the execution floor and acceptance gate don't apply. |
-| blindspot | Unknown-unknowns territory briefing before planning: repo + domain lens scans, ranked 5-10 item briefing. |
-| take-over | Take over an interrupted agent's task: locate the session via ccobs (id / 描述 / Gitee issue), read goal-boundary-progress from the transcript, continue. Secondary: save a handoff doc to `~/tmp/`. Formerly handoff. |
-| exa-code | Search the web for code examples, docs, and programming solutions via Exa. |
-| create-readable-html | Single self-contained, infographic-style HTML explainer — output for readers far from the code. 原 html-doc. |
-| media-understanding | Local audio/video → Gemini transcription + digest. |
-| docs-organize | 文档—事实—代码锚点体检 + docs/ placement 约定落地. |
-| audit-context | Audit, prune, and lean-refactor session context (CLAUDE.md, memory, imports). |
-| skill-atlas | Fleet health check: route-overlap matrix, staleness, per-skill trigger evals, context budget. |
-| ccobs | SQLite observability ledger over session transcripts: skill usage, spawn model discipline, token economy, hook health. |
+| advanced-plan | Write and track an acceptance-bearing dev plan as a mini-project. |
+| debrief | Archive plan artifacts, distill one memory, surface skill candidates. |
+| dispatch-vendors | Delegate self-contained tasks or advisory judgments to vendor CLIs. |
+| grill-me | Escalate only high-risk decisions before substantive work. |
+| take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
+| exa-code | Search the web for code examples and API docs via Exa. |
+| use-html | Self-contained HTML explainer or pre-build clickable prototype. |
+| media-understanding | Transcribe and understand local audio/video. |
+| context-audit | Audit always-loaded context or project docs; adopt placement rules. |
+| no-ai-slop | Human-voice editing, AI-slop detection, CEO-style task reports. |
+| skill-atlas | Fleet health: overlap, staleness, trigger evals, budget, usage. |
+| ccobs | Build or query the agent observability ledger obs.db. |
+| recall | Retrieve up to five past-session clues from ccobs. |
+| orchestrate | Route coding delegation with spec, acceptance, and parallel gates. |
+| skill-forge | Create or improve skills; graduate candidates through trigger eval. |
+| cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 
-### Learning (merged from study-kit, 2026-07-28)
+### Learning
 
-North star: **让下一次学习会话更容易发生** (`docs/study/north-star.md`). The
-boundary against the work skills is *learning vs shipping*, not hobby vs job —
-reading a work codebase to understand it is learning, and these apply.
+Boundary: *learning vs shipping* (`docs/study/north-star.md`).
 
 | Skill | What it does |
 |---|---|
-| resume-learning | 学习存档/读档:结束时三路取证(跨 CLI 会话/git/文件扫描)+ 2-4 个主动回忆追问 → 代写 `RESUME.md`;下次"读档"30 秒重启。重启成本恒定,不随中断时长增长。 |
-| study-coach | 第一性原理学习教练:目标审计(Musk 五步法倒推 + 新摊子闸门)/ 迷茫急救 / 进度分析(读存档历史做证据式盘点)。 |
-| quiz-me | 概念练习出题人:情境应用题而非计算题,题面不出现术语,一题一判,transfer 阶梯(贴材料→跨域→边界陷阱)。 |
-| stepping-stone | 先导知识"够用就走"讲解人:抓单一本质、给图不给想象、只讲先导本身,连回主线的 gap 留给用户。与 quiz-me 互补(搭地基 vs 验结构)。 |
+| resume-learning | Save/restore learning progress to `RESUME.md` with evidence + recall. |
+| study-coach | Goal audit, motivation rescue, progress review, practice, prerequisites. |
 
-Moved out (v2.0): `ship` — now a five-stage lifecycle skill in
-`kox-agent-plugins` (context collection → acceptance-bearing plan →
-implementation → E2E acceptance → finalize), where the issue tracker, E2E
-tester, and deploy pipeline it binds to actually live. Its companion agents
-`ship-tester` / `ship-analyst` retired to `archive/` — verification now rides
-on plan acceptance clauses + the project's E2E stage.
+Moved out (v2.0): `ship` → `kox-agent-plugins`.
 
 ## Subagents
 
-Three subagents (spawnable via the Agent/Task tool as `dev-kit:<agent>`).
-Each runs noisy work in an isolated context so search dumps, engine transcripts,
-and upload logs never enter the main session; only a distilled answer comes back.
-
 | Agent | Model | Role |
 |---|---|---|
-| general-skills-executor | sonnet (default) | Generic runner for noisy delegated skills — loads the skill the prompt names (`exa-code`, `create-readable-html`, `lark-*`), runs it end-to-end, returns only the distilled result. Spawn with `model: opus` for complex tasks; the guard recommends a per-skill baseline (`lark-*` → haiku). |
-| code-search | sonnet | Token-efficient codebase explorer — prefers auggie-mcp semantic search, `rg`/`fd` for exact matches; returns terse located results, not raw file dumps. |
-| investigator | sonnet (opus for hard incidents) | Debug-scenario agent — one spawn per incident; correlates clues across the project's evidence sources (logs / DB / code / tickets / docs, loaded lazily via the project's own skills) inside its own context, returns root cause + evidence chain + reproduction commands. Complements built-in Explore/Plan; replaces per-source fan-out whose clues would otherwise be joined in the expensive main context. |
+| general-skills-executor | sonnet (opus if complex) | Noisy delegated skills (`exa-code`, `use-html`, `lark-*`) — distilled result only. |
+| code-search | sonnet | Token-efficient codebase explorer. |
+| investigator | sonnet (opus for hard incidents) | Debug agent — root cause + evidence chain per incident. |
 
-The other skills are deliberately *not* delegated: they either need the live
-session conversation (take-over), are interactive end-to-end (audit-context), or
-are methodologies the main agent itself must drive (advanced-plan).
+Skills not delegated: live-session work (take-over), interactive audits (context-audit),
+methodologies the host must drive (advanced-plan).
 
-Note: nested subagent spawning requires Claude Code ≥ 2.1.172. On older
-versions the executor reads content inline with strict distillation discipline
-instead of fanning out per-item readers; investigator likewise degrades to
-inline reading when nesting is unavailable.
+Nested subagent spawning requires Claude Code ≥ 2.1.172.
 
 ## Hooks
 
-`hooks/hooks.json` registers four command hooks:
-
-- **`learn-capture.py`** (Stop) — greps the session transcript for
-  `[LEARN] <type>: <rule>` markers the model emitted while working and appends
-  new ones (deduped) to the project's `.claude/LEARNED.md` — the raw learning
-  inbox. Pure observer: always exit 0, never blocks stopping.
-- **`session-replay.py`** (SessionStart) — injects the [LEARN] convention plus
-  the last 5 LEARNED.md entries as context, closing the loop: correct once,
-  remembered next session. `/debrief` graduates inbox entries into curated memory.
-- **`worktree-guard.sh`** (PreToolUse, `Bash`) — enforces the exit-safety order
-  on `git worktree remove`: denies removal from inside the worktree, and
-  removal of a dirty worktree without `--force`.
-- **`skill-guard.sh`** (PreToolUse, `Skill|Read`) — exempt inside **any
-  subagent** (the hook input carries `agent_id` there); in the main context it
-  denies inline use of the noisy delegated skills (and reading their source
-  files) and redirects each to its subagent. A single `DELEGATE` table is the
-  source of truth — `skill_glob | target_agent | model | hint` per row:
-
-  | skill | target | model |
-  |---|---|---|
-  | `exa-code` | general-skills-executor | sonnet |
-  | `create-readable-html` | general-skills-executor | sonnet |
-  | `lark-*` | general-skills-executor | haiku |
-  | `media-understanding` | general-skills-executor | sonnet |
-
-  `lark-skill-maker` and `lark-im` are exempt (skill development and outbound
-  writes stay in the main context). The Read-guard's `*/skills/<name>/*` glob
-  protects those skills' source files wherever they live.
-
-Editing a skill's *source* inside the current working tree (developing this repo)
-is exempt from the guard. Typing a `/<skill>` slash command directly also
-bypasses it, since that path doesn't go through the Skill tool. Hook changes
-load at session start — restart the session after editing.
+`hooks/hooks.json`: `learn-capture.py`, `session-replay.py`, `worktree-guard.sh`,
+`skill-guard.sh` (noisy skills → `general-skills-executor`; editing this repo's
+skill sources is exempt). Restart after hook edits.
 
 ## Layout
 
 ```
-.claude-plugin/
-  plugin.json        # plugin manifest (name: dev-kit)
-  marketplace.json   # marketplace (name: vito-agents), plugin source "./"
-skills/              # 20 skills, auto-discovered
-agents/              # 4 subagents, auto-discovered
-hooks/
-  hooks.json         # hook registration
-  scripts/           # skill-guard.sh, worktree-guard.sh, learn-capture.py, session-replay.py
-archive/             # retired skills/ + agents/ (incl. ship, ship-tester, ship-analyst, cto-audit), not auto-discovered
+.claude-plugin/   # plugin.json + marketplace.json
+skills/           # 18 active skills
+agents/           # 3 subagents
+hooks/            # hook registration + scripts
+archive/          # retired skills (not auto-discovered)
 ```
 
-## Note on portability
+## Portability
 
-`advanced-plan` resolves its templates via `${CLAUDE_PLUGIN_ROOT}` with a
-`~/.claude/skills` fallback. `exa-code` still references its scripts via
-hardcoded paths — fix those if you hit a missing-file error when it tries to
-read its own assets under a plugin-cache install.
+`advanced-plan` templates resolve via `${CLAUDE_PLUGIN_ROOT}`. Tool ledgers default
+under `$HOME/.claude/observability/` — override with `CCOBS_DIR`, `SKILL_ATLAS_DIR`.
+Handoff files use `HANDOFF_DIR` (default `${TMPDIR:-/tmp}`). External docs use
+`EXTERNAL_DOCS_DIR`.

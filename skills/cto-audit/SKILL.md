@@ -1,145 +1,23 @@
 ---
 name: cto-audit
-description: 从 CTO 视角审计项目
+description: >-
+  Audit project architecture, domain model, and harness rules from a CTO lens.
+  Use when the user invokes /cto-audit or requests a structural governance audit.
 disable-model-invocation: true
 argument-hint: "[目标项目目录] [engineering|algorithm|delivery]"
+metadata:
+  kind: meta
 ---
 
 # CTO 项目技术审计
 
-## 北极星
+Ask each cycle: after this change, are architecture, domain model, and rule boundaries converging or drifting?
 
-**AI 写得对每一行,写不对整体;CTO 只审整体——这轮改动之后,架构、领域模型、规则边界,是更收敛了,还是更漂移了?**
+Full process: [process.md](references/process.md). Subagent prompts: [subagent-prompts.md](references/subagent-prompts.md). Report: [report-template.md](references/report-template.md).
 
-为什么存在:agent 的每一轮都是贪心步,局部最优是结构性质不是模型缺陷,升级模型治不好。全局视野只能活在 harness 里——用约束重塑局部搜索空间(快循环),再靠本 skill 周期性退火(慢循环):清存量债、复审约束本身。AI 的漂移是复利的(后续 agent 把前人的 hack 当惯例模仿),且身在局中者看不见,所以检测必须是周期性、外部视角的——这就是本 skill 独立于 code-review 存在的理由。
+## Hard gates
 
-## 八问镜头
-
-审计的注意力清单。前五问审"改动与既有结构的关系",后三问审"既有结构本身的前提":
-
-1. 这个模块原本为什么这样拆?——理由还能被回答吗(ADR/文档/可读历史),还是只活在人脑里?
-2. 这段逻辑是不是已经在别处实现过了?(语义重复,不只文本重复)
-3. 改法会不会绕开原有架构约束?(分层击穿、依赖倒挂)
-4. 这次需求应该影响哪些测试和文档?该动没动的就是残留的不一致债。
-5. 临时加的兼容会不会成历史包袱?(TODO/HACK/fallback 的出生理由今天还成立吗)
-6. **领域偏离**:模块边界还长在业务的关节上吗——不只问"为什么这样拆",还问"这样拆现在还对不对"。
-7. **概念一致性**:同一领域实体是不是有三个名字、同一个词是不是指三件事?语义漂移是"人和 agent 不再共享同一心智模型"的最早信号。
-8. **改动放大系数**:一个典型需求落地要动几个模块?唯一进攻性的问题——架构唯一的职责就是压低改动成本。
-
-## 权力结构
-
-- **CTO(本 skill)**:审架构/领域/规则,**含定规则**——提出、制定、落地全归本 skill,不请示。
-- **CEO(用户)**:只看 /report 口径的方向摘要,保留否决权。自决不等于静默自决:**报告必带「规则变更公示」一节**(立/改/废了什么,一句话理由),让"必要时站出来"有抓手。
-- **行级细节**:发现即移交 code-simplify(缺席时 simplify/ponytail-review),本 skill 报告里不展开行级修法。
-
-## 规则三律(道法自然)
-
-规则产生于开发的摩擦,其生灭如生态,审计是园丁兼季候——平时不干预,季候到时施加选择压:
-
-1. **无痛不立**:立规则只许从观察到的真实痛苦归纳(复发 bug 簇、反复被踩的约定、真实返工),不许从教科书原则演绎。**每条规则带出生证明**(born: 日期 + 一句话摩擦来源)。
-2. **有生有灭**:每次审计必须对称地问"哪些既有规则的出生之痛已不存在"——防的坑已重构掉、约束的模块已删、半年没拦住过东西。化石规则公示后废除;死规则占的是每个未来会话的 token 税。
-3. **少立多察**:不为想象中的问题预先立法,同一摩擦宁可发生两次再立。投机性规则比投机性代码更贵。
-
-## 权重铁律
-
-**能力 > 性能 > 架构 > robustness ≫ 安全。** 快速迭代期、未推广 public:安全项只在确属重大敞口时一条以内列入 P0,不展开不说教,严禁主导报告篇幅。此权重是阶段函数,public 化/商业化时由用户显式上调,skill 默认不变。(能力/性能属经营层,本 skill 审计范围限于架构/领域/规则三层——能力缺口或性能瓶颈若在取证中浮现,作旁证进战略层,不专项深挖。)
-
-## 发动机制(三层,贵的发动权级别越高)
-
-- **日常层(自动)**:审计立下的宪法断言进目标项目的 hook/CI,每次改动毫秒级自动跑——免疫系统,不需要智能。
-- **信号层(提醒)**:debrief 收盘时若发现同主题摩擦复发或距上次审计过久,末尾加一句"建议召集 cto-audit"。只提醒不发动。(该逻辑落在 debrief 的收盘 Move 里,见其 SKILL.md。)
-- **发动层(用户)**:全量审计仅由用户显式召集。成本决策归 CEO;没有读者的报告是浪费。
-
-## 流程
-
-### Phase 0 — 定界(主上下文)
-
-0. 解析第二参数:`algorithm` → 在既有审计基础上直进 Phase 4;`delivery` → 直进 Phase 5;`engineering` 或缺省 → 完整跑 Phase 0-3。
-   **定向题目不豁免流程**(born: 2026-08-05,剪映常量审计初版被 CEO 打回):用户给了具体
-   scope 只收窄「深查投向」,Phase 1 四路照发;prompt 里附的背景指针(session id / 文档 /
-   issue)是必读证据,先读再动。确需降级(如复审重跑),必须在报告开头公示降级项与理由,
-   静默降级 = 流程违例。
-1. 确认目标项目;读 CLAUDE.md / AGENTS.md / README / 项目清单文件;找现成架构/算法清单文档(存在就是捷径,优先精读)。
-2. **读上次审计遗产**:**工作区内所有仓**的 `docs/audit/` 逐个查(多仓工作区只查主仓会漏——2026-08-05 漏过 kox-engine 的 constitution/),宪法断言与规则清单先验证守卫还活着(断言还在跑、没被绕过),活着的整类发现跳过深查,深查只投给新增熵。
-3. 检索 auto-memory / recall 里该项目的历史 issue 根因,作交叉验证素材。
-
-### Phase 1 — 四路并行取证(子代理,一条消息全部发出)
-
-prompt 模板见 [references/subagent-prompts.md](references/subagent-prompts.md):
-
-| 路 | 代理 | 模型 | 产出 |
-|---|---|---|---|
-| Issue 聚类 | 项目对应 issue 源 operator | 默认 | 缺陷占比、模块缺陷密度、复发主题 |
-| 代码结构勘察 | code-search | 默认 | 分层地图、上帝文件、死代码、测试/CI 实况 |
-| Git 历史挖掘 | general-purpose | sonnet | churn 热点、fix 比例、打地鼠文件 |
-| **盲画领域模型** | general-purpose | **opus** | 禁读 src,只读 docs/README,盲写"这系统理应长什么样"的领域模型与模块边界 |
-
-发出后不等待,立即做 Phase 1.5。
-
-### Phase 1.5 — 主上下文独立精读(与 Phase 1 并行)
-
-亲自读承重文件、亲自跑验证命令(命令示例见 subagent-prompts.md 末节):
-
-- 端到端走一条真实请求(入口→服务→核心→持久化),用身体感受**改动放大系数**
-- CI 有没有测试环节、配置契约面(读取数 vs 文档化数)、可疑死代码零引用验证
-- **临时兼容考古**:扫 TODO/FIXME/HACK/兼容/临时/workaround/fallback 分支,逐条问出生理由今天是否还成立——理由失效代码还在的,是纯净可删债务
-- **文档-代码漂移抽查**(八问之四):docs 引用的模块名/函数名/环境变量还存在于代码里吗——反查即得;近期结构性 commit 抽一个,推演"理应连带影响哪些测试文档",和实际改动 diff,漏改项即残留不一致债
-- **概念一致性抽查**:挑 3 个核心领域名词,grep 各自的别名拼写(userId/user_id/uid 式),漂移即记录
-
-**铁律:报告里每个"惊人论断"必须有一条自己跑出来的证据,不能全靠子代理转述。**
-
-### Phase 2 — 交叉验证与综合
-
-- 每个论断配数字或 file:line;issue 根因 ↔ 代码证据 ↔ 历史模式三方互证,三方吻合才是根因
-- **领域 diff**:盲画蓝图 vs 真实结构——真实有蓝图没有的,要么是隐藏领域概念(补文档)要么是实现债;蓝图有真实没有的,是被稀释的领域边界
-- 质量经济学总判断:缺陷占比 × fix 提交比例 → 返工消耗产能几成 → 一句话结构性根因
-
-### Phase 2.5 — 发现分流(本 skill 的真正出口)
-
-**审计的产出是 harness 补丁,不是报告。** 每个发现三选一:
-
-| 去向 | 判据 | 工件 |
-|---|---|---|
-| **落 harness** | 一致性/不变量/既定规则,机器可守 | 见下方映射表,当场落地 |
-| **移交 code-simplify** | 行级修法(重复实现的合并、函数瘦身) | 发现清单交接,不展开 |
-| **CEO 拍板清单** | 战略取舍(债还是养、边界重切、方向二选一) | 进报告战略层,压缩到最少 |
-
-发现类型 → harness 工件映射:
-
-| 发现 | 工件 |
-|---|---|
-| 同一实体多处异名 | 领域词表 + CLAUDE.md 命名规则 |
-| 分层击穿/依赖倒挂 | **宪法断言**(grep/AST 可执行,落 `<项目>/docs/audit/constitution/`,每条带出生证明)+ P0 行动项接 CI/hook |
-| 同一业务规则散落多处 | ADR 记规则归属 + 行为锁定测试 |
-| 隐性约定反复被踩 | CLAUDE.md 规则 或 PreToolUse hook |
-| 承重决策理由不可复原 | ADR 补记 |
-| 领域不变量无守卫 | 类型/DB 约束 + property test(列行动项,不当场写业务代码) |
-
-同时执行**规则三律第二条**:复审既有规则,化石规则列入废除公示。
-
-### Phase 3 — 报告(对话内交付,/report 口径)
-
-按 [references/report-template.md](references/report-template.md) 骨架。硬要求:
-
-- 开头一句话质量经济学总判断,不铺垫
-- 结构性缺陷 3~5 个,每个「问题 → 证据 → 动作」
-- **必有「值得肯定」区块**(审计要公允)
-- **必有「规则变更公示」一节**:本次立/改/废了哪些规则,各一句话理由——CEO 的否决抓手
-- 收尾 P0/P1/P2 行动表,带成本×收益
-
-### Phase 4 — 算法层二阶段(可选,用户追问算法/技术实现时)
-
-核心猎物是**「有算法、没闭环」**:任何召回/对齐/LLM task,没有离线评测和回归机制,质量就只能靠生产 issue 度量。每条建议锚定真实事故或可量化成本,不给教科书泛论。武器库与核对清单见 subagent-prompts.md 末节。
-
-### Phase 5 — 交付物(可选,用户点名才做)
-
-- HTML 可视化:写内容源稿(数字忠实照搬)→ 委派 general-skills-executor(opus)跑 create-readable-html
-- 发飞书:委派 general-skills-executor(haiku),云盘上传 + 组织内链接 + 群发链接,不走文件消息
-- advanced-plan 记档:goal/spec/todo/exploration 落 `<项目>/docs/advanced-plans/`,record-only,todo 按 P0/P1/P2 拆可认领 phase
-
-## 边界
-
-- 不做单 diff 评审、单 bug 排查、渗透/合规安全审计;过度工程专项 → ponytail-audit(可引用其榜单作补充证据,不重复实现)
-- record-only:审计会话不改业务代码;**唯一例外是 harness 工件**(宪法断言/词表/CLAUDE.md 规则/ADR)——那是本 skill 的正式产出,当场落地
-- 子代理结论未经主上下文抽验,不得进报告
-- 模型不得中途自行升级为全量审计;干活时发现的结构问题记入备忘,作下次审计输入
+- Scoped audit still runs Phase 0–1 unless user-approved downgrade (state in report).
+- Output is harness patches, not just narrative.
+- Report must include 规则变更公示 and 值得肯定.
+- Do not upgrade to full audit mid-session without user.

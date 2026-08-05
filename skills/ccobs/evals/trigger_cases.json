@@ -1,0 +1,22 @@
+{
+  "recommended_threshold": 0.28,
+  "should_trigger": [
+    { "text": "run ccobs ingest for recent sessions", "family": "ingest_en" },
+    { "text": "query obs.db for skill usage stats", "family": "stats" },
+    { "text": "fetch Cursor message_parts for this session", "family": "cursor" },
+    { "text": "灌一下 ccobs 账本", "family": "ingest_zh" },
+    { "text": "看一下 v_tool_overview 各工具分配", "family": "stats_zh" }
+  ],
+  "should_not_trigger": [
+    { "text": "recall 以前有没有查过 billing", "family": "recall" },
+    { "text": "跑 skill-atlas 路由重叠体检", "family": "skill_atlas" },
+    { "text": "用 Exa 搜 API 文档", "family": "exa" },
+    { "text": "解释 ccobs 三层架构", "family": "explain" }
+  ],
+  "near_neighbor": [
+    { "text": "take over 前先同步账本", "family": "takeover" },
+    { "text": "debrief 收盘查 dispatch ledger", "family": "debrief" },
+    { "text": "查先例线索 LIMIT 5", "family": "recall_neighbor" },
+    { "text": "转写本地 mp4", "family": "media" }
+  ]
+}

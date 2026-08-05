@@ -6,18 +6,19 @@
     },
     "sediment": {
       "weight": 0.35,
-      "phrases": ["沉淀", "经验", "教训", "写进 memory", "存下来", "归档计划", "archive the plan", "lessons"]
+      "phrases": ["沉淀", "经验", "教训", "写进 memory", "存下来", "归档计划", "archive the plan", "lessons", "archive plan", "distill", "lifecycle memory", "surface skill candidates"]
     },
     "post_completion": {
       "weight": 0.2,
-      "phrases": ["做完了", "merge 完", "issue 关了", "任务结束", "验收完", "任务"]
+      "phrases": ["做完了", "merge 完", "issue 关了", "任务结束", "验收完", "任务", "wraps up", "merge/deploy", "after merge"]
     }
   },
   "negative_concepts": {
     "summary_only": { "weight": 0.3, "exclusive": true, "phrases": ["总结", "文章", "要点", "summarize"] },
     "report_writing": { "weight": 0.3, "exclusive": true, "phrases": ["周报", "汇报"] },
-    "explain_only": { "weight": 0.3, "exclusive": true, "phrases": ["解释", "什么是", "方法论"] },
+    "explain_only": { "weight": 0.45, "exclusive": true, "phrases": ["解释", "什么是", "方法论", "explain"] },
     "lark_archive": { "weight": 0.3, "exclusive": true, "phrases": ["飞书", "云盘"] },
     "sibling_skills": { "weight": 0.28, "exclusive": true, "phrases": ["review 一下这个 PR", "代码质量", "CLAUDE.md", "清理过期记忆", "handoff", "换台机器", "关掉这个 issue", "合并代码"] }
-  }
+  },
+  "fallback_positive_concepts": ["closing", "sediment", "post_completion"]
 }

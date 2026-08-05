@@ -1,0 +1,65 @@
+{
+  "recommended_threshold": 0.28,
+  "should_trigger": [
+    {
+      "text": "search the web for how to configure nginx rate limiting",
+      "family": "explicit_en"
+    },
+    {
+      "text": "find code examples for pydantic v2 validators",
+      "family": "explicit_en"
+    },
+    {
+      "text": "look up the Stripe webhook API documentation",
+      "family": "docs"
+    },
+    {
+      "text": "debug this error — find similar issues on GitHub",
+      "family": "debug"
+    },
+    {
+      "text": "用 Exa 搜一下 FastAPI lifespan 的写法",
+      "family": "explicit_zh"
+    },
+    {
+      "text": "查一下官方文档里这个 endpoint 的参数",
+      "family": "docs_zh"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "转写这段 mp4 录屏",
+      "family": "local_media"
+    },
+    {
+      "text": "以前有没有会话查过这个问题",
+      "family": "recall"
+    },
+    {
+      "text": "解释一下 exa-code 是干嘛的",
+      "family": "explain_only"
+    },
+    {
+      "text": "在这个 repo 里 rg 一下 handler 定义",
+      "family": "codebase"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "灌一下 ccobs 账本",
+      "family": "ccobs"
+    },
+    {
+      "text": "派给 vendor 做 repo recon",
+      "family": "dispatch"
+    },
+    {
+      "text": "画个架构信息图 HTML",
+      "family": "use_html"
+    },
+    {
+      "text": "查一下我们之前的研究先例",
+      "family": "recall_neighbor"
+    }
+  ]
+}

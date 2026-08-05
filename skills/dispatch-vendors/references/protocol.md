@@ -11,17 +11,14 @@ written BEFORE dispatching. The brief must state the acceptance script is
 read-only for the vendor — threshold mismatch → report NEEDS_CONTEXT, never
 edit the gate (a vendor once rewrote the threshold; DONE self-reports are void
 once the gate is editable). Parallel edits → vendor gets its own worktree.
-Long/review-class briefs must also demand the deliverable file created EARLY
-(skeleton first, fill incrementally) — a killed/timed-out vendor then still
-leaves partial value on disk (verified: a 560s kill with nothing written;
-cursor 20-min hang with the report unflushed).
+Long/review-class briefs: demand deliverable file created early (skeleton first).
 
 Three things zero-context does NOT mean prose:
 
 - **Source artifacts go over verbatim, by path.** Design source, prototype,
   schema dump, sample payload — write the in-repo path into the brief and
   require the vendor to read it first. Your prose retelling is not the artifact
-  and does not satisfy zero-context. External file (`~/Downloads`, Desktop) →
+  and does not satisfy zero-context. External file (host Downloads/Desktop or `${DOWNLOADS_DIR}`) →
   copy it into the repo first; a vendor subprocess cannot see what isn't in
   the tree.
 - **Constants carry provenance.** Any threshold / conversion factor / contract
@@ -82,15 +79,12 @@ amend the verdict on return — rows recorded only on success go missing exactly
 when they matter. A fixup caused by *your* wrong brief is logged as such, not
 as a vendor fixup; the ledger is a signal about the gate, not a scoreboard.
 
-**Why the `why:` field exists.** The user has asked for vendor use to continue
-*specifically to observe orchestration and collaboration* — that purpose is not
-token economics, and the economics floor does not get to veto it. An
-under-floor batch dispatched deliberately will drag the pass/fixup numbers
-down and, unmarked, reads as evidence the gate was right. Two populations, two
-verdicts: `econ` rows judge the floor, `obs` rows judge whether non-Anthropic
-collaboration produces anything a subagent wouldn't. Never cite "token 没省下来"
-as a reason to stop dispatching — that conclusion is already in hand
-(2026-07-25) and is not what the observation is measuring.
+**`why:` field rules**
+
+- Tag every row: `why:econ` (economics floor) or `why:obs` (collaboration validation).
+- `econ` rows judge pass/fixup against the token floor; `obs` rows judge whether non-Anthropic collaboration adds signal a subagent would not.
+- Deliberate under-floor batches must stay tagged `obs` — unmarked rows skew econ stats.
+- Do not use "token 没省下来" alone to veto `obs` dispatches; that measures a different question.
 
 ## Recovery — vendor limited mid-run
 
@@ -105,7 +99,7 @@ stored (resumable later if quota returns) and partial work is already on disk
 (early-skeleton rule). Kill the run, harvest the worktree + partial report,
 then re-dispatch to a DIFFERENT vendor family or take it inline — takeover
 brief = original brief + `## Prior findings (from a limited run)` pasting the
-partial report verbatim and listing what's already excluded/verified, so the
+partial report verbatim and listing what's already excluded/confirmed, so the
 successor doesn't re-derive it. Takeover also dies → inline.
 
 Ledger the limited run as `fail(quota-limited)` so debrief sees the pattern.

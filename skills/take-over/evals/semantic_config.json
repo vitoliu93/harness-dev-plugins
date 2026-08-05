@@ -88,10 +88,22 @@
         "转交给同事",
         "给同事"
       ]
+    },
+    "prior_research": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "查一下之前",
+        "有没有会话碰过",
+        "先例",
+        "碰过这个问题"
+      ]
     }
   },
   "fallback_positive_concepts": [
     "takeover_verb",
-    "session_locate"
+    "session_locate",
+    "interrupted_agent",
+    "save_handoff"
   ]
 }

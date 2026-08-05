@@ -1,0 +1,25 @@
+{
+  "recommended_threshold": 0.48,
+  "should_trigger": [
+    { "text": "我为什么要学线性代数", "family": "goal_audit" },
+    { "text": "这条学习路线合理吗", "family": "goal_audit" },
+    { "text": "最近又断了，学不下去", "family": "rescue" },
+    { "text": "给我做一次学习盘点", "family": "progress" },
+    { "text": "考考我反向传播", "family": "quiz" },
+    { "text": "出题，我想练一下概率", "family": "quiz" },
+    { "text": "先讲讲点积，我没印象了", "family": "stepping_stone" },
+    { "text": "垫脚石讲讲指数函数", "family": "stepping_stone" }
+  ],
+  "should_not_trigger": [
+    { "text": "把今天的学习进度存档", "family": "resume_learning" },
+    { "text": "读档，继续上次的学习", "family": "resume_learning" },
+    { "text": "面试前考考我算法题", "family": "interview" },
+    { "text": "我不懂这个 Python 报错", "family": "engineering_help" },
+    { "text": "帮我做职业规划", "family": "career" }
+  ],
+  "near_neighbor": [
+    { "text": "量子力学是什么", "family": "general_knowledge" },
+    { "text": "总结一下这篇教材", "family": "summary" },
+    { "text": "给这段代码做 code review", "family": "code_review" }
+  ]
+}

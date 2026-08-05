@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.20.1"
+    "version": "2.21.0"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
-      "description": "Atom library:26 个项目无关的 skill,覆盖工作(立项/汇报/派活/检索/技能与上下文维护)与学习(存档读档/学习教练/出题/先导知识,2026-07-28 并入自 study-kit)、3 个 subagent、3 个 PreToolUse hook。ship SOP 已迁居 kox-agent-plugins。",
-      "version": "2.20.1",
+      "description": "Claude Code harness: 18 project-agnostic skills, 3 subagents, hooks for noisy-work isolation and worktree guards.",
+      "version": "2.21.0",
       "author": {
         "name": "vito"
       }

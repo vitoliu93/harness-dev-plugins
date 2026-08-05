@@ -5,6 +5,7 @@
       "phrases": [
         "委派",
         "delegate",
+        "delegating",
         "派出去",
         "派活",
         "委派出去",
@@ -17,12 +18,16 @@
       "phrases": [
         "分给 vendor",
         "vendor 和 subagent",
+        "vendor",
+        "subagent",
         "适合委派",
         "哪些任务可以委派",
         "拆分",
         "收回",
         "host 自己做",
-        "路由"
+        "路由",
+        "route",
+        "deciding who should execute"
       ]
     },
     "spec_acceptance": {
@@ -43,8 +48,11 @@
         "编排",
         "orchestrate",
         "fan out",
+        "fanning out",
         "并行开发",
         "并行改代码",
+        "parallel workers",
+        "parallel",
         "worker",
         "撞车",
         "cheap workers"
@@ -59,22 +67,25 @@
         "省 token",
         "窗口快烧穿",
         "确定性的编码活",
-        "防绿着错"
+        "防绿着错",
+        "收回自己做",
+        "execute a batch"
       ]
     }
   },
   "negative_concepts": {
     "explain_only": {
-      "weight": 0.3,
+      "weight": 0.45,
       "exclusive": true,
       "phrases": [
         "解释",
         "什么意思",
-        "是什么"
+        "是什么",
+        "解释一下"
       ]
     },
     "inline_work": {
-      "weight": 0.3,
+      "weight": 0.35,
       "exclusive": true,
       "phrases": [
         "你自己来",
@@ -93,7 +104,7 @@
       ]
     },
     "dispatch_transport": {
-      "weight": 0.3,
+      "weight": 0.4,
       "exclusive": true,
       "phrases": [
         "让 cursor",
@@ -110,7 +121,7 @@
       ]
     },
     "sibling_skills": {
-      "weight": 0.28,
+      "weight": 0.4,
       "exclusive": true,
       "phrases": [
         "开发计划",

@@ -15,7 +15,7 @@ interrupting them.
 Any artifact the work must match — prototype, design export, PRD section, sample
 payload — that lives outside the repo gets copied to `$ROOT/docs/refs/<slug>/`
 **first**. Worktrees, vendor subprocesses and post-compaction context can none of
-them see `~/Downloads`, and a file outside git has no version to agree on.
+them see host paths outside the repo (e.g. the Downloads folder via `${DOWNLOADS_DIR:-$HOME/Downloads}`), and a file outside git has no version to agree on.
 
 Then read each one **end to end**. "It's large, I'll grep the relevant part" is
 how a 100KB design source ends up never read by anyone. Too large for this
@@ -31,10 +31,8 @@ design source is not the design source.
 
 Before writing `Done means`, grep the touched repos' `CLAUDE.md` /
 `docs/**/decisions.md` for existing acceptance discipline — what must be
-verified, by whom, what an agent may not self-certify — and either follow it or
-state in the plan that you are superseding it and why. A fresh kickoff doc
-silently weakening a rule the team already paid to learn is the expensive kind of
-drift.
+confirmed, by whom, what an agent may not self-certify — and either follow it or
+state in the plan when superseding project acceptance rules.
 
 ## 4. Route each execute item before touching it
 

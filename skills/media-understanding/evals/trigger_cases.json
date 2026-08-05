@@ -1,0 +1,61 @@
+{
+  "recommended_threshold": 0.28,
+  "should_trigger": [
+    {
+      "text": "transcribe this local mp4 screen recording",
+      "family": "explicit_en"
+    },
+    {
+      "text": "what does this meeting audio say",
+      "family": "audio"
+    },
+    {
+      "text": "我录了屏，帮你看一下这段视频",
+      "family": "explicit_zh"
+    },
+    {
+      "text": "digest this mov file path /tmp/demo.mov",
+      "family": "path"
+    },
+    {
+      "text": "这段 mp3 讲了什么",
+      "family": "audio_zh"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "search GitHub for ffmpeg examples",
+      "family": "web_search"
+    },
+    {
+      "text": "以前有没有会话分析过这个 bug 录像",
+      "family": "recall"
+    },
+    {
+      "text": "解释一下 media-understanding skill",
+      "family": "explain"
+    },
+    {
+      "text": "生成一段介绍视频",
+      "family": "generate"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "用 Exa 查一下 yt-dlp 用法",
+      "family": "exa_code"
+    },
+    {
+      "text": "派 vendor 做 E2E 测试",
+      "family": "dispatch"
+    },
+    {
+      "text": "灌 ccobs 然后查 usage",
+      "family": "ccobs"
+    },
+    {
+      "text": "画个流程信息图",
+      "family": "use_html"
+    }
+  ]
+}

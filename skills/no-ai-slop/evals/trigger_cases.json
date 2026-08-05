@@ -1,0 +1,24 @@
+{
+  "recommended_threshold": 0.48,
+  "should_trigger": [
+    { "text": "edit this draft but keep my voice", "family": "edit" },
+    { "text": "把这段改得更清楚一点，别太官腔", "family": "edit" },
+    { "text": "帮我润色这封邮件", "family": "edit" },
+    { "text": "这段是不是很像 AI 写的，只检测别重写", "family": "detect" },
+    { "text": "去一下 AI 味，保留我原来的语气", "family": "edit" },
+    { "text": "按 CEO 能看懂的口径汇报这次结果", "family": "report" },
+    { "text": "说人话，别写得这么技术", "family": "report" },
+    { "text": "写一条任务收尾消息，告诉我成了没", "family": "report" }
+  ],
+  "should_not_trigger": [
+    { "text": "从零写一篇产品发布博客", "family": "content_creation" },
+    { "text": "给这段代码做 code review", "family": "code_review" },
+    { "text": "复盘这次任务并沉淀规则", "family": "debrief" },
+    { "text": "这个 AI SDK 报错怎么解决", "family": "technical_qa" }
+  ],
+  "near_neighbor": [
+    { "text": "总结一下今天改了什么", "family": "summary" },
+    { "text": "盘问我还有哪些决策没拍板", "family": "grill_me" },
+    { "text": "把这篇英文文档翻译成中文", "family": "translation" }
+  ]
+}

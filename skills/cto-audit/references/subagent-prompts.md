@@ -96,7 +96,7 @@ grep -rl 'sys.path' <目录> --include='*.py' | wc -l
 ```bash
 #!/usr/bin/env bash
 # rule: domain 层不得 import infra 层
-# born: 2026-07-15 — issue #123 系列：三次缺陷根因均为 domain 直查 DB 绕开 repository
+# source: domain 直查 DB 绕开 repository 的复发缺陷
 # retire-when: 分层重构完成且连续两次审计零违例
 ! rg -l 'from infra' src/domain/ || { echo '违宪: domain→infra'; exit 1; }
 ```

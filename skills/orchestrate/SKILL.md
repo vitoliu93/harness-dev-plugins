@@ -1,66 +1,35 @@
 ---
 name: orchestrate
 description: >-
-  expert at delegation discipline for coding work: route across vendor / subagent /
-  host, write spec + acceptance, gate parallel workers。Use when 委派/派活、
-  编排/fan out、并行开发别让 worker 撞车、"这批活分给 vendor 和 subagent 做吗"。
+  Route coding work across host, subagent, and vendor with spec plus acceptance gates.
+  Use when 委派/编排/fan out、并行开发别让 worker 撞车, or deciding vendor vs subagent.
 argument-hint: "[task or batch to delegate]"
+metadata:
+  kind: sop
 ---
 
 # orchestrate
 
-Delegation = write spec + acceptance instead of code; it pays only when
-that is cheaper than doing it yourself. Quality = the acceptance-command
-suite.
+Delegation pays when spec + acceptance is cheaper than coding yourself.
 
-**Pipeline**: eligibility → route → spec pack → gates → transport
-(dispatch-vendors / subagent) → acceptance + recovery → ledger.
+**Pipeline**: eligibility → route → spec pack → gates → transport → acceptance → ledger.
 
 ## Eligibility (all AND)
 
-- Hard gate: a machine-checkable acceptance command can be written; if not,
-  host does it.
-- Never forecast tokens; use observable signals: type default (config/ops
-  stay inline); no-recon test (can name file+function = do it yourself);
-  spec byproduct (spec writes the diff, or is slower than the change = take
-  it back). Size and spec:diff lines are post-hoc ledger audits only.
-- Exploratory work, tightly coupled repos: host. Cross-project long tasks:
-  sweet spot, once contracts freeze. Break-even judged on the whole job so
-  splitting smaller can't cheat.
-- Cut by decision density (≤1 settled decision per unit) into
-  acceptance-testable behaviors, never by layer.
-- verification-weak (compile/type checks only) = "green but wrong" risk:
-  upgrade tier or take back.
-- spec lint: vague words = unresolved judgment; resolve before queueing.
+- Machine-checkable acceptance exists; else host keeps it
+- Route by observable signals, not token forecasts
+- Cut by decision density into acceptance-testable units
+- verification-weak queues need stronger review or take-back
 
 ## Routing
 
-- **Vendor CLI** (dispatch-vendors): self-contained, quota-heavy tasks.
-  Mid-tier generates; strong foreign family reviews (families must differ).
-- **Subagent**: needs this session's context; recon/search. No model
-  diversity by construction.
-- **Host keeps**: requirement boundaries, spec, acceptance commands,
-  contract spot-checks, arbitration, L3+ rescue. Judgment never delegates.
+- **Vendor** (dispatch-vendors): self-contained, quota-heavy
+- **Subagent**: needs session context
+- **Host**: boundaries, spec, acceptance, arbitration, L3+ rescue
 
-## Spec
+Details: [spec-pack.md](references/spec-pack.md) · [gates.md](references/gates.md) · [recovery-ledger.md](references/recovery-ledger.md)
 
-S tier: goal, files_owned, allowed_extra_writes, acceptance_cmds,
-out_of_scope, escalate_when. L tier adds contract, invariants,
-naive_failure_mode, budget (mandatory for feature tasks, plus adversarial
-spec review). Context pack: three-layer manifest, ~12-15k hard cap;
-overflow = task too big. → `references/spec-pack.md`
+## Recovery
 
-## Gates (in order)
-
-Pre-red (acceptance must fail on baseline) → probe (3 questions vs writes
-set) → worker → run_receipt + zero-model validator → 3-layer review (host
-contract spot-check | foreign adversarial | run acceptance) → serial merge
-queue → close (all green, no rework). Writes globs intersect = serialize;
-tests/fixtures edits need host review. → `references/gates.md`
-
-## Recovery + ledger
-
-L0 env retry → L1 self-fix → L2 other family → L3 upgrade / host takeover →
-L4 human; only L3+ costs host tokens. Second failure: clean_reset, never
-resume (overrides dispatch-vendors' two-resume default). Attribution 6-way,
-default spec_gap. → `references/recovery-ledger.md`
+L0 env → L1 self-fix → L2 other family → L3 upgrade/host → L4 human.
+Second failure: clean_reset, not resume. **6-way attribution** default `spec_gap`.

@@ -53,7 +53,7 @@ Output: `output.text`, `output.structured`, `output.grounding`, `costDollars`.
 ## websets
 
 **Requires a Pro plan.** On a Personal team every `websets/v0/*` call returns 401
-"Upgrade to a Pro plan" — verified 2026-07-27. Don't retry; report it and fall back
+"Upgrade to a Pro plan" — quota/plan limit. Don't retry; report it and fall back
 to `search` or `agent`.
 
 Async collection-building: search → verify each candidate against `criteria` →

@@ -1,0 +1,81 @@
+{
+  "positive_concepts": {
+    "media_file": {
+      "weight": 0.55,
+      "phrases": [
+        "local recording",
+        "screen capture",
+        "media file",
+        "mp4",
+        "mov",
+        "mp3",
+        "m4a",
+        "录屏",
+        "音视频",
+        "transcribe",
+        "Gemini",
+        "录了屏",
+        "这段视频",
+        "meeting audio",
+        "audio say"
+      ]
+    },
+    "understand_content": {
+      "weight": 0.45,
+      "phrases": [
+        "what does it say",
+        "understand this video",
+        "digest",
+        "转写",
+        "看懂这段",
+        "screen recording",
+        "what does",
+        "讲了什么",
+        "帮你看"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "web_search": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": [
+        "search the web",
+        "GitHub",
+        "Stack Overflow",
+        "Exa",
+        "查文档"
+      ]
+    },
+    "recall_past": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "以前查过",
+        "先例",
+        "obs.db"
+      ]
+    },
+    "generate_media": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "生成视频",
+        "generate image",
+        "做个动画"
+      ]
+    },
+    "explain_skill": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么是 media-understanding"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "media_file",
+    "understand_content"
+  ]
+}

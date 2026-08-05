@@ -1,0 +1,26 @@
+{
+  "_comment": "Stable skill identity map for usage folding. Fold aliases before atlas retirement decisions; register renames here.",
+  "aliases": {
+    "report": "no-ai-slop",
+    "blindspot": "grill-me",
+    "quiz-me": "study-coach",
+    "stepping-stone": "study-coach",
+    "docs-organize": "context-audit",
+    "audit-context": "context-audit",
+    "plan-prototype": "use-html",
+    "create-readable-html": "use-html",
+    "html-doc": "use-html",
+    "campaign": "kox-agent-plugins:ship",
+    "write-plan": "advanced-plan",
+    "handoff": "take-over",
+    "ship": "kox-agent-plugins:ship",
+    "gitee-issue-finalize": "kox-agent-plugins:gitee-issue-finalize",
+    "kox-deploy-k8s": "kox-agent-plugins:kox-deploy-k8s",
+    "debrief": "dev-kit:debrief",
+    "recall": "dev-kit:recall"
+  },
+  "namespace_folds": {
+    "_comment": "vito-agent-plugins:* and dev-kit:* are equivalent prefixes",
+    "vito-agent-plugins:": "dev-kit:"
+  }
+}

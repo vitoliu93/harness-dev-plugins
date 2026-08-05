@@ -1,6 +1,10 @@
 ---
 name: exa-code
-description: Search the web and find code examples, documentation, and programming solutions across GitHub, Stack Overflow, and official docs. Use when the user asks to search for information, find code examples, debug issues, or look up API documentation. Also covers Exa Contents (extract known URLs), Agent (async multi-step research with structured output), and Websets (build verified, enriched entity collections).
+description: >-
+  Search the web for code examples, documentation, and programming solutions via Exa.
+  Use when the user asks to search, debug with examples, or look up API documentation.
+metadata:
+  kind: atom
 ---
 
 # Exa

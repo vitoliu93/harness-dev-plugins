@@ -33,5 +33,6 @@
       "exclusive": true,
       "phrases": ["收盘", "复盘", "worktree", "隔离干活", "派活", "盲区"]
     }
-  }
+  },
+  "fallback_positive_concepts": ["planning", "tracked_project", "resume", "acceptance"]
 }

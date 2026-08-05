@@ -51,7 +51,7 @@
 执行层   code-search · vendor CLI(dscode / arkcode / kicode / cursor-agent,sheets 见 dispatch-vendors 的 references/)
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
-学习层   resume-learning · study-coach · quiz-me · stepping-stone(2026-07-28 并入自 study-kit)
+学习层   resume-learning · study-coach 五模式(目标/急救/盘点/出题/垫脚石)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
 

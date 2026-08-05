@@ -1,0 +1,22 @@
+{
+  "recommended_threshold": 0.28,
+  "should_trigger": [
+    { "text": "recall whether we investigated Redis cluster failover before", "family": "explicit_en" },
+    { "text": "以前有没有会话查过这个问题", "family": "explicit_zh" },
+    { "text": "查一下 ccobs 里关于 billing 的先例", "family": "ccobs" },
+    { "text": "开工前看看 obs 里有没有类似调查", "family": "before_work" },
+    { "text": "有没有 past session 碰过这个 API 限流", "family": "mixed" }
+  ],
+  "should_not_trigger": [
+    { "text": "search the web for Redis failover docs", "family": "web_search" },
+    { "text": "转写这段 bug 录像", "family": "media" },
+    { "text": "接手上个 session 继续做完", "family": "takeover" },
+    { "text": "解释 recall skill 怎么用", "family": "explain" }
+  ],
+  "near_neighbor": [
+    { "text": "灌一下 ccobs ingest", "family": "ccobs_ingest" },
+    { "text": "用 Exa 找代码示例", "family": "exa_code" },
+    { "text": "跑 skill-atlas 体检", "family": "skill_atlas" },
+    { "text": "查一下之前有没有 handoff 文档", "family": "takeover_neighbor" }
+  ]
+}

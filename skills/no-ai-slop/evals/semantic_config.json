@@ -1,0 +1,55 @@
+{
+  "positive_concepts": {
+    "human_writing_or_report": {
+      "weight": 1.0,
+      "phrases": [
+        "edit drafts",
+        "clearer",
+        "AI-slop",
+        "AI-sounding",
+        "edit this",
+        "less AI",
+        "AI 味",
+        "AI 写",
+        "改得更清楚",
+        "润色",
+        "汇报",
+        "说人话",
+        "太技术",
+        "收尾消息",
+        "征询确认"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "general_content_creation": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "从零写",
+        "写一篇",
+        "写博客",
+        "写文案"
+      ]
+    },
+    "review_or_debrief": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "代码审查",
+        "code review",
+        "复盘",
+        "沉淀"
+      ]
+    },
+    "technical_qa": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "报错",
+        "怎么实现",
+        "debug"
+      ]
+    }
+  }
+}

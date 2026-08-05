@@ -2,11 +2,11 @@
   "positive_concepts": {
     "forge": {
       "weight": 0.6,
-      "phrases": ["铸造", "建个 skill", "create a skill", "improve this skill", "改良"]
+      "phrases": ["铸造", "建个 skill", "create a skill", "create or improve", "improve a skill", "improve this skill", "改良", "forging a skill", "fixing routing", "skill"]
     },
     "eval_discipline": {
       "weight": 0.3,
-      "phrases": ["评测", "trigger", "触发词"]
+      "phrases": ["评测", "eval gates", "触发词"]
     },
     "placement": {
       "weight": 0.25,
@@ -14,7 +14,7 @@
     },
     "graduation": {
       "weight": 0.45,
-      "phrases": ["候选", "毕业"]
+      "phrases": ["候选", "毕业", "graduate", "graduating", "candidates", "recurring-pattern"]
     }
   },
   "negative_concepts": {
@@ -37,5 +37,6 @@
       "weight": 0.35,
       "phrases": ["hook", "脚手架", "plugin.json", "mcp"]
     }
-  }
+  },
+  "fallback_positive_concepts": ["forge", "graduation", "eval_discipline"]
 }

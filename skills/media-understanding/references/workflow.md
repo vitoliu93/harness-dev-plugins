@@ -75,5 +75,5 @@ full audio then trim locally: `ffmpeg -y -i in.webm -t 120 -ac 1 -ar 16000 out.m
 - Auth is sent as the `x-goog-api-key` header.
 - Large files: the File API handles them via resumable upload; the script then
   polls until the file is `ACTIVE` (server-side processing) before generating.
-- The model id is verified present on the endpoint: list with
+- Confirm the model id is listed on the endpoint: list with
   `curl -s "${GEMINI_BASE_URL}/models?key=${GEMINI_API_KEY}"`.

@@ -1,10 +1,6 @@
 # Advisory dispatch — brief, engines, output contract
 
-Ported from the second-opinion agent (folded in 2026-07-28): same act as an
-execution dispatch — brief out, report back — but the deliverable is a
-judgment, so the acceptance command and the economics floor have nothing to
-bite on. What replaces them is the brief discipline below and your own
-verification of the verdict's code claims.
+Same launch as execution dispatch, but deliverable is judgment — acceptance gate and economics floor do not apply. Brief discipline below replaces them.
 
 ## The brief — five sections, zero-context
 

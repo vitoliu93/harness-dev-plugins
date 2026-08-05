@@ -1,0 +1,68 @@
+{
+  "positive_concepts": {
+    "study_coaching": {
+      "weight": 1.0,
+      "phrases": [
+        "为什么学",
+        "为什么要学",
+        "该学什么",
+        "路线合理吗",
+        "目标审计",
+        "goal audit",
+        "learning goals",
+        "不想学",
+        "学不下去",
+        "又断了",
+        "迷茫",
+        "motivation rescue",
+        "stuck motivation",
+        "学习盘点",
+        "进度分析",
+        "progress review",
+        "study inventory",
+        "出题",
+        "考考我",
+        "练一下",
+        "quizzes",
+        "先讲讲",
+        "不懂",
+        "没印象",
+        "垫脚石",
+        "primers",
+        "coach",
+        "self-directed learning"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "resume_learning": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "存档",
+        "读档",
+        "保存进度",
+        "resume learning"
+      ]
+    },
+    "career_or_interview": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "职业规划",
+        "面试",
+        "刷题"
+      ]
+    },
+    "engineering_help": {
+      "weight": 0.6,
+      "exclusive": true,
+      "phrases": [
+        "报错",
+        "bug",
+        "代码审查",
+        "code review"
+      ]
+    }
+  }
+}

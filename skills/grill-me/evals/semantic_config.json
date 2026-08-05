@@ -1,45 +1,79 @@
 {
   "positive_concepts": {
-    "grill": {
-      "weight": 0.6,
-      "phrases": ["grill me", "grill", "盘问"]
+    "decision_grill": {
+      "weight": 0.5,
+      "phrases": [
+        "grill me",
+        "grill",
+        "盘问",
+        "决策",
+        "拍板",
+        "对齐",
+        "风险",
+        "破坏性",
+        "不可逆",
+        "稳定性",
+        "开工前",
+        "动手前",
+        "再动手",
+        "定稿前"
+      ]
     },
-    "decision": {
-      "weight": 0.35,
-      "phrases": ["决策", "拍板", "对齐"]
-    },
-    "stakes": {
-      "weight": 0.3,
-      "phrases": ["风险", "破坏性", "不可逆", "稳定性"]
-    },
-    "preflight": {
-      "weight": 0.25,
-      "phrases": ["开工前", "动手前", "再动手", "定稿前"]
+    "blindspot_scan": {
+      "weight": 0.5,
+      "phrases": [
+        "盲区",
+        "盲点",
+        "blindspot",
+        "想不到的坑",
+        "不知道自己不知道",
+        "unknown unknowns",
+        "prior art",
+        "扫一下",
+        "雷区"
+      ]
     }
   },
   "negative_concepts": {
     "explain_only": {
       "weight": 0.35,
       "exclusive": true,
-      "phrases": ["解释", "是什么意思", "什么是", "explain"]
+      "phrases": [
+        "解释",
+        "是什么意思",
+        "什么是",
+        "explain"
+      ]
     },
     "code_review": {
       "weight": 0.3,
-      "phrases": ["diff", "有没有 bug", "评审代码", "code review"]
-    },
-    "blindspot_scan": {
-      "weight": 0.3,
-      "phrases": ["盲区", "不知道的坑", "unknown unknown"]
+      "phrases": [
+        "diff",
+        "有没有 bug",
+        "评审代码",
+        "code review"
+      ]
     },
     "no_ask": {
       "weight": 0.4,
       "exclusive": true,
-      "phrases": ["自己决定", "别问我", "不用问", "直接改"]
+      "phrases": [
+        "自己决定",
+        "别问我",
+        "不用问",
+        "直接改"
+      ]
     },
     "sibling_skills": {
       "weight": 0.35,
       "exclusive": true,
-      "phrases": ["立项", "开发计划", "第二意见", "校审"]
+      "phrases": [
+        "立项",
+        "开发计划",
+        "第二意见",
+        "校审"
+      ]
     }
-  }
+  },
+  "fallback_positive_concepts": ["decision_grill", "blindspot_scan"]
 }

@@ -1,7 +1,5 @@
 # Failure recovery, circuit breakers, ledger
 
-Design source: `docs/2026-07-23-coding-agent-orchestration-design.md` §4.4 / 4.7 / 4.8.
-
 ## Recovery levels (only L3+ costs host tokens)
 
 | Level | Trigger | Action |
@@ -77,18 +75,7 @@ needs >80%.
   all amortized in). Always report the within-quality-bar savings rate
   (clean-pass dispatches only) to resist Goodharting.
 
-## Backtest baselines (2026-07-24, 30-day ccobs window)
+## Cost anchors (post-hoc audit only)
 
-- **Self-do cost anchors** (median done out-tokens, subagents included):
-  feature 44k · bugfix 40k · refactor 35k · ops 11k · config 8k. "Estimate
-  the self-do cost" is a table lookup, not a guess.
-- **First-pass rates** (done with zero corrections): ops 84% > refactor 79%
-  > bugfix 72% > config 69% > feature 56% (high-risk; forced L tier).
-- Delegable pool ≈ 40-50% of coding sessions (coding = 55% of all
-  sessions). Sessions under 10k out-tokens = 35% of coding sessions; this
-  line is a **post-hoc audit**, not a dispatch gate (token forecasts are
-  unreliable). Frequent sub-10k dispatches mean the three eligibility
-  signals are too loose.
-- North-star starting point: cheap-compute output-token share **6.2%**
-  (vendor-side metering missing, so the true share is slightly higher;
-  known ledger gap).
+Use median self-do token anchors and first-pass rates from ledger history — not as dispatch gates.
+Delegable pool ≈40–50% of coding sessions; sub-10k dispatches signal loose eligibility.

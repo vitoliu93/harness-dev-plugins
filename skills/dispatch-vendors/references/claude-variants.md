@@ -1,117 +1,71 @@
 # claude-binary variants (headless) — dscode / arkcode / kicode
 
-One `claude` binary, three `~/.zshrc` **functions** remapping it to foreign
-quota pools via `ANTHROPIC_BASE_URL` + model-slot envs. Full Claude Code
-semantics (tools/hooks/skills all load). dscode/arkcode verified 2026-07-16;
-kicode verified and slot maps re-read from `~/.zshrc` 2026-07-22.
+One `claude` binary, three shell **functions** in `${VENDOR_SHELL_RC:-$HOME/.zshrc}` remapping to foreign quota pools via `ANTHROPIC_BASE_URL` + model-slot envs. Full Claude Code semantics (tools/hooks/skills load).
 
 ```bash
-F='--output-format stream-json --verbose'   # --verbose is mandatory with -p
+F='--output-format stream-json --verbose'   # --verbose required with -p
 zsh -ic "dscode  -p '<brief>' --model deepseek-v4-flash $F"
-zsh -ic "arkcode -p '<brief>' --model opus $F"   # opus slot → glm-5.2[1m]
-zsh -ic "kicode  -p '<brief>' --model opus $F"   # every slot → k3[1m]
-zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'    # fix round
+zsh -ic "arkcode -p '<brief>' --model opus $F"
+zsh -ic "kicode  -p '<brief>' --model opus $F"
+zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'
 ```
 
-- **Wrap in `zsh -ic '…'`** — they are `~/.zshrc` functions; a plain
-  `source ~/.zshenv &&` shell gets command-not-found (verified: exit 127).
-- **Always pass `--model` explicitly** — one uniform discipline across the
-  three. Slot maps (read from `~/.zshrc` 2026-07-22; full backend ids also
-  accepted, e.g. `--model deepseek-v4-flash`):
-  - **dscode**: opus/fable/sonnet → `deepseek-v4-pro[1m]`, haiku + subagent →
-    `deepseek-v4-flash[1m]`; effort=max. **Backup for the fast-task tier**
-    (2026-07-22) — cursor composer-2.5 is that tier's first pick (vision;
-    deepseek is text-only).
-  - **arkcode**: opus/fable → `glm-5.2[1m]`, sonnet/haiku/subagent →
-    `deepseek-v4-flash[1m]` (Ark-hosted); effort=max.
-  - **kicode**: every slot → `k3[1m]` (`ANTHROPIC_MODEL` also set, so bare
-    works too — pass `--model` anyway for uniformity); effort=high, 1M ctx.
-    **Quota small (2026-07-22)** — reserve for diversity-core
-    (red-team/second-opinion) or genuine 1M-ctx loads; bulk Q work goes to
-    cursor-agent (fleet primary).
-- **Permissions: the wrappers do NOT set `bypassPermissions`** (re-read
-  2026-07-22 — the old sheet's claim was stale). Runs inherit user settings
-  `defaultMode: auto`; the auto classifier executes on the vendor backend, so
-  a degraded backend fails permission checks mid-run (observed live when k3
-  was temporarily down). For classifier-independent unattended runs, pass
-  `--permission-mode bypassPermissions` yourself.
-- User-level hooks load in these variants (unlike cursor-agent) — when
-  chasing output noise, the hook stack is a suspect unique to them.
+## Launch
 
-## Vision & the media-understanding fallback
+- Wrap in `zsh -ic '…'` — variants are rc functions; plain `source ~/.zshenv &&` often yields command-not-found.
+- Always pass `--model` explicitly. Re-read slot maps from `${VENDOR_SHELL_RC:-$HOME/.zshrc}` when unsure.
 
-- **kicode × k3[1m]: vision YES** (2026-07-22: PNG transcription exact —
-  text, shapes, colors, via the api.kimi.com/coding Anthropic endpoint).
-- **dscode (deepseek): NO, graceful** — Read rejects the image in-run, agent
-  can still reply.
-- **arkcode (glm): NO, fatal** — image block reaches Ark API → 400 "Model
-  only support text input", whole run errors. Never put an image in an
-  arkcode brief.
-- **Text-only variants stay eligible for image/audio/video tasks** — the
-  brief routes the file through the media-understanding script (Gemini →
-  text), the vendor reasons over the returned text. Verified e2e 2026-07-22:
-  dscode + PNG → exact transcription via this path. Two rules:
-  - Name the **exact script path** in the brief:
-    `~/.agents/skills/media-understanding/scripts/gemini_media.py <file>
-    [--audio-only] [--question "Q"]` — a bare "use the media-understanding
-    skill" cost the vendor ~8 turns of find/ls hunting (same e2e).
-  - The script takes images too, not just audio/video (PNG probe 2026-07-22).
-  - Needs `GEMINI_API_KEY` — present under `zsh -ic` (zshenv).
+## Model slots
 
-## The real claude — off-roster, DO NOT use for bulk
+| variant | opus/fable | sonnet | haiku/subagent | notes |
+|---|---|---|---|---|
+| dscode | deepseek-v4-pro[1m] | — | deepseek-v4-flash[1m] | text-only; fast-tier backup when cursor unavailable |
+| arkcode | glm-5.2[1m] | deepseek-v4-flash[1m] | deepseek-v4-flash[1m] | **never send images** — API 400 fatal |
+| kicode | k3[1m] | k3[1m] | k3[1m] | 1M ctx; vision YES; small quota — reserve for D-core / 1M loads |
 
-不上名单,留档备查:shares the interactive Anthropic 5h quota (same stored
-credentials, no separate headless tier). Use only when the task genuinely
-needs Anthropic models AND the main session must stay free.
-`--max-budget-usd <n>` caps spend.
+Full backend ids also accepted (e.g. `--model deepseek-v4-flash`).
 
-**The one sanctioned use is advisory dispatch** — `claude -p --model fable`
-for a stronger-reasoning second opinion (SKILL.md → Advisory dispatch;
-`references/advisory.md` for the incantation). Verified live 2026-07-28.
+## Permissions
 
-## Shared flags (all three)
+Wrappers do not set `bypassPermissions`. Runs inherit user `defaultMode: auto`; classifier runs on vendor backend — pass `--permission-mode bypassPermissions` for unattended runs when needed.
 
-- Run: `-p/--print`, prompt as positional arg or stdin.
-- Model: `--model <alias|full-id>`, `--fallback-model <list>`, `--effort
-  low|medium|high|xhigh|max` (wrappers already pin effort via env).
-- Output: **default to `stream-json --verbose`** (`--verbose` is required
-  alongside it under `-p`). Warnings go to stderr — redirect separately,
-  never `2>&1`. Why it beats `json`:
-  - **`session_id` lands in the first seconds — capture it at launch:**
-    `jq -r 'select(.session_id).session_id' out.jsonl | head -1`. Don't grab
-    line 1 blindly: the variants' hook stack fires first, so lines 1-4 are
-    `hook_started` and the `init` event is ~line 5 (verified). Every one of
-    them carries the same `session_id`, so the jq above works from the very
-    first flush. With `json` nothing is written until exit, so a killed or
-    hung run loses the id too, and `-r` fix rounds become impossible on
-    exactly the runs that need them.
-  - Per-event flush is real on a redirected regular file, not a TTY illusion,
-    **including through a foreign `ANTHROPIC_BASE_URL` backend** (dscode →
-    deepseek, verified live 2026-07-22: 33KB/51 lines at t+5s climbing to
-    120KB/165 lines at t+65s, continuous). Growing line count = a genuine
-    liveness signal.
-  - Surfaces `hook_started`/`hook_response` — free observability into the
-    hook stack, a noise suspect unique to these variants.
-  - Final answer is byte-identical to `json`'s:
-    `jq -r 'select(.type=="result").result' out.jsonl`.
-- **Heartbeat has two tiers — pick deliberately, and never poll on a timer.**
-  A background run costs zero while it runs (the harness notifies on exit);
-  every check you initiate costs a full turn at current context size.
-  - alive? → `wc -l out.jsonl` twice, compare. ~0 tokens.
-  - on track? → `tail -3 out.jsonl | jq -c '.type, .message.content[]?.name?'`.
-    A full turn plus a few k. Only when genuinely suspicious or asked.
-- **Never `cat`/`head`/Read the whole `.jsonl`.** The redirect keeps megabytes
-  out of context only if you don't pull them back in yourself.
-- Session-id recovery if line 1 was missed: force it instead —
-  `--session-id $(uuidgen)`. Do NOT use "newest `.jsonl` in
-  `~/.claude/projects/<cwd-slug>/`": the orchestrator's OWN transcript lives
-  in that same directory and is usually the newest file (verified).
-- Resume: `-r/--resume <session-id>` · `-c/--continue` (latest in cwd) ·
-  `--fork-session` (new id on resume) · `--session-id <uuid>` (force id).
-- Tools: `--allowedTools/--disallowedTools "<list>"`, `--tools ""` disables all.
-- Scope: `--add-dir <dirs>`, `--append-system-prompt <text>`.
-- `--bare`: skips hooks/plugins/CLAUDE.md/auto-memory — pointless for the
-  variants (their value includes the loaded ecosystem).
-- No `--timeout` — and macOS has no `timeout(1)` either (verified 2026-07-22:
-  exit 127, two dead runs); run bare with `run_in_background` + monitor, or
-  `gtimeout` if coreutils installed.
+User-level hooks load in these variants (unlike cursor-agent).
+
+## Vision and media fallback
+
+| variant | vision | image in brief |
+|---|---|---|
+| kicode × k3 | supported | direct |
+| dscode | graceful reject | route via media-understanding script |
+| arkcode | fatal 400 | must use media-understanding script first |
+
+Text-only path: load `media-understanding`, set `MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}`, run:
+
+```bash
+"$MEDIA_SKILL_DIR/scripts/gemini_media.py" <file> [--audio-only] [--question "Q"]
+```
+
+Requires `GEMINI_API_KEY` under `zsh -ic`. Script handles PNG/JPG too.
+
+## Real claude — off-roster for bulk
+
+Shares interactive Anthropic 5h quota. Use only when task needs Anthropic models and main session must stay free. `--max-budget-usd <n>` caps spend.
+
+Sanctioned advisory use: `claude -p --model fable --effort high` — see `advisory.md`.
+
+## Flags (all three)
+
+- Run: `-p/--print`, prompt positional or stdin.
+- Model: `--model`, `--fallback-model`, `--effort low|medium|high|xhigh|max`.
+- Output: default **`stream-json --verbose`**. stderr separate — never `2>&1`.
+  - Capture session id early: `jq -r 'select(.session_id).session_id' out.jsonl | head -1` (hooks may precede `init`).
+  - Per-event flush on redirected file — use growing line count as liveness signal.
+  - Final answer: `jq -r 'select(.type=="result").result' out.jsonl`.
+- Heartbeat: `wc -l out.jsonl` twice for alive; `tail -3 out.jsonl | jq -c '.type'` only when suspicious.
+- Never Read/cat whole `.jsonl` into main context.
+- Session id recovery: `--session-id $(uuidgen)` if missed; do not pick "newest jsonl" (orchestrator transcript may be newest).
+- Resume: `-r/--resume <id>` · `-c/--continue` · `--fork-session` · `--session-id <uuid>`.
+- Tools: `--allowedTools/--disallowedTools`, `--tools ""` disables all.
+- Scope: `--add-dir`, `--append-system-prompt`.
+- `--bare` skips hooks/plugins — pointless for variants.
+- No built-in `--timeout`; use background run + monitor or `gtimeout` if installed.

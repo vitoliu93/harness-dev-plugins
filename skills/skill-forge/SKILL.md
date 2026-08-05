@@ -1,90 +1,24 @@
 ---
 name: skill-forge
 description: >-
-  铸造或改良一个 skill,或让攒够的候选毕业
+  Create or improve a skill and graduate debrief candidates through eval gates.
+  Use when forging a skill, fixing routing, or graduating a recurring-pattern candidate.
+metadata:
+  kind: meta
 ---
 
 # skill-forge
 
-消化自 yao-meta-skill@4eb11f9:方法收进本文,工具链 vendored 在
-`scripts/`(stdlib-only;上游 155 脚本只有这几件有含金量)。上游教义
-"rigor 必须长得比 context 成本快,否则删"——它自己是反面教材,引以为戒。
+Full workflow: [workflow.md](references/workflow.md).
 
 ```bash
-PLUGIN=~/codebase/projects/agent-plugins
-FORGE=$PLUGIN/skills/skill-forge/scripts
+PLUGIN=${CLAUDE_PLUGIN_ROOT:?set CLAUDE_PLUGIN_ROOT}
+FORGE=${CLAUDE_SKILL_DIR}/scripts
 ```
 
-## 0. 资格门 — 最便宜的产出是"不建"
+## Hard gates
 
-建:跨 session 第 3 次手做(debrief SKILL-CANDIDATES 毕业)、易被路由错、
-可脚本化压缩。不建:一次性任务、解释/总结/翻译类、"以后可能用"。
-组合律:现有 skill 串起来够用 → 不新建,链路写成 SOP skill 或
-call-site.md 一行。Near-neighbor 律:先草拟一行 description,与现有
-skill 分不清 → 并入该 skill,不新建。Boundary 律:候选必须能说出边界或代价("用于 X,不用于 Y")
-——只有重复次数不够毕业(debrief 的毕业条件与这两条同源)。
-
-## 1. 意图对话 — 只问改变设计的问题
-
-job / 真实输入 / 必要输出 / 近邻排除 / 约束。按 grill-me 分层:多数自决,
-只有方向性取舍升级给 CEO。
-
-## 2. Invocation 经济学 — description 是每回合付费的 context load
-
-先定触达方式,再写字:
-
-- 模型要自主触达、或被别的 skill 链到 → model-invoked。description 只写
-  身份一句 + 每个分支一个触发锚词(信任模型泛化,不枚举同义词),近邻负例
-  至多一条——其余负例迁进 evals 的 negative_concepts,那里零 context 费。
-- **禁叙事律(desc 与正文同管)**:不写来历/学费故事/重建次数/战果数字/
-  评价语("实证为准""最大件""这就是那笔学费")——描述只管路由,正文只管
-  怎么做,规则不在正文里为自己辩护。范式:grill-me(一句成文)、
-  exa-code / agent-browser(能力一句 + 触发枚举 + 边界一句)。
-- 只被用户点名、或由 hook 指路 → `disable-model-invocation: true`,
-  description 一行写给人,零 context 费("仅限用户召集"类规则由此机械化,
-  例:cto-audit)。此类不建 evals——没有路由可测。
-- 来源定默认:session 沉淀的 SOP(ccobs sop_candidate/debrief 候选)→
-  user-invoked;被链原子 → model-invoked,description 带"被 X 链到"锚
-  (skill-atlas xref 抓边用)。
-- 拆分自由度同轴:user-invoked 零费随需拆;model-invoked 要证据(eval FP/FN
-  或双 call site)且 diff 同步全部 xref 命中处——预算是路由精度。
-
-## 3. Trigger-first — description 先于正文(model-invoked 才做)
-
-1. 建 `evals/`,抄 `skills/dispatch-vendors/evals/` 的形状(should / should-not /
-   near-neighbor 三桶 + 概念桶)。
-2. `python3 $FORGE/trigger_eval.py --description-file skills/<name>/SKILL.md
-   --cases <c> --semantic-config <s>` → P = R = 1.0 才继续
-   (直接喂 SKILL.md 即可,`>-` 折叠块解析已在 vendored 版修复)。
-3. `python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills` → 与全舰
-   无 ≥0.42 重叠。产物默认写 `~/.claude/observability/skill-atlas/`(和 ccobs
-   的账本放一起),不落仓、不落 /tmp;要一次性结果才传 `--output-dir`。
-4. 评测服务描述,不绑架描述:描述瘦身后概念锚不齐 → semantic_config 加
-   `fallback_positive_concepts`,不准往描述里塞词凑分。
-
-## 4. 正文与放置
-
-正文 ≤700 tokens(`python3 $FORGE/context_sizer.py <dir> --json` 验证);
-深度进 `references/`,确定性步骤进 `scripts/`,评测进 `evals/`。
-正文只写怎么做:操作参数、阈值这类数字保留,"为什么/踩过什么坑"的叙述
-默认删——非留不可的证据链进 `references/`,不占每回合正文。
-本仓公开:示例里的内部标识(函数名/工单号/人名)一律虚构化,只留形状。
-
-## 5. 收尾 — 首版即基线
-
-- `skill-atlas/call-site.md` 补一行:接线点 = 准入证,填不出 → 别 ship。
-- 从候选毕业的,回写 SKILL-CANDIDATES 该行 3 行 eval-delta:
-  before-description → after-description → 修掉了什么路由混淆。
-- 跑 `plugin-dev:skill-reviewer` 独立评审(自验抓不出语义缺陷)。
-- bump plugin.json + marketplace.json(skills/ 只经 plugin 分发,sync 脚本已废)。
-- 恰好列 **3 个**下一迭代方向,防 scope 蔓延,也防"首版即终版"。
-
-## Vendored 工具链
-
-| 脚本 | 用途 | 消费者 |
-|---|---|---|
-| trigger_eval.py | description vs cases 的 P/R | 本 skill · skill-atlas |
-| context_sizer.py | token 预算估算 | 本 skill · skill-atlas |
-| build_skill_atlas.py (+2 兄弟模块) | 路由重叠矩阵 | skill-atlas |
-
-上游不再跟踪;脚本坏了修 vendored 版(stdlib-only,零依赖)。
+- Near-neighbor indistinguishable → merge, don't create
+- model-invoked → evals P=R=1.0 before ship
+- SKILL.md body ≤700 tokens
+- call-site row required

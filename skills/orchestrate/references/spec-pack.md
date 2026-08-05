@@ -1,7 +1,6 @@
 # Spec templates and context pack
 
-Templates scale by tier to avoid bureaucratic padding. Design source:
-`docs/2026-07-23-coding-agent-orchestration-design.md` §4.2-4.3.
+Templates scale by tier to avoid bureaucratic padding.
 The spec pack is the content of the vendor brief; transport formatting,
 launch incantations, and vendor quirks belong to dispatch-vendors.
 

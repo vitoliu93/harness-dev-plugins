@@ -1,0 +1,52 @@
+{
+  "positive_concepts": {
+    "ccobs_ops": {
+      "weight": 1.0,
+      "phrases": [
+        "ingest",
+        "灌库",
+        "灌一下",
+        "ccobs",
+        "ccobs 账本",
+        "observability ledger",
+        "obs.db",
+        "build or query",
+        "ingesting sessions",
+        "usage stats",
+        "v_tool_overview",
+        "v_skill_usage",
+        "各工具分配",
+        "工具分配",
+        "message_parts",
+        "Cursor transcript",
+        "cursor-ide",
+        "cursor-agent",
+        "fetching Cursor",
+        "reading usage stats"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "recall_clues": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": ["先例", "以前查过", "recall", "investigated before"]
+    },
+    "web_search": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": ["Exa", "search the web", "GitHub"]
+    },
+    "skill_fleet": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": ["skill-atlas", "route overlap", "trigger eval", "舰队体检"]
+    },
+    "explain_only": {
+      "weight": 0.65,
+      "exclusive": true,
+      "phrases": ["解释", "什么是 ccobs", "三层架构", "架构"]
+    }
+  },
+  "fallback_positive_concepts": ["ccobs_ops"]
+}

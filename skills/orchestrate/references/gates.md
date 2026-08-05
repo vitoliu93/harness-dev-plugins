@@ -1,8 +1,6 @@
 # Quality gate details
 
-Acceptance is executed, not re-read: a line-by-line diff review by the host
-costs about as much as writing the code itself, which defeats delegation.
-Design source: `docs/2026-07-23-coding-agent-orchestration-design.md` §4.5-4.6.
+Acceptance is executed, not re-read: host line-by-line diff review defeats delegation.
 "High-stakes" below = tasks the host flags as red-line (security, money,
 data loss); "clean pass" = both review layers and acceptance green with no
 rework.
@@ -36,7 +34,7 @@ Delivery must include a machine-generated (not self-reported) receipt:
 files_touched, env_digest}`.
 Reports pass a zero-model validator first: evidence_ref must resolve,
 hedge-word scan (should / looks like / probably / untested but) bounces the
-report, the unverified section is mandatory, env fingerprint must match.
+report, the unconfirmed section is mandatory, env fingerprint must match.
 The host spends tokens only after all green, and audits artifact
 completeness, never narrative. Residual risk: the validator catches
 omissions, not forgery; true-source spot checks are reserved for

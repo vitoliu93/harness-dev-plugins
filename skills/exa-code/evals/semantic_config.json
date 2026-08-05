@@ -1,0 +1,80 @@
+{
+  "positive_concepts": {
+    "search": {
+      "weight": 0.5,
+      "phrases": [
+        "search",
+        "find code",
+        "look up",
+        "debug with examples",
+        "API documentation",
+        "Exa",
+        "code examples",
+        "documentation",
+        "programming solutions"
+      ]
+    },
+    "web_research": {
+      "weight": 0.5,
+      "phrases": [
+        "web",
+        "GitHub",
+        "Stack Overflow",
+        "official docs",
+        "search the web",
+        "查文档",
+        "找示例",
+        "官方文档",
+        "endpoint",
+        "参数",
+        "查一下官方文档"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "local_media": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": [
+        "录屏",
+        "mp4",
+        "local recording",
+        "transcribe",
+        "音视频"
+      ]
+    },
+    "recall_past": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": [
+        "以前查过",
+        "先例",
+        "obs.db",
+        "ccobs 账本"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么是",
+        "explain what"
+      ]
+    },
+    "codebase_search": {
+      "weight": 0.35,
+      "exclusive": true,
+      "phrases": [
+        "搜代码库",
+        "codebase",
+        "rg ",
+        "这个 repo 里"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "search",
+    "web_research"
+  ]
+}
