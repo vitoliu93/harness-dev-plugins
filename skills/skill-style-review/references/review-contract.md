@@ -85,14 +85,21 @@ Exit codes:
 - `1` — semantic findings exist with `--fail-on-issues`;
 - `2` — invalid input, missing configuration, or API/response failure.
 
+## Tests
+
+```bash
+bun test <skill-dir>/scripts/review.test.ts
+```
+
+This skill carries no `package.json`, `node_modules`, or lockfile; the runner
+uses only Bun and Node built-ins.
+
 ## Report shape
 
 ```json
 {
   "ok": false,
   "model": "deepseek-v4-flash",
-  "effort": "max",
-  "adjudication_effort": "max",
   "reviewed_at": "RFC3339 timestamp",
   "skill_count": 1,
   "issue_count": 1,
