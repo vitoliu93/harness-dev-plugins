@@ -17,6 +17,32 @@
 | 廉价算力占比:执行类 token 跑在非 Anthropic 引擎上的比例 | ~0%(dscode/droid/cursor-agent 均未系统化调用) | ↑ |
 | 纠偏次数:每任务用户纠正(不对/重新/错了)的次数 | 长 session 中 35+ | ↓ |
 
+## 四支柱(2026-08-05 校准)
+
+> 8 路源调研(git 史 · obs.db 内容级复盘 · 自有信/蓝图 · 社区全文 · grill-me-skills/ECC
+> 两参照仓 · Weng harness 文)对"跨工具 harness 生态 / agent 自进化 / agent 团队"三句
+> 草稿的裁决。证据档:本次会话调研产出。
+
+1. **本地疤痕,全球工厂**(原"跨工具生态")。可共享的是制造机器——skill-forge /
+   skill-atlas / ccobs / hooks / 发布纪律;skill 内容刻意本地:好 skill 是疤痕不是简历
+   (SWE-Skills-Bench 实测 49 个公开 skill 39 个零提升、3 个降分)。description 预算是
+   舰队级零和账本,新技能入场必须显示它花掉了谁的预算。跨工具收窄为分发/同步层
+   (格式已标准化);hooks 与记忆不可移植,文档化承认而非假装可移植;先把已发生的
+   跨引擎用量协议化(dispatch 账本 2 行 vs 165 个裸开会话),不建新覆盖面。
+2. **证据进化,人手闸门**(原"agent 自进化")。capture 全自动且带心跳自证(2026-07-22
+   蒸馏管线 SIGTRAP 静默死两周的学费);propose 受安装清单约束、候选带 decided 态
+   (ship 被 21 种拼写重复提案的学费);promote 过人闸,毕业形态优先 hook 不优先散文
+   (机器生成 harness 文档实测降分;"text in a prompt 不是 enforcement");evaluator
+   与权限永远在自改回路之外。
+3. **有界编排,验证优先**(原"agent 团队")。委派过 break-even 门(07-23 设计文档);
+   读活并行、写活单线程(并行写路径 = 隐式决策冲突);每个 worker 带熔断预算
+   (1313 次 StructuredOutput 连发无人终止的学费);阶段状态外置到计划工件,SOP 可跨
+   session 幂等续跑(263-turn 对账会话的学费);高风险单元过 orchestrator review gate。
+   金样本形状:侦察后台并行 → 因果链阻塞串行 → 按难度分档 fan-out。
+4. **enforcement(新增支柱)**。账本头号失败形态是"规则已读、正确、仍被违反"
+   (验证纪律被重学 60 次,零 enforce):确定性门用 hook 强制,判断留 skill;
+   done 声明必须携带当轮验证 artifact,自证 done 无效。
+
 ## 分层架构(组件映射)
 
 ```
@@ -91,8 +117,20 @@
   ② 只被用户点名的技能 user-invoked 化(cto-audit 首个,"仅限用户召集"由
   `disable-model-invocation` 机械化,其评测夹具按退役约定入 archive/);③ 教义写进
   skill-forge(invocation 经济学一节 + "评测服务描述,不绑架描述")。
+- **v2.7–v2.20(漂移期补记,2026-08-05)**:orchestrate(三方纪律:host 持 spec /
+  vendor 可弃置执行 / 外族模型评审)· campaign(模块级归口)· ccobs 长到 8 源 ·
+  cto-audit 慢节奏化 · dispatch 舰队收敛 4 vendor——均未记档,由本次校准补上。
+  教训入演进原则:北极星文档本身是 cto-audit 漂移检查的对象。
+- **v2.21(北极星校准 + 收敛)2026-08-05**:四支柱落笔;技能 24→17 六合并
+  (report→no-ai-slop、blindspot→grill-me、quiz-me+stepping-stone→study-coach、
+  docs-organize→context-audit、plan-prototype→use-html、campaign→kox ship),
+  旧名入 alias 表——atlas 修好稳定身份前,用量数据不得作删除依据(fired-once
+  假象:同会话同时打出 `ship` 与 `kox-agent-plugins:ship`);全体 skill 标
+  `metadata.kind: meta|atom|sop`。P0:distill 崩溃修复 + 管线心跳。
 - **观察项(刻意不做)**:SQLite/向量库记忆基建(flat markdown + grep 够用)、常驻
   daemon、每轮后台反思 fork、跨 16 平台分发 —— 参考项目验证过的过度工程,solo 场景不碰。
+  新增(2026-08-05):常驻多 agent 团队(1-3 个窄委派是实测常态,团队化无证据)、
+  自动晋升记忆/技能(promote 永远过人闸)、追求 hooks/记忆跨工具可移植。
 
 ## 演进原则
 
