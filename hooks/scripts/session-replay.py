@@ -7,9 +7,12 @@ context-only SessionStart hooks). Reads the last entries of the project's
 """
 import json
 import sys
+import time
 from pathlib import Path
 
 MAX_ENTRIES = 5
+HEARTBEAT = Path.home() / ".claude" / "observability" / "distill.heartbeat"
+HEARTBEAT_MAX_AGE_H = 48  # distill 每小时跑;超 48h 未跳 = 管线死了(07-22 静默死两周的学费)
 
 CONVENTION = (
     "When the user corrects how you work, or you discover a durable project rule "
@@ -26,6 +29,14 @@ def main():
     learned = cwd / ".claude" / "LEARNED.md"
 
     print(f"<learn-convention>{CONVENTION}</learn-convention>")
+    if HEARTBEAT.is_file():
+        age_h = (time.time() - HEARTBEAT.stat().st_mtime) / 3600
+        if age_h > HEARTBEAT_MAX_AGE_H:
+            print(
+                f"<pipeline-alarm>ccobs distill heartbeat is {age_h:.0f}h old "
+                f"(threshold {HEARTBEAT_MAX_AGE_H}h) — the distillation pipeline is likely dead. "
+                "Tell the user; check ~/.claude/observability/ingest.log and launchd job com.vito.ccobs.ingest.</pipeline-alarm>"
+            )
     if learned.is_file():
         entries = [l for l in learned.read_text().splitlines() if l.startswith("- ")]
         if entries:

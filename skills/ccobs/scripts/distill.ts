@@ -15,7 +15,7 @@
 //   bun distill.ts --session <id>   # redo one session (e.g. after prompt/model swap)
 
 import { Database } from "bun:sqlite";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -102,6 +102,7 @@ const pending = db
     `SELECT s.session_id, s.file_path, s.ended_at
      FROM sessions s LEFT JOIN observations o ON o.session_id = s.session_id
      WHERE s.kind = 'main'
+       AND s.source = 'claude-code' -- digest 解析器只认 Claude 式 JSONL;Cursor 的 state.vscdb(2.8GB 二进制)曾把整条管线 SIGTRAP 打死两周
        AND (?1 IS NOT NULL AND s.session_id = ?1
             OR ?1 IS NULL AND o.session_id IS NULL
                AND s.ended_at < strftime('%Y-%m-%dT%H:%M:%S', 'now', '-30 minutes')
@@ -113,6 +114,7 @@ const pending = db
 
 if (pending.length === 0) {
   console.log("ccobs distill: nothing pending");
+  writeFileSync(join(homedir(), ".claude", "observability", "distill.heartbeat"), new Date().toISOString());
   process.exit(0);
 }
 
@@ -140,6 +142,11 @@ let ok = 0;
 let failed = 0;
 for (const s of pending) {
   if (!existsSync(s.file_path)) continue; // retention already ate the raw file
+  if (statSync(s.file_path).size > 128 * 1024 * 1024) { // readFileSync 巨文件是不可 catch 的原生崩溃,门口拦掉
+    failed++;
+    console.error(`  ${s.session_id}: skipped, file > 128MB (${s.file_path})`);
+    continue;
+  }
   try {
     const res = await fetch(`${cfg.base_url}/chat/completions`, {
       method: "POST",
@@ -171,3 +178,5 @@ for (const s of pending) {
   }
 }
 console.log(`ccobs distill: ${ok} ok, ${failed} failed, model=${cfg.model}`);
+// 心跳:跑到这一行才算活着(2026-07-22 起 SIGTRAP 死两周无人知的学费);session-replay hook 检查此文件的年龄
+writeFileSync(join(homedir(), ".claude", "observability", "distill.heartbeat"), new Date().toISOString());
