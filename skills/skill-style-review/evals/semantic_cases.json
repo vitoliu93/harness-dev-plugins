@@ -1,0 +1,56 @@
+{
+  "cases": [
+    {
+      "id": "origin-story",
+      "expect": "fail",
+      "category": "origin-story",
+      "text": "# Runtime\n\nThis rule began in another tool and was later folded into this skill."
+    },
+    {
+      "id": "incident-lore",
+      "expect": "fail",
+      "category": "incident-lore",
+      "text": "# Runtime\n\nA worker once rewrote the threshold, so never trust its DONE report."
+    },
+    {
+      "id": "tuition-narrative",
+      "expect": "fail",
+      "category": "tuition-narrative",
+      "text": "# Runtime\n\nWe paid for this lesson; an unread verdict is money thrown away."
+    },
+    {
+      "id": "marketing-language",
+      "expect": "fail",
+      "category": "marketing-language",
+      "text": "# Runtime\n\nUse this perfect, best-in-class workflow for every project."
+    },
+    {
+      "id": "prose-wall",
+      "expect": "fail",
+      "category": "prose-wall",
+      "text": "# Runtime\n\nIf the probe is empty go inline, if it returns partial output resume twice before switching providers, and if quota is exhausted archive the session then ask the user whether to wait while also updating the ledger and acceptance report."
+    },
+    {
+      "id": "gate-loss",
+      "expect": "fail",
+      "category": "gate-loss",
+      "text": "# Runtime\n\nRun the workflow.",
+      "diff": "-Fail the commit when verification fails."
+    },
+    {
+      "id": "hard-gate",
+      "expect": "pass",
+      "text": "# Runtime\n\nFail the commit when any style finding remains."
+    },
+    {
+      "id": "active-cutoff",
+      "expect": "pass",
+      "text": "# Runtime\n\nUse schema v2 for records created after 2026-08-01."
+    },
+    {
+      "id": "structured-list",
+      "expect": "pass",
+      "text": "# Runtime\n\n- If the probe is empty, go inline.\n- If quota is exhausted, preserve the session id.\n- After execution, run the acceptance command."
+    }
+  ]
+}

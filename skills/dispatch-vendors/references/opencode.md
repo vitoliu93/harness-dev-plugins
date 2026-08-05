@@ -9,7 +9,10 @@ source ~/.zshenv && opencode run "<brief>" -m volcengine-plan/kimi-k2.7-code --f
 source ~/.zshenv && opencode run -s <session-id> "<consolidated fix list>" --format json --auto
 ```
 
-- Model: `-m provider/model`, provider `volcengine-plan` (`~/.config/opencode/opencode.json`). **Verdicts are per CLI×model, not per CLI**: `kimi-k2.7-code` — **unsupported** (stable 0-token silent no-op even with `--auto`); `glm-5.2` — supported; obey output-cap discipline below; `doubao-seed-2.0-pro` — supported incl. vision. Also lists `deepseek-v4-{flash,pro}`, `minimax-{m2.7,m3}` etc., status unknown until probed. `--variant high|max|minimal` = reasoning effort.
+- Model: `-m provider/model`; configure provider `volcengine-plan` in `~/.config/opencode/opencode.json`.
+- Record verdicts per CLI×model: `kimi-k2.7-code` is unsupported because it returns a 0-token no-op; `glm-5.2` is supported with the output cap below; `doubao-seed-2.0-pro` supports vision.
+- Treat listed `deepseek-v4-{flash,pro}` and `minimax-{m2.7,m3}` models as unknown until probed.
+- Set reasoning effort with `--variant high|max|minimal`.
 - Output: `--format json`; session id = `sessionID` field on JSON event lines.
 - Resume: `-s/--session <id>` · `-c/--continue` · `--fork` (needs `-s` or `-c`) · `--title <t>`.
 - **`--auto` required for ANY tool-using task — including read-only review**. Without it: `step_finish` with 0 tokens, exit 0 (silent no-op).

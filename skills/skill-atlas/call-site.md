@@ -10,7 +10,7 @@
 | advanced-plan | sop | ship(kox) 计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | grill-me 盲区扫描 · 搜索需求(skill-guard→executor) | ①③ |
-| skill-atlas | meta | skill-atlas-guard(commit 碰 SKILL.md) · "skill 体检" | ②③ |
+| skill-atlas | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检" | ②③ |
 | take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
 | ccobs | meta | "观测报告/usage report" · debrief/skill-atlas 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
@@ -20,6 +20,8 @@
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
+| llm-call | atom | skill-style-review 推理调用 · direct DeepSeek JSON | ① |
+| skill-style-review | atom | skill-forge ship · skill-atlas semantic style | ① |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | study-coach | atom | 目标审计/迷茫/盘点/出题/垫脚石 | ③ |
 | use-html | atom | 可视化(skill-guard→executor) · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |

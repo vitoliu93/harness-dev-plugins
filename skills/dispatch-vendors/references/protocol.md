@@ -6,12 +6,14 @@ quota-limited mid-run.
 
 ## 1. Brief
 
-Zero-context (every fact inline) + a machine-checkable acceptance command
-written BEFORE dispatching. The brief must state the acceptance script is
-read-only for the vendor — threshold mismatch → report NEEDS_CONTEXT, never
-edit the gate (a vendor once rewrote the threshold; DONE self-reports are void
-once the gate is editable). Parallel edits → vendor gets its own worktree.
-Long/review-class briefs: demand deliverable file created early (skeleton first).
+Zero-context means every required fact is inline. Apply these gates:
+
+- Write a machine-checkable acceptance command before dispatching.
+- Mark the acceptance script read-only for the vendor.
+- On threshold mismatch, require `NEEDS_CONTEXT`; never allow a gate edit.
+- Reject a `DONE` self-report when the vendor changed the gate.
+- Give parallel edits their own worktree.
+- For long or review-class briefs, require an early deliverable skeleton.
 
 Three things zero-context does NOT mean prose:
 
@@ -23,8 +25,8 @@ Three things zero-context does NOT mean prose:
   the tree.
 - **Constants carry provenance.** Any threshold / conversion factor / contract
   number you hand down cites its `file:line`, and you re-source it yourself
-  once. A vendor's own passing test proves it implemented your brief — never
-  that your brief was right.
+  once. Treat a vendor's passing test as implementation evidence, not proof
+  that the brief is correct.
 - **Recon output sets direction, not truth.** For guard/security/invariant
   work, re-derive the write paths yourself (grep every call site) before coding
   against a recon conclusion.
@@ -35,11 +37,9 @@ anyone reviewed it.)
 
 ## 2. Probe, then launch
 
-**Probe before you bet the brief** (30s, first dispatch into a repo/worktree
-this session): one throwaway run — "read `<known file>` and echo its first
-line". No output → the vendor's tools are dead in that tree; go inline instead
-of discovering it 14 minutes later (real case: a full recon brief came back as
-"all filesystem tools failed, cannot deliver").
+**Probe before launch** (30s, first dispatch into a repo/worktree this
+session): run "read `<known file>` and echo its first line". No output means
+the vendor tools are unavailable in that tree; go inline.
 
 Launch with Bash `run_in_background: true`, using the vendor sheet's exact
 incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
@@ -75,16 +75,15 @@ date | vendor | scenario | why:econ|obs|advice | pass/fail(+fixups) | resumes:N
 ```
 
 **Write the row in the same Bash call that launches** (`… | dispatched`), then
-amend the verdict on return — rows recorded only on success go missing exactly
-when they matter. A fixup caused by *your* wrong brief is logged as such, not
-as a vendor fixup; the ledger is a signal about the gate, not a scoreboard.
+amend the verdict on return. Log a fixup caused by the host brief as a host
+fixup, not a vendor fixup. Use the ledger to evaluate the dispatch gate.
 
 **`why:` field rules**
 
 - Tag every row: `why:econ` (economics floor) or `why:obs` (collaboration validation).
 - `econ` rows judge pass/fixup against the token floor; `obs` rows judge whether non-Anthropic collaboration adds signal a subagent would not.
 - Deliberate under-floor batches must stay tagged `obs` — unmarked rows skew econ stats.
-- Do not use "token 没省下来" alone to veto `obs` dispatches; that measures a different question.
+- Judge `obs` rows by whether non-Anthropic collaboration adds signal; token savings do not decide `obs` rows.
 
 ## Recovery — vendor limited mid-run
 
@@ -94,9 +93,8 @@ errors in the jsonl tail, or the user says so from the vendor console (window
 sizes and reset times are console-side facts you cannot see — never guess
 them; wait-for-reset is only an option when the user explicitly offers it).
 
-Once limited, **hand over — it's cheap by construction**: the session id is
-stored (resumable later if quota returns) and partial work is already on disk
-(early-skeleton rule). Kill the run, harvest the worktree + partial report,
+Once limited, **hand over**: retain the session id for a later resume and use
+the partial work already on disk. Kill the run, harvest the worktree + report,
 then re-dispatch to a DIFFERENT vendor family or take it inline — takeover
 brief = original brief + `## Prior findings (from a limited run)` pasting the
 partial report verbatim and listing what's already excluded/confirmed, so the

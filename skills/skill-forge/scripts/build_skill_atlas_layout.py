@@ -24,13 +24,18 @@ def render_html(payload: dict[str, Any]) -> str:
             "</tr>"
         )
     blockers = (
-        payload["actionable_route_collisions"][:20]
+        payload["style_issues"][:20]
+        + payload["actionable_route_collisions"][:20]
         + payload["actionable_owner_review_gaps"][:20]
         + payload["actionable_stale_skills"][:20]
         + payload["actionable_drift_signals"][:20]
     )
     blocker_items = "".join(
-        f"<li><strong>{html.escape(item.get('name', item.get('skill_a', 'issue')))}</strong> {html.escape(item.get('reason', item.get('status', ', '.join(item.get('missing', item.get('signal_types', []))))))}</li>"
+        (
+            f"<li><strong>{html.escape(item.get('skill') or item.get('name') or item.get('skill_a', 'issue'))}</strong> "
+            f"{html.escape(item.get('message') or item.get('reason') or item.get('status') or ', '.join(item.get('missing', item.get('signal_types', []))))}"
+            f"{'<br><small>' + html.escape(str(item.get('file'))) + ':' + html.escape(str(item.get('line'))) + '</small>' if item.get('file') else ''}</li>"
+        )
         for item in blockers
     )
     opportunity_items = "".join(
@@ -67,10 +72,12 @@ def render_html(payload: dict[str, Any]) -> str:
 <body>
   <main>
     <h1>Skill Atlas</h1>
-    <p>Portfolio-level review for route overlap, stale ownership, shared resources, telemetry drift, and no-route opportunities.</p>
+    <p>Portfolio-level review for runtime style, route overlap, stale ownership, shared resources, telemetry drift, and no-route opportunities.</p>
     <section class="grid">
       <div class="card"><span>Skills</span><strong>{summary['skill_count']}</strong></div>
       <div class="card"><span>Actionable</span><strong>{summary['actionable_skill_count']}</strong></div>
+      <div class="card"><span>Total Blockers</span><strong>{summary['actionable_blocker_count']}</strong></div>
+      <div class="card"><span>Style Issues</span><strong>{summary['style_issue_count']}</strong></div>
       <div class="card"><span>Route Collisions</span><strong>{summary['actionable_route_collision_count']}</strong></div>
       <div class="card"><span>Owner Gaps</span><strong>{summary['actionable_owner_gap_count']}</strong></div>
       <div class="card"><span>Stale Skills</span><strong>{summary['actionable_stale_count']}</strong></div>
@@ -78,7 +85,7 @@ def render_html(payload: dict[str, Any]) -> str:
       <div class="card"><span>No-Route Opportunities</span><strong>{summary['no_route_opportunity_count']}</strong></div>
     </section>
     <section>
-      <h2>Actionable Issues</h2>
+      <h2>Blocking Issues</h2>
       <ul>{blocker_items or '<li>No blocking portfolio issues detected.</li>'}</ul>
     </section>
     <section>
@@ -88,7 +95,7 @@ def render_html(payload: dict[str, Any]) -> str:
     </section>
     <section>
       <h2>Full Portfolio Counts</h2>
-      <p>All scanned skills remain visible: {summary['route_collision_count']} total route collisions, {summary['owner_gap_count']} total owner gaps, {summary['stale_count']} total stale signals, and {summary['drift_signal_count']} telemetry drift signals.</p>
+      <p>All scanned skills remain visible: {summary['style_issue_count']} style issues, {summary['route_collision_count']} route collisions, {summary['owner_gap_count']} owner gaps, {summary['stale_count']} stale signals, and {summary['drift_signal_count']} telemetry drift signals.</p>
     </section>
     <section>
       <h2>Catalog</h2>

@@ -5,6 +5,7 @@ import json
 import os
 import re
 from collections import Counter, defaultdict
+from dataclasses import asdict
 from datetime import date, datetime
 from io import StringIO
 from pathlib import Path
@@ -12,6 +13,7 @@ from typing import Any
 
 from build_skill_atlas_opportunities import no_route_opportunities
 from build_skill_atlas_layout import render_html
+from skill_style import SKIP_PARTS, audit_workspace
 
 try:
     import yaml
@@ -25,15 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE_DIR = Path(
     os.environ.get("SKILL_ATLAS_DIR") or Path.home() / ".claude" / "observability" / "skill-atlas"
 )
-IGNORE_PARTS = {
-    ".git",
-    "__pycache__",
-    "dist",
-    ".previews",
-    "node_modules",
-    ".venv",
-    "venv",
-}
+IGNORE_PARTS = set(SKIP_PARTS) | {".previews"}
 STOPWORDS = {
     "a",
     "an",
@@ -498,6 +492,14 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
         telemetry_report_count += 1 if telemetry["report_present"] else 0
         drift_signals.extend(signals)
         skills.append(skill)
+    skills_by_path = {skill["path"]: skill for skill in skills}
+    style_issues = []
+    for issue in audit_workspace(workspace_root, skill_dirs):
+        item = asdict(issue)
+        skill = skills_by_path.get(issue.skill_path, {})
+        item["actionable"] = bool(skill.get("actionable", True))
+        item["scope"] = str(skill.get("atlas_scope", "release"))
+        style_issues.append(item)
     overlap_rows, collisions = route_overlap(skills, threshold)
     graph = dependency_graph(skills)
     stale = stale_skills(skills, today)
@@ -513,6 +515,14 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
     actionable_stale = [item for item in stale if item.get("actionable")]
     actionable_owner_gaps = [item for item in owner_gaps if item.get("actionable")]
     actionable_drift_signals = [item for item in drift_signals if item.get("actionable")]
+    actionable_style_issues = [item for item in style_issues if item.get("actionable")]
+    actionable_blocker_count = (
+        len(style_issues)
+        + len(actionable_collisions)
+        + len(actionable_stale)
+        + len(actionable_owner_gaps)
+        + len(actionable_drift_signals)
+    )
     summary = {
         "skill_count": len(skills),
         "actionable_skill_count": len(actionable_skills),
@@ -527,6 +537,9 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
         "telemetry_report_count": telemetry_report_count,
         "drift_signal_count": len(drift_signals),
         "actionable_drift_signal_count": len(actionable_drift_signals),
+        "style_issue_count": len(style_issues),
+        "actionable_style_issue_count": len(actionable_style_issues),
+        "actionable_blocker_count": actionable_blocker_count,
         "non_actionable_issue_count": (len(collisions) - len(actionable_collisions))
         + (len(owner_gaps) - len(actionable_owner_gaps))
         + (len(stale) - len(actionable_stale))
@@ -538,8 +551,12 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
         "skills": skills,
         "summary": summary,
     }
+    style_ok = not style_issues
+    portfolio_ok = actionable_blocker_count == 0
     payload = {
-        "ok": True,
+        "ok": portfolio_ok,
+        "style_ok": style_ok,
+        "portfolio_ok": portfolio_ok,
         "workspace_root": display_path(workspace_root),
         "summary": summary,
         "scope_policy": scope_policy,
@@ -553,6 +570,8 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
         "actionable_owner_review_gaps": actionable_owner_gaps,
         "drift_signals": drift_signals,
         "actionable_drift_signals": actionable_drift_signals,
+        "style_issues": style_issues,
+        "actionable_style_issues": actionable_style_issues,
         "no_route_opportunities": opportunities,
         "artifacts": {
             "catalog": display_path(output_dir / "catalog.json"),
@@ -561,6 +580,7 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
             "stale_skills": display_path(output_dir / "stale_skills.json"),
             "owner_review_gaps": display_path(output_dir / "owner_review_gaps.json"),
             "drift_signals": display_path(output_dir / "drift_signals.json"),
+            "style_issues": display_path(output_dir / "style_issues.json"),
             "no_route_opportunities": display_path(output_dir / "no_route_opportunities.json"),
             "report_json": display_path(report_json),
             "report_html": display_path(report_html),
@@ -573,6 +593,10 @@ def build_atlas(workspace_root: Path, output_dir: Path, report_html: Path, repor
     (output_dir / "stale_skills.json").write_text(json.dumps(stale, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output_dir / "owner_review_gaps.json").write_text(json.dumps(owner_gaps, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output_dir / "drift_signals.json").write_text(json.dumps(drift_signals, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output_dir / "style_issues.json").write_text(
+        json.dumps(style_issues, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     (output_dir / "no_route_opportunities.json").write_text(json.dumps(opportunities, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     report_json.parent.mkdir(parents=True, exist_ok=True)
     report_html.parent.mkdir(parents=True, exist_ok=True)
@@ -589,6 +613,7 @@ def main() -> None:
     parser.add_argument("--report-json", default=str(STATE_DIR / "skill_atlas.json"))
     parser.add_argument("--overlap-threshold", type=float, default=0.42)
     parser.add_argument("--today", default=date.today().isoformat())
+    parser.add_argument("--fail-on-style", action="store_true")
     args = parser.parse_args()
     today = datetime.strptime(args.today, "%Y-%m-%d").date()
     payload = build_atlas(
@@ -600,6 +625,8 @@ def main() -> None:
         today,
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if args.fail_on_style and payload["style_issues"]:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

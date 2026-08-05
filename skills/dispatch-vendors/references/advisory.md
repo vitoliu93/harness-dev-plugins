@@ -10,12 +10,10 @@ Same launch as execution dispatch, but deliverable is judgment — acceptance ga
    blind spots). Plan check: the intended approach plus its constraints.
 3. **Expected vs actual** — specific and observable. Plan check: the goal and
    the doubts you actually have.
-4. **Ruled out** — hypotheses already dead, decisions already settled. Without
-   it you pay for advice you have already rejected once.
+4. **Ruled out** — hypotheses already dead and decisions already settled.
 5. **Length cap** — "under 400 words", etc.
 
-Can't write all five? You don't have a question yet. Sharpen it first — a thin
-brief buys a confident guess, and a confident guess is worse than no consult.
+If any section is missing, sharpen the question before dispatching.
 
 ## Engines
 
@@ -38,9 +36,8 @@ claude -p --model fable --effort high "<brief>" > "$ans"    # long: < brief.txt
   kill a run for being slow.
 - Never `--bare` (restricts auth to `ANTHROPIC_API_KEY`, breaks OAuth/keychain)
   and never `--dangerously-skip-permissions`.
-- This bills the interactive 5h Anthropic quota — it is the one sanctioned use
-  of the real `claude` binary (`claude-variants.md`), so spend it on real
-  questions, not reflex consults.
+- Use the real `claude` binary only for advisory dispatch
+  (`claude-variants.md`); reserve interactive quota for main-session work.
 
 **Vendor** (foreign family) — the vendor sheets, unchanged. This is the D gate
 of the execution side pointed at a question instead of a task.
@@ -48,8 +45,8 @@ of the execution side pointed at a question instead of a task.
 ## Output contract
 
 400–700 words. The first paragraph is the single thing that matters most.
-"Your plan is sound, watch out for X" is a valid and valuable answer — an
-advisor that invents objections to justify the consult is worse than none.
+Accept "Your plan is sound, watch out for X" as a valid verdict. Do not require
+the advisor to invent objections.
 
 ```
 ## Verdict: <proceed / adjust / stop-and-rethink — one sentence>
@@ -65,18 +62,15 @@ advisor that invents objections to justify the consult is worse than none.
 
 ## Consuming it
 
-Verify the code claims yourself, then adopt or reject each point explicitly —
-an unread verdict is a dispatch you paid for and threw away. **Two rounds
-max**: one ask, plus one counter-argument if the verdict misread something.
-Then decide. An advisor you argue with five times is one you are trying to
-make agree with you.
+Verify the code claims yourself, then adopt or reject each point explicitly.
+**Two rounds max**: one ask, plus one counter-argument if the verdict misread
+something. Then decide; do not continue the exchange to seek agreement.
 
 ## Resident advisor — 长战役的常驻审查人
 
 One-shot consults don't fit a multi-hour/-day campaign (采集战役、无人值守监控、
 长 issue 队列): the advisor needs the campaign's history to catch drift — the
-kind of miss a worker can't see in itself (under-collection blamed on the
-platform, a counter bug that false-stops overnight, fake denominators):
+worker and advisor compare each round against the same campaign history:
 
 - **Fixed session, resumed** — create once with `claude -p --session-id <uuid>
   --model fable "<开局审查 brief>"`, continue every round with `claude -p -r
@@ -87,7 +81,7 @@ platform, a counter bug that false-stops overnight, fake denominators):
 - **Sync on milestones, not on the clock** — phase done / anomaly / before any
   irreversible step (spend, delete, publish). Escalate instead of stalling:
   风控、超预算、通道判死 → brief the advisor and keep working the other lanes
-  (停摆本身就是成本).
+  while the review runs.
 - **Three brief skeletons** — 开局审查 (plan + acceptance criteria, verbatim);
   轮次回执 (facts since last sync + what changed + next irreversible step);
   终局审计 (deliverable + per-criterion PASS/FAIL ask, "他点头才算完成").

@@ -1,16 +1,15 @@
 #!/bin/bash
 # PreToolUse skill-atlas-guard: the skill fleet changed but its health check
-# didn't re-run. A deterministic gate ("hook 拦确定的事") — when a commit in the
-# dev-kit plugin repo stages a SKILL.md edit/add, block it until skill-atlas has
-# re-run, so stale route-overlap / trigger / budget / call-site findings can't
-# ship. The judgment (interpret findings, propose merge/retire) stays in the
-# skill; this hook only enforces "did the event check fire at all".
+# didn't re-run or still reports runtime style violations. A deterministic gate
+# ("hook 拦确定的事") — when a commit in the dev-kit plugin repo changes any
+# skill surface, block it until skill-atlas has re-run and style is clean.
+# Judgment-heavy merge/retire decisions stay in the skill.
 #
 # Denies when ALL hold:
 #   a) the Bash command is a `git commit`
 #   b) its repo is the plugin source (toplevel has .claude-plugin/plugin.json)
-#   c) a skills/*/SKILL.md is staged/dirty
-#   d) skill-atlas's last output is older than that SKILL.md (or missing)
+#   c) a skill surface is staged/dirty
+#   d) skill-atlas's last output is stale/missing, or reports style violations
 # Escape: run /skill-atlas — its output refreshes, (d) fails, the commit passes.
 # The quarterly staleness sweep is unaffected (it's not a commit-time event).
 # Anything unparseable / not-our-repo → allow (exit 0). Fail-open by design.
@@ -34,15 +33,25 @@ root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
 # their own skills/*/SKILL.md we must not gate against dev-kit's atlas.
 [ "$(jq -r '.name // empty' "$root/.claude-plugin/plugin.json" 2>/dev/null)" = "dev-kit" ] || exit 0
 
-# Does this commit touch the fleet? (staged or working-tree SKILL.md)
-git -C "$root" status --porcelain 2>/dev/null | grep -qE 'skills/[^/]+/SKILL\.md' || exit 0
+# Does this commit touch any skill surface, including a new orphan directory?
+git -C "$root" status --porcelain --untracked-files=all 2>/dev/null \
+  | grep -qE '[[:space:]]skills/' || exit 0
 
-# Freshness: any SKILL.md newer than skill-atlas's last route-overlap output?
-atlas_out="${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas}/atlas/route_overlap_matrix.csv"
-if [ -f "$atlas_out" ] && [ -z "$(find "$root"/skills/*/SKILL.md -newer "$atlas_out" 2>/dev/null)" ]; then
-  exit 0   # atlas ran after the latest SKILL.md change → fresh → allow
+# Freshness: any active skill file newer than skill-atlas's last output?
+atlas_root="${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas}"
+atlas_out="$atlas_root/atlas/route_overlap_matrix.csv"
+atlas_report="$atlas_root/skill_atlas.json"
+if [ -f "$atlas_out" ] && [ -f "$atlas_report" ] \
+  && [ -z "$(find "$root"/skills -type f \
+    ! -path '*/__pycache__/*' ! -path '*/_archive/*' ! -path '*/archive/*' \
+    ! -path '*/node_modules/*' ! -path '*/.venv/*' ! -path '*/venv/*' \
+    -newer "$atlas_out" 2>/dev/null)" ]; then
+  style_count=$(jq -r '.summary.style_issue_count // -1' "$atlas_report" 2>/dev/null)
+  if [ "$style_count" = "0" ]; then
+    exit 0
+  fi
 fi
 
-jq -n --arg r "本次 commit 改了 skills/*/SKILL.md,但 skill-atlas 事件档没重跑——route-overlap/trigger-eval/budget/call-site 可能过期。刷新命令(可直接复制): python3 $root/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $root/skills ;跑完按 /skill-atlas 的检查清单 reconcile 发现(有 evals/ 的 skill 补跑 trigger_eval),再重新 commit。注意本次 deny 已终止整条命令链——commit/push 要拆开单独重跑,别假设后半段执行过。(季度 staleness 体检不走这条,不受影响。)" \
+jq -n --arg r "本次 commit 改了 skill surface，但 skill-atlas 事件档过期或仍有 Skill & Doc Style 违规。先运行: python3 $root/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $root/skills --fail-on-style ;若失败，查看 $atlas_root/atlas/style_issues.json，修复 description 两行契约、叙事/营销、超长墙文或不可移植路径后重跑；再按 /skill-atlas reconcile route-overlap/trigger-eval/budget/call-site。注意本次 deny 已终止整条命令链——commit/push 要拆开单独重跑。" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0

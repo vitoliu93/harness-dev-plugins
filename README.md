@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code, packaged as a plugin. The repo root is
-the plugin root — 18 skills under `skills/`, 3 subagents under `agents/`, hooks
+the plugin root — 20 skills under `skills/`, 3 subagents under `agents/`, hooks
 under `hooks/` are auto-discovered. Retired skills live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -34,11 +34,13 @@ Restart the session. Skills load as `dev-kit:<skill>` (e.g. `/dev-kit:advanced-p
 | media-understanding | Transcribe and understand local audio/video. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
 | no-ai-slop | Human-voice editing, AI-slop detection, CEO-style task reports. |
-| skill-atlas | Fleet health: overlap, staleness, trigger evals, budget, usage. |
+| skill-atlas | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
+| llm-call | Call DeepSeek through Bun and OpenAI with explicit reasoning effort and JSON output. |
+| skill-style-review | Review skill prose through llm-call for narrative, marketing language, prose walls, and gate loss. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | recall | Retrieve up to five past-session clues from ccobs. |
 | orchestrate | Route coding delegation with spec, acceptance, and parallel gates. |
-| skill-forge | Create or improve skills; graduate candidates through trigger eval. |
+| skill-forge | Create or improve skills through deterministic and semantic style, budget, routing, and trigger gates. |
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 
 ### Learning
@@ -67,15 +69,17 @@ Nested subagent spawning requires Claude Code ≥ 2.1.172.
 
 ## Hooks
 
-`hooks/hooks.json`: `learn-capture.py`, `session-replay.py`, `worktree-guard.sh`,
-`skill-guard.sh` (noisy skills → `general-skills-executor`; editing this repo's
-skill sources is exempt). Restart after hook edits.
+`hooks/hooks.json` registers:
+- PreToolUse: `skill-guard.sh`, `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
+- Session/Stop/PostToolUse/PostCompact: `learn-capture.py`, `session-replay.py`, `plan-anchor.py`, `standby-watchdog.py`, `security-warning-relay.py`, `compact-audit.py`, and ccobs `obs-enqueue.ts`
+
+Restart after hook edits.
 
 ## Layout
 
 ```
 .claude-plugin/   # plugin.json + marketplace.json
-skills/           # 18 active skills
+skills/           # 20 active skills
 agents/           # 3 subagents
 hooks/            # hook registration + scripts
 archive/          # retired skills (not auto-discovered)

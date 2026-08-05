@@ -9,15 +9,47 @@ FORGE=$PLUGIN/skills/skill-forge/scripts
 DB=${CCOBS_DIR:-$HOME/.claude/observability}/obs.db
 ```
 
-## 1. Route overlap
+## 1. Deterministic Skill & Doc Style
 
 ```bash
-python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills
+python3 $FORGE/skill_style.py --workspace-root $PLUGIN/skills --fail-on-issues
+```
+
+Gate: zero findings across every skill; atlas scope policy cannot exempt style violations. Repair with the
+[style contract](../../skill-forge/references/style-contract.md): two-line routing interface,
+present-tense runtime rules, configurable paths, gate-preserving progressive disclosure, and fictional public examples.
+Keep dates only when they are active compatibility cutoffs.
+
+Atlas also writes `$ATLAS/atlas/style_issues.json`; any finding blocks the commit gate.
+
+## 2. Semantic Skill & Doc Style
+
+```bash
+STYLE_REVIEW=$PLUGIN/skills/skill-style-review
+LLM_CALL=$PLUGIN/skills/llm-call
+bun install --cwd $LLM_CALL --frozen-lockfile
+LLM_CALL_RUNNER=$LLM_CALL/scripts/call.ts SKILL_STYLE_EFFORT=none \
+  bun $STYLE_REVIEW/scripts/review.ts \
+  --workspace-root $PLUGIN/skills \
+  --output $ATLAS/atlas/semantic_style_issues.json \
+  --fail-on-issues
+```
+
+Gate: zero origin-story, incident-lore, tuition-narrative,
+marketing-language, meaning-level prose-wall, or gate-loss findings. Missing
+`DEEPSEEK_API_KEY` means the audit is incomplete, not clean. The reviewer calls
+the `llm-call` atom at `effort=none`, then adjudicates candidates at `max`; the commit hook remains
+deterministic and does not make remote API calls.
+
+## 3. Route overlap
+
+```bash
+python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills --fail-on-style
 ```
 
 Read `$ATLAS/atlas/route_overlap_matrix.csv`: pair ≥0.42 → tighten or merge.
 
-## 2. Staleness
+## 4. Staleness
 
 ```bash
 for d in $PLUGIN/skills/*/; do
@@ -27,7 +59,7 @@ done | sort -k2
 
 >90d untouched → flag refresh or archive via debrief.
 
-## 3. Trigger eval
+## 5. Trigger eval
 
 ```bash
 for d in $PLUGIN/skills/*/evals; do
@@ -39,7 +71,7 @@ done
 
 Gate: P=R=1.0. Description edit without re-run = lint failure.
 
-## 4. Context budget
+## 6. Context budget
 
 ```bash
 python3 $FORGE/context_sizer.py $PLUGIN/skills/<name> --json
@@ -47,11 +79,11 @@ python3 $FORGE/context_sizer.py $PLUGIN/skills/<name> --json
 
 SKILL.md body >700 tokens → move detail to `references/`.
 
-## 5. Call sites
+## 7. Call sites
 
 Read [call-site.md](../call-site.md). Orphan/⚠ → wire or exempt (monthly hygiene: context-audit, skill-atlas).
 
-## 6. Cross-refs
+## 8. Cross-refs
 
 ```bash
 for d in $PLUGIN/skills/*/; do n=$(basename $d)
@@ -63,7 +95,7 @@ done
 
 Stale skill names in docs = lint failure.
 
-## 7. Usage
+## 9. Usage
 
 Skip if no obs.db. Fold aliases via `aliases.json`:
 

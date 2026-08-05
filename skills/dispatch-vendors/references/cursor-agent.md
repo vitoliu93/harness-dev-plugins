@@ -1,6 +1,6 @@
 # cursor-agent — Cursor Ultra subscription
 
-Quota: Cursor subscription. Unique asset: **workspace index** (repo-wide localization without cold grep).
+Quota: Cursor subscription. The **workspace index** provides repo-wide localization without cold grep.
 
 Default Q model: **`cursor-grok-4.5-high`**. Fast/light + vision: **`composer-2.5`**. Hard tier: **`gpt-5.6-sol-high`** when listed. Subagent model inside Cursor is composer-2.5 — hands-off.
 

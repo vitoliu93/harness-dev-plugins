@@ -34,7 +34,7 @@ Operate in original `cwd`, not current directory.
 
 Large transcript → sonnet subagent for probes; host reads tail + key files.
 
-Cursor bodies: see ccobs [queries.md](../ccobs/references/queries.md).
+Cursor bodies: see ccobs [queries.md](../../ccobs/references/queries.md).
 
 ## Brief before work
 

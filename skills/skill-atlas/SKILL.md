@@ -1,8 +1,8 @@
 ---
 name: skill-atlas
 description: >-
-  Run fleet health checks on skills: overlap, staleness, trigger evals, budget, and usage.
-  Use when auditing the skill collection or before shipping SKILL.md changes.
+  Run fleet health checks on deterministic and semantic runtime style, overlap, staleness, trigger evals, budget, and usage.
+  Use when auditing the skill collection or before shipping skill runtime-surface changes.
 argument-hint: "[optional: skill name to focus on]"
 metadata:
   kind: meta
@@ -21,6 +21,8 @@ ATLAS=${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas}
 
 ```
 skill-atlas · <date>
+style  : <violations by skill | clean>
+semantic: <violations by skill | clean | not run>
 overlap : N pairs, M collisions
 stale   : <skills >90d | none>
 triggers: <per-skill P/R | missing fixtures>

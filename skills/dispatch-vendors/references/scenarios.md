@@ -23,6 +23,10 @@ Picks name MODELS (roster + carrier chains: ../SKILL.md; powers: models.md); car
 
 **Default routing**: grok-4.5 for default Q on cursor Ultra pool; gpt-5.6-sol for hard-tier escalation on same pool. kimi-k3 quota small — diversity-core (#3/10/11), true 1M-ctx digestion, or vision. Fast/light: composer-2.5 (vision edge over deepseek), deepseek-v4 as backup.
 
-**Modality check before picking a vendor**: scenarios with images/screenshots need vision-capable cells — cursor composer/grok or kicode k3. deepseek (dscode) degrades gracefully; glm via arkcode fatal on direct image. Text-only cells stay eligible when brief routes media through media-understanding script first — name exact script path in brief. Matrix in `vendor-onboarding.md`.
+**Check modality before routing:**
+- Route images and screenshots to vision-capable cells: cursor composer/grok or kicode k3.
+- Treat deepseek through dscode as graceful degradation; do not send images directly to glm through arkcode.
+- Keep text-only cells eligible by routing media through the exact media-understanding script path first.
+- Read the full matrix in `vendor-onboarding.md`.
 
 Consume cheaply: digests and finding lists are read; repros and suites run once; diffs are `git diff`-ed. If consuming the result means re-deriving it, the scenario failed the litmus.

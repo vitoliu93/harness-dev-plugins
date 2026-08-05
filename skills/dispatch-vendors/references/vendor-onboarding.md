@@ -1,6 +1,9 @@
 # Vendor onboarding — ten-rung ladder
 
-Each rung is cheap → expensive. **Do not advance until the current rung passes.** Record pass criteria and failure modes per CLI×model.
+Order rungs by increasing cost:
+
+- Do not advance until the current rung passes.
+- Record pass criteria and failure modes per CLI×model.
 
 ## Ladder
 
@@ -40,10 +43,14 @@ PNG with text + graphics; record supported / graceful-degrade / fatal.
 Long output task: json exit-flush vs stream flush; per-turn cap if any.
 
 ### ⑨ Per-model verdict
-**CLI×model is the unit.** Same CLI, different models → different verdict. Failover chains at this granularity.
+- Treat CLI×model as the unit.
+- Record separate verdicts for different models on the same CLI.
+- Build failover chains at CLI×model granularity.
 
 ### ⑩ Register
-Add `references/<cli>.md`, scenarios row, ledger habit. Run one month of real use before treating as stable.
+- Add `references/<cli>.md`.
+- Add a scenarios row and start the ledger habit.
+- Run one month of real use before treating the pair as stable.
 
 ## Capability matrix (current fleet)
 
