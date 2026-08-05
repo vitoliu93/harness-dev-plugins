@@ -22,7 +22,7 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 - user/hook only: `disable-model-invocation: true`, no evals
 - Apply [style-contract.md](style-contract.md): routing interface, present-tense runtime docs, portable paths, gate-preserving progressive disclosure, fictional public examples
 - Run `python3 $FORGE/skill_style.py --workspace-root $PLUGIN/skills --fail-on-issues`
-- Run `bun install --cwd $PLUGIN/skills/llm-call --frozen-lockfile`
+- Run `bun add -g openai@7`
 - Run `LLM_CALL_RUNNER=$PLUGIN/skills/llm-call/scripts/call.ts bun $PLUGIN/skills/skill-style-review/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues`
 
 ## 3. Trigger-first (model-invoked)
@@ -60,4 +60,4 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 Stdlib-only; fix in place.
 
 Semantic style review is owned by the independent `skill-style-review` skill.
-It calls the `llm-call` atom at `effort=max`; do not dispatch a vendor.
+It calls the `llm-call` atom; do not dispatch a vendor.

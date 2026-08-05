@@ -19,7 +19,7 @@ Run the bundled Bun script directly; do not route through `dispatch-vendors` or 
 PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
 STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
 LLM_CALL_DIR=$PLUGIN/skills/llm-call
-bun install --cwd "$LLM_CALL_DIR" --frozen-lockfile
+bun add -g openai@7
 LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
   --skill-dir <skill-dir> --fail-on-issues
 ```
@@ -30,9 +30,8 @@ Fleet audit:
 PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
 STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
 LLM_CALL_DIR=$PLUGIN/skills/llm-call
-bun install --cwd "$LLM_CALL_DIR" --frozen-lockfile
-LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts SKILL_STYLE_EFFORT=none \
-  bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
+bun add -g openai@7
+LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
   --workspace-root <skills-root> --output <report.json> --fail-on-issues
 ```
 
@@ -41,9 +40,7 @@ LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts SKILL_STYLE_EFFORT=none \
 - Run deterministic `skill_style.py` first; this skill judges semantics, not path or frontmatter shape.
 - Call the `llm-call` atom; keep OpenAI SDK and provider handling out of this skill.
 - Require `DEEPSEEK_API_KEY`; never fall back to vendor orchestration.
-- Use `max` for focused review, fixed evals, and candidate adjudication.
-- Use `none` for fleet first-pass classification.
-- Reinstall `llm-call`, then run the fixed eval after changing either prompt.
+- Run the fixed eval after changing either prompt.
 - Return file, line, exact evidence, category, reason, and imperative rewrite for every finding.
 - Treat a retained date as valid only when it changes current runtime behavior.
 - Preserve safety and lifecycle gates while removing narrative.

@@ -4,45 +4,25 @@ import { buildRequest, isRetryable, normalizeUsage, parseInput } from "./call";
 const messages = [{ role: "user" as const, content: "Return JSON." }];
 
 describe("input contract", () => {
-  test("defaults to max effort and 8192 output tokens", () => {
-    const input = parseInput({ messages });
-
-    expect(input.effort).toBe("max");
-    expect(input.max_tokens).toBe(8_192);
+  test("defaults to the max thinking budget", () => {
+    expect(parseInput({ messages }).max_tokens).toBe(32_768);
   });
 
-  test("rejects invalid roles and effort", () => {
+  test("rejects invalid roles and output budgets", () => {
     expect(() => parseInput({ messages: [{ role: "tool", content: "x" }] })).toThrow(
       "role is invalid",
     );
-    expect(() => parseInput({ messages, effort: "medium" })).toThrow(
-      "effort must be none, high, or max",
-    );
+    expect(() => parseInput({ messages, max_tokens: 99_999 })).toThrow("max_tokens must be");
   });
 });
 
 describe("DeepSeek request mapping", () => {
-  test("max enables thinking and the largest effort tier", () => {
-    const request = buildRequest(parseInput({ messages, effort: "max" }));
+  test("always enables thinking at max effort", () => {
+    const request = buildRequest(parseInput({ messages }));
 
     expect(request.thinking).toEqual({ type: "enabled" });
     expect(request.reasoning_effort).toBe("max");
-    expect(request.max_tokens).toBe(8_192);
-  });
-
-  test("high enables balanced thinking", () => {
-    const request = buildRequest(parseInput({ messages, effort: "high" }));
-
-    expect(request.thinking).toEqual({ type: "enabled" });
-    expect(request.reasoning_effort).toBe("high");
-    expect(request.max_tokens).toBe(4_096);
-  });
-
-  test("none disables thinking and omits reasoning effort", () => {
-    const request = buildRequest(parseInput({ messages, effort: "none" }));
-
-    expect(request.thinking).toEqual({ type: "disabled" });
-    expect(request.reasoning_effort).toBeUndefined();
+    expect(request.max_tokens).toBe(32_768);
   });
 
   test("maps JSON Output through the OpenAI request shape", () => {

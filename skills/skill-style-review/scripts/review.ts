@@ -413,7 +413,6 @@ function parseJson(content: string): unknown {
 
 type LlmEnvelope = {
   model: string;
-  effort: string;
   content: string;
   finish_reason: string | null;
   usage: Record<string, unknown> | null;
@@ -460,7 +459,6 @@ async function callLlm(
 async function reviewChunk(
   runner: string,
   model: string,
-  effort: string,
   prompt: string,
   skill: string,
   chunk: string,
@@ -482,9 +480,8 @@ async function reviewChunk(
           },
         ],
         model,
-        effort,
         temperature: 0,
-        max_tokens: Number(process.env.SKILL_STYLE_MAX_TOKENS ?? 8_192),
+        max_tokens: Number(process.env.SKILL_STYLE_MAX_TOKENS ?? 32_768),
         response_format: "json_object",
       });
       return parseJson(completion.content);
@@ -498,7 +495,6 @@ async function reviewChunk(
 async function adjudicateIssues(
   runner: string,
   model: string,
-  effort: string,
   prompt: string,
   skill: string,
   issues: ReviewIssue[],
@@ -550,9 +546,8 @@ async function adjudicateIssues(
           },
         ],
         model,
-        effort,
         temperature: 0,
-        max_tokens: Number(process.env.SKILL_STYLE_ADJUDICATION_MAX_TOKENS ?? 8_192),
+        max_tokens: Number(process.env.SKILL_STYLE_ADJUDICATION_MAX_TOKENS ?? 32_768),
         response_format: "json_object",
       });
       const parsed = parseJson(completion.content) as { keep?: unknown };
@@ -584,8 +579,6 @@ type SemanticCase = {
 async function runSemanticEval(
   runner: string,
   model: string,
-  effort: string,
-  adjudicationEffort: string,
   prompt: string,
   adjudicationPrompt: string,
   casesPath: string,
@@ -621,7 +614,6 @@ async function runSemanticEval(
     const raw = await reviewChunk(
       runner,
       model,
-      effort,
       prompt,
       "semantic-regression",
       reviewInput,
@@ -637,7 +629,6 @@ async function runSemanticEval(
     const issues = await adjudicateIssues(
       runner,
       model,
-      adjudicationEffort,
       adjudicationPrompt,
       "semantic-regression",
       candidates,
@@ -663,8 +654,6 @@ async function runSemanticEval(
   return {
     ok: failures.length === 0,
     model,
-    effort,
-    adjudication_effort: adjudicationEffort,
     case_count: results.length,
     failure_count: failures.length,
     results,
@@ -674,8 +663,6 @@ async function runSemanticEval(
 async function reviewSkill(
   runner: string,
   model: string,
-  effort: string,
-  adjudicationEffort: string,
   prompt: string,
   adjudicationPrompt: string,
   skillDir: string,
@@ -704,7 +691,6 @@ async function reviewSkill(
       const raw = await reviewChunk(
         runner,
         model,
-        effort,
         prompt,
         skillName(skillDir),
         chunks[index],
@@ -727,7 +713,6 @@ async function reviewSkill(
   const issues = await adjudicateIssues(
     runner,
     model,
-    adjudicationEffort,
     adjudicationPrompt,
     skillName(skillDir),
     candidates,
@@ -770,8 +755,6 @@ async function main(): Promise<void> {
   const runner = resolveLlmRunner();
   if (!existsSync(runner)) fail(`llm-call runner not found: ${runner}`);
   const model = process.env.DEEPSEEK_STYLE_MODEL ?? process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL;
-  const effort = process.env.SKILL_STYLE_EFFORT ?? (options.workspaceRoot ? "none" : "max");
-  const adjudicationEffort = process.env.SKILL_STYLE_ADJUDICATION_EFFORT ?? "max";
   const prompt = readFileSync(resolve(import.meta.dir, "../references/review-prompt.md"), "utf8");
   const adjudicationPrompt = readFileSync(
     resolve(import.meta.dir, "../references/adjudication-prompt.md"),
@@ -784,8 +767,6 @@ async function main(): Promise<void> {
       evalReport = await runSemanticEval(
         runner,
         model,
-        effort,
-        adjudicationEffort,
         prompt,
         adjudicationPrompt,
         options.evalCases,
@@ -813,8 +794,6 @@ async function main(): Promise<void> {
         await reviewSkill(
           runner,
           model,
-          effort,
-          adjudicationEffort,
           prompt,
           adjudicationPrompt,
           skillDir,
@@ -830,8 +809,6 @@ async function main(): Promise<void> {
   const report = {
     ok: issueCount === 0,
     model,
-    effort,
-    adjudication_effort: adjudicationEffort,
     reviewed_at: new Date().toISOString(),
     skill_count: skills.length,
     issue_count: issueCount,

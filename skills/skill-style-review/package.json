@@ -6,7 +6,7 @@
   },
   "private": true,
   "scripts": {
-    "eval": "bun install --cwd ../llm-call --frozen-lockfile && LLM_CALL_RUNNER=../llm-call/scripts/call.ts bun scripts/review.ts --eval-cases evals/semantic_cases.json",
+    "eval": "bun add -g openai@7 && LLM_CALL_RUNNER=../llm-call/scripts/call.ts bun scripts/review.ts --eval-cases evals/semantic_cases.json",
     "test": "bun test scripts/review.test.ts",
     "typecheck": "tsc --noEmit --target es2022 --module preserve --moduleResolution bundler --allowImportingTsExtensions --types bun scripts/review.ts scripts/review.test.ts"
   },

@@ -1,5 +1,4 @@
 skills/lark-*
-!skills/llm-call/bun.lock
 !skills/skill-style-review/bun.lock
 .skill-lock.json
 __pycache__/

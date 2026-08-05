@@ -1,8 +1,5 @@
 #!/usr/bin/env bun
 
-import OpenAI from "openai";
-
-export type Effort = "none" | "high" | "max";
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -10,15 +7,14 @@ export type Message = {
 export type CallInput = {
   messages: Message[];
   model?: string;
-  effort?: Effort;
-  max_tokens?: number;
+  max_tokens: number;
   temperature?: number;
   response_format?: "text" | "json_object";
 };
 
 const DEFAULT_BASE_URL = "https://api.deepseek.com";
 const DEFAULT_MODEL = "deepseek-v4-flash";
-const EFFORTS = new Set<Effort>(["none", "high", "max"]);
+const DEFAULT_MAX_TOKENS = 32_768;
 const ROLES = new Set<Message["role"]>(["system", "user", "assistant"]);
 
 function fail(message: string): never {
@@ -41,13 +37,11 @@ export function parseInput(value: unknown): CallInput {
     if (!content.trim()) throw new Error(`messages[${index}].content must be non-empty`);
     return { role, content };
   });
-  const effort = String(input.effort ?? "max") as Effort;
-  if (!EFFORTS.has(effort)) throw new Error("effort must be none, high, or max");
   const responseFormat = String(input.response_format ?? "text");
   if (!["text", "json_object"].includes(responseFormat)) {
     throw new Error("response_format must be text or json_object");
   }
-  const maxTokens = Number(input.max_tokens ?? (effort === "max" ? 8_192 : 4_096));
+  const maxTokens = Number(input.max_tokens ?? DEFAULT_MAX_TOKENS);
   if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 65_536) {
     throw new Error("max_tokens must be an integer from 1 to 65536");
   }
@@ -63,7 +57,6 @@ export function parseInput(value: unknown): CallInput {
   return {
     messages,
     model,
-    effort,
     max_tokens: maxTokens,
     temperature,
     response_format: responseFormat as CallInput["response_format"],
@@ -71,15 +64,14 @@ export function parseInput(value: unknown): CallInput {
 }
 
 export function buildRequest(input: CallInput, defaultModel = DEFAULT_MODEL): Record<string, unknown> {
-  const effort = input.effort ?? "max";
   const request: Record<string, unknown> = {
     model: input.model ?? defaultModel,
     messages: input.messages,
-    max_tokens: input.max_tokens ?? (effort === "max" ? 8_192 : 4_096),
+    max_tokens: input.max_tokens,
     stream: false,
-    thinking: { type: effort === "none" ? "disabled" : "enabled" },
+    thinking: { type: "enabled" },
+    reasoning_effort: "max",
   };
-  if (effort !== "none") request.reasoning_effort = effort;
   if (input.temperature !== undefined) request.temperature = input.temperature;
   if (input.response_format === "json_object") {
     request.response_format = { type: "json_object" };
@@ -123,17 +115,21 @@ async function main(): Promise<void> {
     fail(error instanceof Error ? error.message : String(error));
   }
 
-  const baseURL = process.env.DEEPSEEK_BASE_URL ?? DEFAULT_BASE_URL;
-  const defaultModel = process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL;
-  const client = new OpenAI({ apiKey, baseURL, maxRetries: 0, timeout: 120_000 });
-  const request = buildRequest(input, defaultModel);
+  // ponytail: dynamic import so the globally installed SDK (`bun add -g openai@7`)
+  // stays out of `bun test`, which does not resolve global packages.
+  const { default: OpenAI } = await import("openai");
+  const client = new OpenAI({
+    apiKey,
+    baseURL: process.env.DEEPSEEK_BASE_URL ?? DEFAULT_BASE_URL,
+    maxRetries: 0,
+    timeout: 300_000,
+  });
+  const request = buildRequest(input, process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL);
 
   let lastError = "unknown completion error";
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const completion = await client.chat.completions.create(
-        request as unknown as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
-      );
+      const completion = await client.chat.completions.create(request as never);
       const choice = completion.choices[0];
       const content = choice?.message?.content;
       if (!content?.trim()) {
@@ -142,7 +138,7 @@ async function main(): Promise<void> {
       console.log(
         JSON.stringify({
           model: completion.model ?? request.model,
-          effort: input.effort ?? "max",
+          reasoning_effort: "max",
           content,
           finish_reason: choice.finish_reason,
           usage: normalizeUsage(completion.usage),

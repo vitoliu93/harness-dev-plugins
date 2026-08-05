@@ -27,9 +27,8 @@ Atlas also writes `$ATLAS/atlas/style_issues.json`; any finding blocks the commi
 ```bash
 STYLE_REVIEW=$PLUGIN/skills/skill-style-review
 LLM_CALL=$PLUGIN/skills/llm-call
-bun install --cwd $LLM_CALL --frozen-lockfile
-LLM_CALL_RUNNER=$LLM_CALL/scripts/call.ts SKILL_STYLE_EFFORT=none \
-  bun $STYLE_REVIEW/scripts/review.ts \
+bun add -g openai@7
+LLM_CALL_RUNNER=$LLM_CALL/scripts/call.ts bun $STYLE_REVIEW/scripts/review.ts \
   --workspace-root $PLUGIN/skills \
   --output $ATLAS/atlas/semantic_style_issues.json \
   --fail-on-issues
@@ -37,9 +36,9 @@ LLM_CALL_RUNNER=$LLM_CALL/scripts/call.ts SKILL_STYLE_EFFORT=none \
 
 Gate: zero origin-story, incident-lore, tuition-narrative,
 marketing-language, meaning-level prose-wall, or gate-loss findings. Missing
-`DEEPSEEK_API_KEY` means the audit is incomplete, not clean. The reviewer calls
-the `llm-call` atom at `effort=none`, then adjudicates candidates at `max`; the commit hook remains
-deterministic and does not make remote API calls.
+`DEEPSEEK_API_KEY` means the audit is incomplete, not clean. The reviewer calls the `llm-call` atom at maximum reasoning effort, then
+adjudicates candidates; the commit hook remains deterministic and does not make
+remote API calls.
 
 ## 3. Route overlap
 

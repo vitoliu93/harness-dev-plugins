@@ -6,11 +6,14 @@
 - `DEEPSEEK_BASE_URL` — optional; defaults to `https://api.deepseek.com`.
 - `DEEPSEEK_MODEL` — optional; defaults to `deepseek-v4-flash`.
 
-Install the locked OpenAI SDK dependency before the first call:
+Install the OpenAI SDK once, globally, before the first call:
 
 ```bash
-bun install --cwd <llm-call-dir> --frozen-lockfile
+bun add -g openai@7
 ```
+
+The runner imports `openai` from the global Bun install; the skill directory
+carries no `package.json`, `node_modules`, or lockfile.
 
 ## Request
 
@@ -23,8 +26,7 @@ Write one JSON object to stdin:
     {"role": "user", "content": "Classify this input."}
   ],
   "model": "deepseek-v4-flash",
-  "effort": "max",
-  "max_tokens": 8192,
+  "max_tokens": 32768,
   "temperature": 0,
   "response_format": "json_object"
 }
@@ -37,21 +39,15 @@ Required:
 Optional:
 
 - `model` — overrides `DEEPSEEK_MODEL`.
-- `effort` — `none`, `high`, or `max`; defaults to `max`.
-- `max_tokens` — defaults to `8192` for `max`, otherwise `4096`.
+- `max_tokens` — 1 to 65536; defaults to `32768`.
 - `temperature` — omitted unless supplied.
 - `response_format` — `text` or `json_object`; defaults to `text`.
 
-## Effort mapping
+## Reasoning effort
 
-| Input | DeepSeek request | Use |
-|---|---|---|
-| `none` | `thinking.type=disabled` | deterministic extraction or lowest latency |
-| `high` | `thinking.type=enabled`, `reasoning_effort=high` | balanced reasoning |
-| `max` | `thinking.type=enabled`, `reasoning_effort=max` | increased thinking-token budget |
-
-DeepSeek maps lower thinking tiers to `high` and xhigh-style tiers to `max`.
-Expose only the three stable runtime choices above.
+Every request sends `thinking.type=enabled` and `reasoning_effort=max`, and the
+default `max_tokens` keeps the thinking budget large. Callers cannot select a
+lower tier.
 
 ## Response
 
@@ -60,7 +56,7 @@ The runner writes one JSON object to stdout:
 ```json
 {
   "model": "deepseek-v4-flash",
-  "effort": "max",
+  "reasoning_effort": "max",
   "content": "{\"label\":\"pass\"}",
   "finish_reason": "stop",
   "usage": {
@@ -82,3 +78,9 @@ Exit codes:
 
 - `0` — valid completion;
 - `2` — invalid input, missing configuration, API failure, or empty content.
+
+## Tests
+
+```bash
+bun test <llm-call-dir>/scripts/call.test.ts
+```

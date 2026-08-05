@@ -39,18 +39,15 @@ lines; once grounded, the false-positive adjudicator cannot discard it.
 
 - `LLM_CALL_RUNNER` — optional path to `llm-call/scripts/call.ts`; otherwise
   resolve it from `CLAUDE_PLUGIN_ROOT` or the packaged sibling skill.
-- `SKILL_STYLE_EFFORT` — optional; defaults to `max` for one skill or evals and
-  `none` for a workspace first pass.
-- `SKILL_STYLE_ADJUDICATION_EFFORT` — optional; defaults to `max`.
 - `DEEPSEEK_STYLE_MODEL` — optional; defaults to `deepseek-v4-flash`.
 - `SKILL_STYLE_MAX_CHARS` — optional maximum characters per request chunk;
   defaults to `30000`.
 - `SKILL_STYLE_MAX_TOKENS` and `SKILL_STYLE_ADJUDICATION_MAX_TOKENS` — optional;
-  both default to `8192`.
+  both default to `32768`.
 
 The `llm-call` atom owns Bun/OpenAI installation and all `DEEPSEEK_*`
-configuration. This skill sends JSON through stdin. Max increases the
-thinking-token budget for focused judgment; None keeps fleet scans bounded.
+configuration. This skill sends JSON through stdin; every call runs at maximum
+reasoning effort.
 
 ## CLI
 
@@ -64,7 +61,7 @@ LLM_CALL_RUNNER=<llm-call-runner> \
 Review every discovered skill:
 
 ```bash
-LLM_CALL_RUNNER=<llm-call-runner> SKILL_STYLE_EFFORT=none bun scripts/review.ts \
+LLM_CALL_RUNNER=<llm-call-runner> bun scripts/review.ts \
   --workspace-root <skills-root> \
   --output <report.json> \
   --fail-on-issues
@@ -77,7 +74,7 @@ regression:
 
 ```bash
 LLM_CALL_DIR=<llm-call-dir>
-bun install --cwd $LLM_CALL_DIR --frozen-lockfile
+bun add -g openai@7
 LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts \
   bun scripts/review.ts --eval-cases evals/semantic_cases.json
 ```
