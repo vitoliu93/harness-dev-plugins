@@ -76,7 +76,7 @@ OpenAI-compatible API:
 STYLE_REVIEW=$PLUGIN/skills/skill-style-review
 LLM_CALL=$PLUGIN/skills/llm-call
 bun add -g openai@7
-LLM_CALL_RUNNER=$LLM_CALL/scripts/call.ts bun $STYLE_REVIEW/scripts/review.ts \
+LLM_CALL_DIR=$LLM_CALL bun $STYLE_REVIEW/scripts/review.ts \
   --skill-dir <skill-dir> --fail-on-issues
 ```
 

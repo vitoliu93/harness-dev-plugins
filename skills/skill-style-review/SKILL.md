@@ -18,10 +18,9 @@ Run the bundled Bun script directly; do not route through `dispatch-vendors` or 
 ```bash
 PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
 STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
-LLM_CALL_DIR=$PLUGIN/skills/llm-call
+export LLM_CALL_DIR=$PLUGIN/skills/llm-call
 bun add -g openai@7
-LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
-  --skill-dir <skill-dir> --fail-on-issues
+bun "$STYLE_REVIEW_DIR/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues
 ```
 
 Fleet audit:
@@ -29,9 +28,9 @@ Fleet audit:
 ```bash
 PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
 STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
-LLM_CALL_DIR=$PLUGIN/skills/llm-call
+export LLM_CALL_DIR=$PLUGIN/skills/llm-call
 bun add -g openai@7
-LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
+bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
   --workspace-root <skills-root> --output <report.json> --fail-on-issues
 ```
 

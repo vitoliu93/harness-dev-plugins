@@ -37,8 +37,10 @@ lines; once grounded, the false-positive adjudicator cannot discard it.
 
 ## Configuration
 
-- `LLM_CALL_RUNNER` — optional path to `llm-call/scripts/call.ts`; otherwise
-  resolve it from `CLAUDE_PLUGIN_ROOT` or the packaged sibling skill.
+- `LLM_CALL_RUNNER` — path to `llm-call/scripts/call.ts`; otherwise set
+  `LLM_CALL_DIR` (the llm-call skill directory) or `CLAUDE_PLUGIN_ROOT`. The
+  runner is never resolved through a relative sibling path; missing all three
+  fails the run.
 - `DEEPSEEK_STYLE_MODEL` — optional; defaults to `deepseek-v4-flash`.
 - `SKILL_STYLE_MAX_CHARS` — optional maximum characters per request chunk;
   defaults to `30000`.
@@ -54,14 +56,14 @@ reasoning effort.
 Review one skill:
 
 ```bash
-LLM_CALL_RUNNER=<llm-call-runner> \
+LLM_CALL_DIR=<llm-call-dir> \
   bun scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
 ```
 
 Review every discovered skill:
 
 ```bash
-LLM_CALL_RUNNER=<llm-call-runner> bun scripts/review.ts \
+LLM_CALL_DIR=<llm-call-dir> bun scripts/review.ts \
   --workspace-root <skills-root> \
   --output <report.json> \
   --fail-on-issues
@@ -73,10 +75,9 @@ After changing the review or adjudication prompt, run the fixed semantic
 regression:
 
 ```bash
-LLM_CALL_DIR=<llm-call-dir>
+export LLM_CALL_DIR=<llm-call-dir>
 bun add -g openai@7
-LLM_CALL_RUNNER=$LLM_CALL_DIR/scripts/call.ts \
-  bun scripts/review.ts --eval-cases evals/semantic_cases.json
+bun scripts/review.ts --eval-cases evals/semantic_cases.json
 ```
 
 Exit codes:

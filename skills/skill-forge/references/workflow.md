@@ -23,7 +23,7 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 - Apply [style-contract.md](style-contract.md): routing interface, present-tense runtime docs, portable paths, gate-preserving progressive disclosure, fictional public examples
 - Run `python3 $FORGE/skill_style.py --workspace-root $PLUGIN/skills --fail-on-issues`
 - Run `bun add -g openai@7`
-- Run `LLM_CALL_RUNNER=$PLUGIN/skills/llm-call/scripts/call.ts bun $PLUGIN/skills/skill-style-review/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues`
+- Run `LLM_CALL_DIR=$PLUGIN/skills/llm-call bun $PLUGIN/skills/skill-style-review/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues`
 
 ## 3. Trigger-first (model-invoked)
 

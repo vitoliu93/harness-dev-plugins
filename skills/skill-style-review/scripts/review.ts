@@ -420,10 +420,11 @@ type LlmEnvelope = {
 
 function resolveLlmRunner(): string {
   if (process.env.LLM_CALL_RUNNER) return resolve(process.env.LLM_CALL_RUNNER);
+  if (process.env.LLM_CALL_DIR) return resolve(process.env.LLM_CALL_DIR, "scripts/call.ts");
   if (process.env.CLAUDE_PLUGIN_ROOT) {
     return resolve(process.env.CLAUDE_PLUGIN_ROOT, "skills/llm-call/scripts/call.ts");
   }
-  return resolve(import.meta.dir, "../../llm-call/scripts/call.ts");
+  fail("set LLM_CALL_RUNNER, LLM_CALL_DIR, or CLAUDE_PLUGIN_ROOT to locate the llm-call atom");
 }
 
 async function callLlm(
