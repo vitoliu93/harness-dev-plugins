@@ -33,6 +33,7 @@ cursor-agent -p --resume <chatId> "<consolidated fix list>" --force
 
 - Use **`stream-json`**, never `json` (json flushes only at exit; process may hang after work completes).
 - Line 1: `system`/`init` event with `session_id` (= chat id for `--resume`). Capture at launch.
+- No line 1 within seconds = dead launch (network/TLS layer) — read stderr, relaunch. Mid-run drops self-heal (`connection/reconnecting` → `reconnected`); tool failures right after a reconnect resolve on retry.
 - Plan mode deliverable: `createPlanToolCall` event `args.plan`, not `result` field.
 - Final answer (ask/edit): `jq -r 'select(.type=="result").result'`
 - Progress: `tail -3 | jq -c '.type'` — event mix is tool_call-heavy
@@ -44,6 +45,10 @@ composer-2.5: supported. grok/gpt: per Cursor docs (confirm with `--list-models`
 ## Worktree
 
 Avoid `-w` headless — may hang before conversation. Create own `git worktree`, run with cwd inside it.
+
+## Background processes
+
+Shell-tool background jobs (`&`, `nohup`) die with the tool call. Brief the vendor to run long-lived processes (dev servers) in a persistent background shell and verify liveness with an HTTP probe, not the spawn's exit code.
 
 ## Resume and filesystem
 

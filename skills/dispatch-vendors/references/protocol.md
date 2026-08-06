@@ -11,9 +11,15 @@ Zero-context means every required fact is inline. Apply these gates:
 - Write a machine-checkable acceptance command before dispatching.
 - Mark the acceptance script read-only for the vendor.
 - On threshold mismatch, require `NEEDS_CONTEXT`; never allow a gate edit.
+- Verification briefs: require `SKIPPED` + reason for an unrunnable case and
+  `NEEDS_CONTEXT` when blocked; reject a guessed pass.
 - Reject a `DONE` self-report when the vendor changed the gate.
 - Give parallel edits their own worktree.
 - For long or review-class briefs, require an early deliverable skeleton.
+- Before a sensitive dispatch, enumerate the inherited surface: the vendor
+  auto-discovers host agent config (instruction files, plugin skills) and
+  inherits your MCP/credential reach — the brief is not its whole instruction
+  set, and its privilege is yours.
 
 Three things zero-context does NOT mean prose:
 
@@ -54,6 +60,11 @@ Inspect the file only via `wc -l` / `tail -N | jq -c`; never `cat`/`head`/Read
 it whole, and never poll on a timer — the redirect only keeps megabytes out of
 context if you don't pull them back in.
 
+**Launch is the fragile moment.** A probe that passed earlier does not prove
+launch-time health (TLS interception, gateway resets). No `init` line within
+~15s of launch → read the stderr file, relaunch with backoff. Mid-stream drops
+usually self-heal via carrier reconnect; a missing first line never does.
+
 **Index scenarios (`--mode plan`, read-only):** plan mode also blocks writes to
 your scratchpad, so the report never lands. Either drop `--mode plan` and put
 "read-only, change no file in the repo" in the brief, or
@@ -64,6 +75,15 @@ your scratchpad, so the report never lands. Either drop `--mode plan` and put
 Run the acceptance yourself, read the artifact; never accept the vendor's
 self-report. Fix round = resume by session id with one consolidated list. Two
 resumes max, then take it back inline.
+
+Harvest the final report from the deliverable artifact or the whole `result`
+event — a byte-capped stdout slice can silently drop acceptance evidence from
+a complete report. Require acceptance outputs in the deliverable's result
+slots, not stdout only.
+
+Relay every vendor caveat — SKIPPED cases, degraded checks, side-effect
+observations — into your own report, or drop it with a stated reason. A caveat
+absorbed in retelling is evidence lost.
 
 ## 4. Ledger
 
