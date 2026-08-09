@@ -21,6 +21,21 @@ def run(script, payload):
     return p.stdout
 
 
+def run_bun(script, payload, env=None):
+    """Run a bun/TypeScript hook, piping the JSON payload to stdin."""
+    merged = dict(os.environ)
+    if env:
+        merged.update(env)
+    p = subprocess.run(
+        ["bun", "run", str(HERE / script)],
+        input=json.dumps(payload),
+        capture_output=True, text=True, timeout=20,
+        env=merged,
+    )
+    assert p.returncode == 0, f"{script} exited {p.returncode}: {p.stderr}\nstdout: {p.stdout}"
+    return p.stdout
+
+
 def test_plan_anchor():
     with tempfile.TemporaryDirectory() as d:
         plan = Path(d) / "docs" / "advanced-plans" / "2026-07-25-demo"
@@ -102,9 +117,83 @@ def test_compact_audit():
     print("compact-audit    ok")
 
 
+def test_prompt_forge_disabled():
+    """PROMPT_FORGE not set → silent no-op."""
+    assert run_bun("prompt-forge.ts", {"prompt": "whatever"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "whatever"},
+                   env={"PROMPT_FORGE": "0"}) == ""
+    print("prompt-forge-disabled ok")
+
+
+def test_prompt_forge_gate1():
+    """Gate 1: short inputs and confirmation words pass through silently."""
+    # Short (≤15 codepoints)
+    assert run_bun("prompt-forge.ts", {"prompt": "ok"},
+                   env={"PROMPT_FORGE": "1"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "fix the bug"},
+                   env={"PROMPT_FORGE": "1"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "  好  "},
+                   env={"PROMPT_FORGE": "1"}) == ""
+    # Confirmation words (even longer ones)
+    assert run_bun("prompt-forge.ts", {"prompt": "go ahead"},
+                   env={"PROMPT_FORGE": "1"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "got it"},
+                   env={"PROMPT_FORGE": "1"}) == ""
+    # Long non-confirmation with mock pass → silent
+    assert run_bun("prompt-forge.ts",
+                   {"prompt": "this is a long and somewhat vague request to fix things"},
+                   env={"PROMPT_FORGE": "1",
+                        "PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
+    print("prompt-forge-gate1 ok")
+
+
+def test_prompt_forge_gate2():
+    """Gate 2: LLM classification with mock responses."""
+    long_prompt = "make the authentication system more robust and fix all the issues"
+
+    # Mock: verdict pass → silent
+    assert run_bun("prompt-forge.ts", {"prompt": long_prompt},
+                   env={"PROMPT_FORGE": "1",
+                        "PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
+
+    # Mock: verdict rewrite → injects additionalContext
+    out = run_bun("prompt-forge.ts", {"prompt": long_prompt},
+                  env={"PROMPT_FORGE": "1",
+                       "PROMPT_FORGE_TEST_MOCK":
+                       '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}'})
+    result = json.loads(out)
+    assert result["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+    ctx = result["hookSpecificOutput"]["additionalContext"]
+    assert "prompt-forge" in ctx
+    assert "Enriched Prompt" in ctx
+    assert "src/login.ts" in ctx
+
+    # Mock: invalid JSON → fail-open silently
+    assert run_bun("prompt-forge.ts", {"prompt": long_prompt},
+                   env={"PROMPT_FORGE": "1",
+                        "PROMPT_FORGE_TEST_MOCK": "not json"}) == ""
+
+    # Empty prompt → silent
+    assert run_bun("prompt-forge.ts", {"prompt": ""},
+                   env={"PROMPT_FORGE": "1"}) == ""
+
+    # Invalid stdin → silent
+    p = subprocess.run(
+        ["bun", "run", str(HERE / "prompt-forge.ts")],
+        input="not valid json", capture_output=True, text=True, timeout=20,
+        env=dict(os.environ, PROMPT_FORGE="1"),
+    )
+    assert p.returncode == 0 and p.stdout == ""
+
+    print("prompt-forge-gate2 ok")
+
+
 if __name__ == "__main__":
     test_plan_anchor()
     test_standby_watchdog()
     test_security_relay()
     test_compact_audit()
+    test_prompt_forge_disabled()
+    test_prompt_forge_gate1()
+    test_prompt_forge_gate2()
     print("all hook self-checks passed")
