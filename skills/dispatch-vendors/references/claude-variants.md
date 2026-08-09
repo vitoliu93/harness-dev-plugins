@@ -41,7 +41,7 @@ User-level hooks load in these variants (unlike cursor-agent).
 Text-only path: load `media-understanding`, set `MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}`, run:
 
 ```bash
-"$MEDIA_SKILL_DIR/scripts/gemini_media.py" <file> [--audio-only] [--question "Q"]
+"$MEDIA_SKILL_DIR/scripts/gemini_media.ts" <file> [--audio-only] [--question "Q"]
 ```
 
 Requires `GEMINI_API_KEY` under `zsh -ic`. Script handles PNG/JPG too.

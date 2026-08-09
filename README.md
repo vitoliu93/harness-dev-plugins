@@ -71,7 +71,7 @@ Nested subagent spawning requires Claude Code ≥ 2.1.172.
 
 `hooks/hooks.json` registers:
 - PreToolUse: `skill-guard.sh`, `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
-- Session/Stop/PostToolUse/PostCompact: `learn-capture.py`, `session-replay.py`, `plan-anchor.py`, `standby-watchdog.py`, `security-warning-relay.py`, `compact-audit.py`, and ccobs `obs-enqueue.ts`
+- Session/Stop/PostToolUse/PostCompact: `learn-capture.ts`, `session-replay.ts`, `plan-anchor.ts`, `standby-watchdog.ts`, `security-warning-relay.ts`, `compact-audit.ts`, and ccobs `obs-enqueue.ts`
 
 Restart after hook edits.
 

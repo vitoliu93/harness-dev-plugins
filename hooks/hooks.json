@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/compact-audit.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/compact-audit.ts",
             "timeout": 10
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security-warning-relay.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security-warning-relay.ts",
             "timeout": 10
           }
         ]
@@ -61,12 +61,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/learn-capture.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/learn-capture.ts",
             "timeout": 20
           },
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/standby-watchdog.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/standby-watchdog.ts",
             "timeout": 10
           },
           {
@@ -82,12 +82,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-replay.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-replay.ts",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/plan-anchor.py",
+            "command": "bun ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/plan-anchor.ts",
             "timeout": 10
           }
         ]

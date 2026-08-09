@@ -54,7 +54,7 @@ Replace internal ticket ids, session ids, personal names, account labels, and mo
 Run the deterministic linter first:
 
 ```bash
-python3 "$FORGE/skill_style.py" --workspace-root "$PLUGIN/skills" --fail-on-issues
+bun "$FORGE/skill_style.ts" --workspace-root "$PLUGIN/skills" --fail-on-issues
 ```
 
 The linter checks description shape, invocation wording, internal ticket ids,

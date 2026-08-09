@@ -19,7 +19,7 @@ FORGE=${CLAUDE_SKILL_DIR}/scripts
 ## Hard gates
 
 - Near-neighbor indistinguishable → merge, don't create
-- Deterministic runtime style → zero `skill_style.py` findings
+- Deterministic runtime style → zero `skill_style.ts` findings
 - Semantic runtime style → zero `skill-style-review` findings
 - model-invoked → evals P=R=1.0 before ship
 - SKILL.md body ≤700 tokens

@@ -2,7 +2,7 @@
 
 ## Boundary
 
-Run `skill-forge/scripts/skill_style.py` before this review. It owns exact checks:
+Run `skill-forge/scripts/skill_style.ts` before this review. It owns exact checks:
 description shape, portable paths, fixed runtime IDs, orphan surfaces, and
 paragraph length. This skill owns meaning-dependent judgments.
 

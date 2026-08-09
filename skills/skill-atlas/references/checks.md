@@ -12,7 +12,7 @@ DB=${CCOBS_DIR:-$HOME/.claude/observability}/obs.db
 ## 1. Deterministic Skill & Doc Style
 
 ```bash
-python3 $FORGE/skill_style.py --workspace-root $PLUGIN/skills --fail-on-issues
+bun $FORGE/skill_style.ts --workspace-root $PLUGIN/skills --fail-on-issues
 ```
 
 Gate: zero findings across every skill; atlas scope policy cannot exempt style violations. Repair with the
@@ -43,7 +43,7 @@ remote API calls.
 ## 3. Route overlap
 
 ```bash
-python3 $FORGE/build_skill_atlas.py --workspace-root $PLUGIN/skills --fail-on-style
+bun $FORGE/build_skill_atlas.ts --workspace-root $PLUGIN/skills --fail-on-style
 ```
 
 Read `$ATLAS/atlas/route_overlap_matrix.csv`: pair ≥0.42 → tighten or merge.
@@ -63,7 +63,7 @@ done | sort -k2
 ```bash
 for d in $PLUGIN/skills/*/evals; do
   s=$(basename $(dirname $d))
-  python3 $FORGE/trigger_eval.py --description-file $PLUGIN/skills/$s/SKILL.md \
+  bun $FORGE/trigger_eval.ts --description-file $PLUGIN/skills/$s/SKILL.md \
     --cases $d/trigger_cases.json --semantic-config $d/semantic_config.json
 done
 ```
@@ -73,7 +73,7 @@ Gate: P=R=1.0. Description edit without re-run = lint failure.
 ## 6. Context budget
 
 ```bash
-python3 $FORGE/context_sizer.py $PLUGIN/skills/<name> --json
+bun $FORGE/context_sizer.ts $PLUGIN/skills/<name> --json
 ```
 
 SKILL.md body >700 tokens → move detail to `references/`.
@@ -99,7 +99,7 @@ Stale skill names in docs = lint failure.
 Skip if no obs.db. Fold aliases via `aliases.json`:
 
 ```bash
-python3 $PLUGIN/skills/skill-forge/scripts/skill_usage.py --db $DB --aliases $PLUGIN/skills/skill-atlas/aliases.json --days 30
+bun $PLUGIN/skills/skill-forge/scripts/skill_usage.ts --db $DB --aliases $PLUGIN/skills/skill-atlas/aliases.json --days 30
 ```
 
 Zero-use after description change ≠ death. Triage: scene absent / scene present but no trigger / inlined by ship.

@@ -52,6 +52,6 @@ if [ -f "$atlas_out" ] && [ -f "$atlas_report" ] \
   fi
 fi
 
-jq -n --arg r "本次 commit 改了 skill surface，但 skill-atlas 事件档过期或仍有 Skill & Doc Style 违规。先运行: python3 $root/skills/skill-forge/scripts/build_skill_atlas.py --workspace-root $root/skills --fail-on-style ;若失败，查看 $atlas_root/atlas/style_issues.json，修复 description 两行契约、叙事/营销、超长墙文或不可移植路径后重跑；再按 /skill-atlas reconcile route-overlap/trigger-eval/budget/call-site。注意本次 deny 已终止整条命令链——commit/push 要拆开单独重跑。" \
+jq -n --arg r "本次 commit 改了 skill surface，但 skill-atlas 事件档过期或仍有 Skill & Doc Style 违规。先运行: bun $root/skills/skill-forge/scripts/build_skill_atlas.ts --workspace-root $root/skills --fail-on-style ;若失败，查看 $atlas_root/atlas/style_issues.json，修复 description 两行契约、叙事/营销、超长墙文或不可移植路径后重跑；再按 /skill-atlas reconcile route-overlap/trigger-eval/budget/call-site。注意本次 deny 已终止整条命令链——commit/push 要拆开单独重跑。" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
 exit 0

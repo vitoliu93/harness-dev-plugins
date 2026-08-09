@@ -36,7 +36,7 @@ bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
 
 ## Hard gates
 
-- Run deterministic `skill_style.py` first; this skill judges semantics, not path or frontmatter shape.
+- Run deterministic `skill_style.ts` first; this skill judges semantics, not path or frontmatter shape.
 - Call the `llm-call` atom; keep OpenAI SDK and provider handling out of this skill.
 - Keep this skill directory dependency-free: no `package.json`, `node_modules`, or lockfile.
 - Require `DEEPSEEK_API_KEY`; never fall back to vendor orchestration.

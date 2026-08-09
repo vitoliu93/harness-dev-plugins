@@ -38,4 +38,4 @@ Advice is hypothesis until you Read cited code paths. Vendor does not commit —
 
 ## Media fallback
 
-Image-bearing briefs: vision-capable model or load `media-understanding`, set `MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}` from that skill, run `${MEDIA_SKILL_DIR}/scripts/gemini_media.py`.
+Image-bearing briefs: vision-capable model or load `media-understanding`, set `MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}` from that skill, run `${MEDIA_SKILL_DIR}/scripts/gemini_media.ts`.
