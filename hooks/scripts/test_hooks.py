@@ -118,8 +118,7 @@ def test_compact_audit():
 
 
 def test_prompt_forge_disabled():
-    """PROMPT_FORGE not set → silent no-op."""
-    assert run_bun("prompt-forge.ts", {"prompt": "whatever"}) == ""
+    """PROMPT_FORGE=0 disables the hook."""
     assert run_bun("prompt-forge.ts", {"prompt": "whatever"},
                    env={"PROMPT_FORGE": "0"}) == ""
     print("prompt-forge-disabled ok")
@@ -127,23 +126,16 @@ def test_prompt_forge_disabled():
 
 def test_prompt_forge_gate1():
     """Gate 1: short inputs and confirmation words pass through silently."""
-    # Short (≤15 codepoints)
-    assert run_bun("prompt-forge.ts", {"prompt": "ok"},
-                   env={"PROMPT_FORGE": "1"}) == ""
-    assert run_bun("prompt-forge.ts", {"prompt": "fix the bug"},
-                   env={"PROMPT_FORGE": "1"}) == ""
-    assert run_bun("prompt-forge.ts", {"prompt": "  好  "},
-                   env={"PROMPT_FORGE": "1"}) == ""
-    # Confirmation words (even longer ones)
-    assert run_bun("prompt-forge.ts", {"prompt": "go ahead"},
-                   env={"PROMPT_FORGE": "1"}) == ""
-    assert run_bun("prompt-forge.ts", {"prompt": "got it"},
-                   env={"PROMPT_FORGE": "1"}) == ""
+    # Enabled by default — no env flag needed
+    assert run_bun("prompt-forge.ts", {"prompt": "ok"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "fix the bug"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "  好  "}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "go ahead"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": "got it"}) == ""
     # Long non-confirmation with mock pass → silent
     assert run_bun("prompt-forge.ts",
                    {"prompt": "this is a long and somewhat vague request to fix things"},
-                   env={"PROMPT_FORGE": "1",
-                        "PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
+                   env={"PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
     print("prompt-forge-gate1 ok")
 
 
@@ -153,13 +145,11 @@ def test_prompt_forge_gate2():
 
     # Mock: verdict pass → silent
     assert run_bun("prompt-forge.ts", {"prompt": long_prompt},
-                   env={"PROMPT_FORGE": "1",
-                        "PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
+                   env={"PROMPT_FORGE_TEST_MOCK": '{"verdict":"pass"}'}) == ""
 
     # Mock: verdict rewrite → injects additionalContext
     out = run_bun("prompt-forge.ts", {"prompt": long_prompt},
-                  env={"PROMPT_FORGE": "1",
-                       "PROMPT_FORGE_TEST_MOCK":
+                  env={"PROMPT_FORGE_TEST_MOCK":
                        '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}'})
     result = json.loads(out)
     assert result["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
@@ -170,18 +160,15 @@ def test_prompt_forge_gate2():
 
     # Mock: invalid JSON → fail-open silently
     assert run_bun("prompt-forge.ts", {"prompt": long_prompt},
-                   env={"PROMPT_FORGE": "1",
-                        "PROMPT_FORGE_TEST_MOCK": "not json"}) == ""
+                   env={"PROMPT_FORGE_TEST_MOCK": "not json"}) == ""
 
     # Empty prompt → silent
-    assert run_bun("prompt-forge.ts", {"prompt": ""},
-                   env={"PROMPT_FORGE": "1"}) == ""
+    assert run_bun("prompt-forge.ts", {"prompt": ""}) == ""
 
     # Invalid stdin → silent
     p = subprocess.run(
         ["bun", "run", str(HERE / "prompt-forge.ts")],
         input="not valid json", capture_output=True, text=True, timeout=20,
-        env=dict(os.environ, PROMPT_FORGE="1"),
     )
     assert p.returncode == 0 and p.stdout == ""
 

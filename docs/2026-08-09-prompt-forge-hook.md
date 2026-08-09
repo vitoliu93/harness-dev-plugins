@@ -94,9 +94,9 @@ rewrite 时注入的 additionalContext 格式：
 
 ### 灰度：PROMPT_FORGE env flag
 
-- `PROMPT_FORGE=1` → hook 激活
-- 未设置或设置其他值 → hook 静默退出（zero overhead beyond the `PROMPT_FORGE` check）
-- 默认关闭——用户需要显式 opt-in
+- 默认启用——无需设置任何环境变量
+- `PROMPT_FORGE=0` → hook 静默退出（zero overhead beyond the env check）
+- 设置为其他值 → 无效果，hook 仍启用
 
 ## 判定标准：正反例
 

@@ -8,7 +8,7 @@
  *                         On rewrite, inject an authoritative enriched prompt
  *                         via additionalContext.
  *
- * Opt-in: PROMPT_FORGE=1 must be set, otherwise this hook is a silent no-op.
+ * Enabled by default. Set PROMPT_FORGE=0 to disable.
  * Fail-open: any exception, timeout, or llm-call error → pass through.
  */
 
@@ -243,7 +243,7 @@ function formatAdditionalContext(enriched: string): string {
 // ---------------------------------------------------------------------------
 
 function run(): void {
-  if (process.env.PROMPT_FORGE !== "1") return;
+  if (process.env.PROMPT_FORGE === "0") return;
 
   const stdin = readFileSync(0, "utf-8").trim();
   if (!stdin) return;
