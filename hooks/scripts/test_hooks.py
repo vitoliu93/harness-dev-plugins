@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Self-check for the three postmortem hooks. Run: python3 test_hooks.py
+"""Self-check for the hooks. Run: python3 test_hooks.py
 
 Each case pipes a fixture payload into the hook and asserts on stdout.
 No framework, no fixtures dir — the smallest thing that fails if the logic breaks.
@@ -175,6 +175,47 @@ def test_prompt_forge_gate2():
     print("prompt-forge-gate2 ok")
 
 
+def test_prompt_forge_logging():
+    """Progress logs go to stderr only; stdout stays pure hook JSON."""
+
+    def run_case(prompt, mock=None):
+        env = dict(os.environ, PROMPT_FORGE_TEST_MOCK=mock) if mock else dict(os.environ)
+        p = subprocess.run(
+            ["bun", "run", str(HERE / "prompt-forge.ts")],
+            input=json.dumps({"prompt": prompt}),
+            capture_output=True, text=True, timeout=20, env=env,
+        )
+        assert p.returncode == 0, p.stderr
+        return p
+
+    # Gate 1 reasons are distinguishable in the log
+    assert "confirmation word" in run_case("ok").stderr
+    assert "short input" in run_case("fix the bug").stderr
+
+    long_prompt = "make the authentication system more robust and fix all the issues"
+    ok = run_case(long_prompt, '{"verdict":"pass"}')
+    assert "gate2: classifying" in ok.stderr and "verdict=pass" in ok.stderr, ok.stderr
+    assert ok.stdout == "", "stdout must stay empty on pass"
+
+    rw = run_case(long_prompt, '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}')
+    assert "verdict=rewrite" in rw.stderr and "injecting additionalContext" in rw.stderr, rw.stderr
+    assert json.loads(rw.stdout)["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+
+    bad = run_case(long_prompt, "not json")
+    assert "llm-call failed" in bad.stderr and "fail-open" in bad.stderr, bad.stderr
+    assert bad.stdout == "", "fail-open must not emit stdout"
+
+    disabled = subprocess.run(
+        ["bun", "run", str(HERE / "prompt-forge.ts")],
+        input=json.dumps({"prompt": long_prompt}),
+        capture_output=True, text=True, timeout=20,
+        env=dict(os.environ, PROMPT_FORGE="0"),
+    )
+    assert "disabled" in disabled.stderr and disabled.stdout == ""
+
+    print("prompt-forge-logging ok")
+
+
 if __name__ == "__main__":
     test_plan_anchor()
     test_standby_watchdog()
@@ -183,4 +224,5 @@ if __name__ == "__main__":
     test_prompt_forge_disabled()
     test_prompt_forge_gate1()
     test_prompt_forge_gate2()
+    test_prompt_forge_logging()
     print("all hook self-checks passed")

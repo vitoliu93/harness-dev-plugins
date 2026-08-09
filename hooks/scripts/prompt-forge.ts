@@ -10,6 +10,9 @@
  *
  * Enabled by default. Set PROMPT_FORGE=0 to disable.
  * Fail-open: any exception, timeout, or llm-call error → pass through.
+ *
+ * Observability: progress/result logs go to stderr (visible in the debug
+ * log via `claude --debug` or `/log`). Stdout must stay pure hook JSON.
  */
 
 import { join, dirname } from "node:path";
@@ -39,7 +42,10 @@ const CONFIRMATION_WORDS = new Set([
 
 const LLM_CALL_TIMEOUT_MS = 60_000; // hook-level safety net
 const TRANSCRIPT_TAIL_LINES = 200;
-const GIT_TIMEOUT_MS = 5_000;
+// Worst-case budget vs the 65s hooks.json timeout:
+// 4×git(1s each) + bun boot(~0.5s) + 60s LLM ≈ 64.5s < 65s. Signals are
+// best-effort — a slow repo just loses the signal, never blocks the user.
+const GIT_TIMEOUT_MS = 1_000;
 
 // ---------------------------------------------------------------------------
 // Resolve paths relative to this script
@@ -50,14 +56,28 @@ const PLUGIN_ROOT = join(SCRIPT_DIR, "..", "..");
 const LLM_CALL_SCRIPT = join(PLUGIN_ROOT, "skills", "llm-call", "scripts", "call.ts");
 
 // ---------------------------------------------------------------------------
+// Logging (stderr only — stdout must stay pure hook JSON)
+// ---------------------------------------------------------------------------
+
+function log(msg: string): void {
+  process.stderr.write(`[prompt-forge] ${msg}\n`);
+}
+
+// ---------------------------------------------------------------------------
 // Gate 1
 // ---------------------------------------------------------------------------
 
-function gate1Pass(prompt: string): boolean {
+function gate1Pass(prompt: string): { pass: boolean; reason?: string } {
   const text = prompt.trim();
-  if ([...text].length <= GATE1_MAX_LENGTH) return true;
-  if (CONFIRMATION_WORDS.has(text.toLowerCase())) return true;
-  return false;
+  // Confirmation words first — the list is meant to pass regardless of length.
+  if (CONFIRMATION_WORDS.has(text.toLowerCase())) {
+    return { pass: true, reason: "confirmation word" };
+  }
+  const len = [...text].length;
+  if (len <= GATE1_MAX_LENGTH) {
+    return { pass: true, reason: `short input (${len} ≤ ${GATE1_MAX_LENGTH})` };
+  }
+  return { pass: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -205,6 +225,7 @@ function callLLM(payload: Record<string, unknown>): Record<string, unknown> | nu
   // Test hook: skip real LLM call when mock response is provided
   const mock = process.env.PROMPT_FORGE_TEST_MOCK;
   if (mock) {
+    log("PROMPT_FORGE_TEST_MOCK set — using mock response");
     try { return JSON.parse(mock) as Record<string, unknown>; } catch { return null; }
   }
 
@@ -243,7 +264,10 @@ function formatAdditionalContext(enriched: string): string {
 // ---------------------------------------------------------------------------
 
 function run(): void {
-  if (process.env.PROMPT_FORGE === "0") return;
+  if (process.env.PROMPT_FORGE === "0") {
+    log("disabled (PROMPT_FORGE=0)");
+    return;
+  }
 
   const stdin = readFileSync(0, "utf-8").trim();
   if (!stdin) return;
@@ -255,7 +279,11 @@ function run(): void {
   if (!prompt) return;
 
   // Gate 1: zero-cost pass-through
-  if (gate1Pass(prompt)) return;
+  const g1 = gate1Pass(prompt);
+  if (g1.pass) {
+    log(`gate1 pass: ${g1.reason}`);
+    return;
+  }
 
   // Gate 2: LLM classification
   const cwd = String(payload.cwd || ".");
@@ -263,14 +291,29 @@ function run(): void {
     ? String(payload.transcript_path)
     : undefined;
 
+  const shown = [...prompt].slice(0, 60).join("");
+  log(`gate2: classifying ${JSON.stringify(shown)} (${[...prompt].length} chars) via llm-call`);
+
   const llmPayload = buildLLMPayload(prompt, cwd, transcriptPath);
+  const t0 = Date.now();
   const result = callLLM(llmPayload);
+  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
 
-  if (!result) return;
-  if (result.verdict !== "rewrite") return;
+  if (!result) {
+    log(`gate2 llm-call failed in ${elapsed}s → fail-open, prompt unchanged`);
+    return;
+  }
+  if (result.verdict !== "rewrite") {
+    log(`gate2 verdict=pass in ${elapsed}s → prompt unchanged`);
+    return;
+  }
   const enriched = String(result.enriched || "").trim();
-  if (!enriched) return;
+  if (!enriched) {
+    log("gate2 verdict=rewrite but enriched empty → fail-open, prompt unchanged");
+    return;
+  }
 
+  log(`gate2 verdict=rewrite in ${elapsed}s (enriched=${[...enriched].length} chars) → injecting additionalContext`);
   console.log(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
@@ -279,5 +322,7 @@ function run(): void {
   }));
 }
 
-try { run(); } catch { /* fail-open */ }
+try { run(); } catch (e) {
+  log(`fatal: ${e instanceof Error ? e.message : String(e)} → fail-open`);
+}
 process.exit(0);

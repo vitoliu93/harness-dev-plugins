@@ -80,7 +80,7 @@ rewrite 时注入的 additionalContext 格式：
 |---|---|---|
 | `prompt` | 需要判定的用户输入 | 全部 |
 | `transcript_path` | 会话历史，推断"上次讨论的方案"、"那个文件" | 最后 200 行（约 5-10 轮） |
-| `cwd` | 仓库根目录，读取 git 信号 | `git branch --show-current`, `git log --oneline -3`, `git diff --name-only HEAD~1` |
+| `cwd` | 仓库根目录，读取 git 信号 | `git branch --show-current`, `git log --oneline -5`, `git diff --name-only HEAD~1`, `git status --short` |
 | `session_id` | 日志标识 | — |
 
 **不做的**：不读文件内容。原因：(1) 文件内容可能很大，注入 prompt 会撑爆 LLM 上下文；(2) 文件路径本身就足够具体——"src/auth/login.ts" 比 "那个 auth 文件" 好得多；(3) agent 会在收到 rewrite 后自己读文件。
@@ -88,9 +88,29 @@ rewrite 时注入的 additionalContext 格式：
 ### 超时与 fail-open
 
 - llm-call 内部超时：300s（call.ts 的 SDK timeout）
-- Hook 层兜底超时：60s（`subprocess.run(timeout=60)`）
-- 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变
-- Hook 自身 `sys.exit(0)` 永远是最后一行——任何异常都被吞掉
+- Hook 层兜底超时：60s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）
+- git 信号每次 1s（`GIT_TIMEOUT_MS`）——信号是 best-effort，慢仓库丢信号不阻塞用户
+- hooks.json 注册 timeout：65s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 60s(LLM) ≈ 64.5s < 65s ✅
+- 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变（stdout 无输出）
+- Hook 自身 `process.exit(0)` 永远是最后一行——任何异常都被吞掉（stderr 留一行日志）
+
+### 可观测性：进度日志
+
+**界面实时信号**：hooks.json 为 UserPromptSubmit 注册了 `statusMessage`——hook 运行时终端显示 spinner「prompt-forge: 分析输入是否需要增强…」。这是界面唯一实时可见的信号（官方文档：`statusMessage` 是配置项，只能静态设置，hook 无法动态更新）。
+
+**详细日志走 stderr**（仅 debug log 可见）：进度与结果日志全部输出到 stderr——`claude --debug` 或 `/log` 可查。官方文档：exit 0 的 hook stderr 只进 debug log，不进 transcript，Claude 也看不到。stdout 必须保持纯 hook JSON，任何额外输出都会破坏解析——日志走 stderr 是硬约束。
+
+| 节点 | stderr 日志 |
+|---|---|
+| 禁用 | `[prompt-forge] disabled (PROMPT_FORGE=0)` |
+| Gate 1 放行 | `[prompt-forge] gate1 pass: short input (11 ≤ 15)` / `confirmation word` |
+| Gate 2 开始 | `[prompt-forge] gate2: classifying "fix the bug" (11 chars) via llm-call` |
+| verdict=pass | `[prompt-forge] gate2 verdict=pass in 3.2s → prompt unchanged` |
+| verdict=rewrite | `[prompt-forge] gate2 verdict=rewrite in 4.1s (enriched=312 chars) → injecting additionalContext` |
+| LLM 失败/超时 | `[prompt-forge] gate2 llm-call failed in 61.0s → fail-open, prompt unchanged` |
+| 任何异常 | `[prompt-forge] fatal: <msg> → fail-open` |
+
+**为什么不用 additionalContext 注入进度**：注入文本会出现在对话上下文中且可能被 agent 复述，污染上下文；且 pass 路径没有注入点。进度是给人的调试信息，不是给模型的指令。
 
 ### 灰度：PROMPT_FORGE env flag
 
