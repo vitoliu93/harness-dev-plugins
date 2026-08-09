@@ -41,10 +41,11 @@ const CONFIRMATION_WORDS = new Set([
 ]);
 
 const LLM_CALL_TIMEOUT_MS = 60_000; // hook-level safety net
-const TRANSCRIPT_TAIL_LINES = 200;
 // Worst-case budget vs the 65s hooks.json timeout:
 // 4×git(1s each) + bun boot(~0.5s) + 60s LLM ≈ 64.5s < 65s. Signals are
 // best-effort — a slow repo just loses the signal, never blocks the user.
+// Full transcript is sent; if it overflows the LLM context window the API
+// returns an error → fail-open.
 const GIT_TIMEOUT_MS = 1_000;
 
 // ---------------------------------------------------------------------------
@@ -110,11 +111,10 @@ function gitSignals(cwd: string): Record<string, string> {
 // Transcript
 // ---------------------------------------------------------------------------
 
-function transcriptTail(transcriptPath: string | undefined): string {
+function transcriptContent(transcriptPath: string | undefined): string {
   if (!transcriptPath || !existsSync(transcriptPath)) return "";
   try {
-    const lines = readFileSync(transcriptPath, "utf-8").split("\n");
-    return lines.slice(-TRANSCRIPT_TAIL_LINES).join("\n");
+    return readFileSync(transcriptPath, "utf-8");
   } catch {
     return "";
   }
@@ -130,7 +130,7 @@ function buildLLMPayload(
   transcriptPath: string | undefined,
 ): Record<string, unknown> {
   const signals = gitSignals(cwd);
-  const history = transcriptTail(transcriptPath);
+  const history = transcriptContent(transcriptPath);
 
   let contextBlock = "";
   if (Object.keys(signals).length > 0) {
@@ -140,7 +140,7 @@ function buildLLMPayload(
     }
   }
   if (history) {
-    contextBlock += `\n## Recent session transcript (last ${TRANSCRIPT_TAIL_LINES} lines)\n`;
+    contextBlock += `\n## Session transcript\n`;
     contextBlock += `\`\`\`\n${history}\n\`\`\`\n`;
   }
 
