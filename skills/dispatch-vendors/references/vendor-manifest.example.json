@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "updated": "2026-08-09",
+  "default_pool": "cursor",
+  "quota_pools": {
+    "cursor": "Cursor Ultra subscription",
+    "kimi": "Kimi Code subscription",
+    "deepseek": "DeepSeek quota via dscode",
+    "volcengine": "Volcengine coding plan"
+  },
+  "cells": [
+    {
+      "id": "cursor-agent",
+      "cli": "cursor-agent",
+      "enabled": true,
+      "quota_pool": "cursor",
+      "carrier_sheet": "cursor-agent.md",
+      "capabilities": ["index", "vision", "resume", "unattended"],
+      "launch": "cursor-agent -p '<brief>' --output-format stream-json --model <slot> --trust [--mode plan] [--force]",
+      "notes": "model names rotate — re-run --list-models before dispatch; cursor subagent uses the fast_light slot",
+      "slots": {
+        "hard":       { "model": "gpt-5.6-sol-high", "family": "openai", "status": "unknown",  "note": "confirm before relying" },
+        "default_q":  { "model": "grok-4.5-high",    "family": "xai",    "status": "supported" },
+        "fast_light": { "model": "composer-2.5",     "family": "cursor", "status": "supported", "note": "vision ok" }
+      }
+    },
+    {
+      "id": "kimi-code",
+      "cli": "kimi",
+      "enabled": true,
+      "quota_pool": "kimi",
+      "carrier_sheet": "kimi.md",
+      "capabilities": ["vision", "long_context", "resume", "unattended"],
+      "launch": "kimi -p '<brief>' --output-format stream-json [--plan]",
+      "notes": "stdout block-buffered until exit; session id from session.resume_hint",
+      "slots": {
+        "long_context": { "model": "k3", "family": "moonshot", "status": "supported", "note": "1M ctx; small quota" }
+      }
+    },
+    {
+      "id": "dscode",
+      "cli": "dscode",
+      "enabled": true,
+      "quota_pool": "deepseek",
+      "carrier_sheet": "claude-variants.md",
+      "capabilities": ["unattended"],
+      "launch": "zsh -ic \"dscode -p '<brief>' --model deepseek-v4-flash --output-format stream-json --verbose\"",
+      "notes": "rc function — needs zsh -ic; text-only",
+      "slots": {
+        "bulk": { "model": "deepseek-v4-flash", "family": "deepseek", "status": "supported", "note": "text-only" },
+        "hard": { "model": "deepseek-v4-pro",   "family": "deepseek", "status": "unknown",  "note": "1M ctx" }
+      }
+    },
+    {
+      "id": "arkcode",
+      "cli": "arkcode",
+      "enabled": true,
+      "quota_pool": "volcengine",
+      "carrier_sheet": "claude-variants.md",
+      "capabilities": ["long_context", "unattended"],
+      "launch": "zsh -ic \"arkcode -p '<brief>' --model glm-5.2 --output-format stream-json --verbose\"",
+      "notes": "never send images — API 400 fatal",
+      "slots": {
+        "long_context": { "model": "glm-5.2", "family": "zhipu", "status": "supported", "note": "1M ctx; image fatal" }
+      }
+    },
+    {
+      "id": "kicode",
+      "cli": "kicode",
+      "enabled": true,
+      "quota_pool": "kimi",
+      "carrier_sheet": "claude-variants.md",
+      "capabilities": ["vision", "long_context", "unattended"],
+      "launch": "zsh -ic \"kicode -p '<brief>' --model k3 --output-format stream-json --verbose\"",
+      "notes": "1M ctx; vision; small quota",
+      "slots": {
+        "long_context": { "model": "k3", "family": "moonshot", "status": "supported" }
+      }
+    },
+    {
+      "id": "opencode",
+      "cli": "opencode",
+      "enabled": false,
+      "quota_pool": "volcengine",
+      "carrier_sheet": "opencode.md",
+      "capabilities": [],
+      "launch": "source ~/.zshenv && opencode run '<brief>' -m volcengine-plan/<model> --format json --auto",
+      "notes": "inactive cell — re-run the onboarding ladder before re-enabling; --auto required or 0-token no-op",
+      "slots": {
+        "bulk": { "model": "glm-5.2", "family": "zhipu", "status": "unsupported", "note": "4096-token output cap" }
+      }
+    }
+  ]
+}

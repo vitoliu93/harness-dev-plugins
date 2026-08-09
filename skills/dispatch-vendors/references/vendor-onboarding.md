@@ -52,20 +52,14 @@ Long output task: json exit-flush vs stream flush; per-turn cap if any.
 - Add a scenarios row and start the ledger habit.
 - Run one month of real use before treating the pair as stable.
 
-## Capability matrix (current fleet)
+## Capability matrix — record in the manifest, not in this doc
 
-Status: **supported** · **unsupported** · **unknown**. Vision: **yes** · **no** · **fallback-only** · **fatal-if-direct**.
-
-| CLI × model | write path | vision | output | role / limits |
-|---|---|---|---|---|
-| kicode × k3[1m] | supported | yes | stream-json per event | D+Q; 1M ctx; permission via settings auto |
-| dscode × deepseek-v4-flash | supported | fallback-only | json exit-flush; stream-json available | bulk codegen/tests; text-only |
-| arkcode × glm-5.2[1m] | supported | fatal-if-direct | same as dscode | backup when dscode limited; no images in brief |
-| cursor × composer-2.5 | supported | yes | use stream-json/text, not json | fast/light + vision |
-| cursor × grok-4.5-high | supported | yes | stream-json; plan deliverable in tool event | hard Q / red-team tier |
-| cursor × gpt-5.6-sol-high | unknown | yes (docs) | same as cursor | hard tier; confirm before relying |
-| kimi-code × k3[1m] | supported | yes | stream-json; stdout block-buffered until exit | primary k3 carrier |
-| grok CLI × grok-4.5 | unknown | unknown | streaming-json | spare carrier; complete ladder before dispatch |
+Verdicts per CLI×model are machine-local. Record the fleet in the vendor
+manifest (`status` + `note` per slot; schema:
+[vendor-manifest.schema.md](vendor-manifest.schema.md)). The old matrix is
+retired — it duplicated machine state into the skill and went stale on every
+other machine. Status: **supported** · **unsupported** · **unknown**. Vision:
+**yes** · **no** · **fallback-only** · **fatal-if-direct**.
 
 **Image fallback (media-understanding)**: text-only carriers — brief must run script first:
 
@@ -74,4 +68,6 @@ MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}   # after loading media-understanding skill
 "$MEDIA_SKILL_DIR/scripts/gemini_media.py" <file> [--audio-only] [--question "Q"]
 ```
 
-**Cursor tier rule**: composer-2.5 for fast/light + vision; grok-4.5-high for hard/red-team; gpt-5.6-sol-high when listed and confirmed.
+Slot models per role are the machine's choice — the cursor-cell example in
+`vendor-manifest.example.json` shows how the tier rule (fast/light vs hard)
+maps onto slots.

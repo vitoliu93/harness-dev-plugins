@@ -21,6 +21,17 @@ Gate yes → [protocol.md](references/protocol.md). Scenarios → [scenarios.md]
 
 Roster + advisory + execution gate: [gates-and-roster.md](references/gates-and-roster.md).
 
+## Fleet — read the manifest first
+
+Carriers and models are per-machine, never hardcoded here. Read
+`$VENDOR_MANIFEST` (default
+`${CCOBS_DIR:-$HOME/.claude/observability}/vendor-manifest.json`) before
+dispatching: installed CLIs, quota pools, model slots. Missing → bootstrap
+per [vendor-onboarding.md](references/vendor-onboarding.md). references/ hold
+the provider 坑 (carrier sheets) and the capability-level
+[model-use-guide.md](references/model-use-guide.md) — concrete model names
+live in the manifest only.
+
 ## Hard rule
 
 Advice is hypothesis until you Read cited code paths. Vendor does not commit — you verify.

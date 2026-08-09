@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.30.1",
+  "version": "2.31.0",
   "description": "Claude Code harness with 20 project-agnostic skills, 3 subagents, and direct DeepSeek inference plus skill quality guards.",
   "author": {
     "name": "vito",

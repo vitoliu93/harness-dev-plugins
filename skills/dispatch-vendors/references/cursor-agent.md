@@ -2,11 +2,11 @@
 
 Quota: Cursor subscription. The **workspace index** provides repo-wide localization without cold grep.
 
-Default Q model: **`cursor-grok-4.5-high`**. Fast/light + vision: **`composer-2.5`**. Hard tier: **`gpt-5.6-sol-high`** when listed. Subagent model inside Cursor is composer-2.5 — hands-off.
+Slot models per manifest role (`hard` / `default_q` / `fast_light`). The subagent model inside Cursor is the fast_light slot — hands-off.
 
 ```bash
-cursor-agent --mode plan -p "<q>" --output-format stream-json --model cursor-grok-4.5-high --trust
-cursor-agent -p "<brief>" --output-format stream-json --model cursor-grok-4.5-high --force
+cursor-agent --mode plan -p "<q>" --output-format stream-json --model <default_q slot> --trust
+cursor-agent -p "<brief>" --output-format stream-json --model <default_q slot> --force
 cursor-agent -p --resume <chatId> "<consolidated fix list>" --force
 ```
 
@@ -22,11 +22,8 @@ cursor-agent -p --resume <chatId> "<consolidated fix list>" --force
 
 ## Models
 
-- Primary hard tier: `cursor-grok-4.5-high`
-- Fast/light: `composer-2.5`
-- Escalation: `gpt-5.6-sol-high`, `claude-opus-4-8-thinking-high`
-- Names rotate — re-run `--list-models` before dispatch
-- Parameterized: `--model 'claude-opus-4-8[context=1m,effort=high]'`
+- Slot models live in the vendor manifest; names rotate — re-run `--list-models` before dispatch and reconcile the manifest when they change.
+- Parameterized (example): `--model 'claude-opus-4-8[context=1m,effort=high]'`
 - Effort: prefer `-high` variants when exposed
 
 ## Output
@@ -40,7 +37,7 @@ cursor-agent -p --resume <chatId> "<consolidated fix list>" --force
 
 ## Vision
 
-composer-2.5: supported. grok/gpt: per Cursor docs (confirm with `--list-models`).
+Per slot — check the manifest `capabilities`/`note`; confirm with `--list-models`.
 
 ## Worktree
 

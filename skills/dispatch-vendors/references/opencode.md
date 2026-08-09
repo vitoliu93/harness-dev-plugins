@@ -10,7 +10,7 @@ source ~/.zshenv && opencode run -s <session-id> "<consolidated fix list>" --for
 ```
 
 - Model: `-m provider/model`; configure provider `volcengine-plan` in `~/.config/opencode/opencode.json`.
-- Record verdicts per CLI×model: `kimi-k2.7-code` is unsupported because it returns a 0-token no-op; `glm-5.2` is supported with the output cap below; `doubao-seed-2.0-pro` supports vision.
+- Record verdicts per CLI×model — the entries below are examples of the ledger habit; the live fleet lives in the vendor manifest (schema: [vendor-manifest.schema.md](vendor-manifest.schema.md)). `kimi-k2.7-code` was unsupported (0-token no-op); `glm-5.2` supported with the output cap below; `doubao-seed-2.0-pro` supports vision.
 - Treat listed `deepseek-v4-{flash,pro}` and `minimax-{m2.7,m3}` models as unknown until probed.
 - Set reasoning effort with `--variant high|max|minimal`.
 - Output: `--format json`; session id = `sessionID` field on JSON event lines.

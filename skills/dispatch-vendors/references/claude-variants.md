@@ -4,9 +4,9 @@ One `claude` binary, three shell **functions** in `${VENDOR_SHELL_RC:-$HOME/.zsh
 
 ```bash
 F='--output-format stream-json --verbose'   # --verbose required with -p
-zsh -ic "dscode  -p '<brief>' --model deepseek-v4-flash $F"
-zsh -ic "arkcode -p '<brief>' --model opus $F"
-zsh -ic "kicode  -p '<brief>' --model opus $F"
+zsh -ic "dscode  -p '<brief>' --model <slot> $F"
+zsh -ic "arkcode -p '<brief>' --model <slot> $F"
+zsh -ic "kicode  -p '<brief>' --model <slot> $F"
 zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'
 ```
 
@@ -17,13 +17,12 @@ zsh -ic 'kicode  -p -r <session-id> "<consolidated fix list>"'
 
 ## Model slots
 
-| variant | opus/fable | sonnet | haiku/subagent | notes |
-|---|---|---|---|---|
-| dscode | deepseek-v4-pro[1m] | — | deepseek-v4-flash[1m] | text-only; fast-tier backup when cursor unavailable |
-| arkcode | glm-5.2[1m] | deepseek-v4-flash[1m] | deepseek-v4-flash[1m] | **never send images** — API 400 fatal |
-| kicode | k3[1m] | k3[1m] | k3[1m] | 1M ctx; vision YES; small quota — reserve for D-core / 1M loads |
-
-Full backend ids also accepted (e.g. `--model deepseek-v4-flash`).
+Slot maps are defined per machine in `${VENDOR_SHELL_RC:-$HOME/.zshrc}` and
+must be recorded in the vendor manifest (schema:
+[vendor-manifest.schema.md](vendor-manifest.schema.md)). This sheet keeps only
+the mechanics: which variant is text-only, which kills on images, which is 1M /
+vision. Re-read the rc slot maps when unsure. Full backend ids are also
+accepted (`--model deepseek-v4-flash`).
 
 ## Permissions
 

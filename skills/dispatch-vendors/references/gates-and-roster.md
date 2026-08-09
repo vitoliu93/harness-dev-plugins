@@ -1,20 +1,32 @@
-# Model roster, advisory, execution gate
+# Capability roster, advisory, execution gate
 
-## Model roster — dispatch a model, not a CLI
+## Fleet — read the manifest first
 
-Pick model first; CLI is carrier. Chains floor on Anthropic subagent. Details: [models.md](models.md), carrier sheets.
+Concrete carriers and models are per-machine: read `$VENDOR_MANIFEST`
+(`${CCOBS_DIR:-$HOME/.claude/observability}/vendor-manifest.json`) before
+routing. Schema, bootstrap and example:
+[vendor-manifest.schema.md](vendor-manifest.schema.md). Missing → bootstrap
+from [vendor-onboarding.md](vendor-onboarding.md).
 
-| Model | Route for | Carrier chain |
+## Capability roster — dispatch a capability, not a model
+
+Pick capability first; the manifest slot names the model; the carrier sheet
+names the CLI. Chains floor on Anthropic subagent. Details:
+[model-use-guide.md](model-use-guide.md), carrier sheets.
+
+| Capability | Route for | Manifest slot |
 |---|---|---|
-| gpt-5.6-sol | hard tier, long unattended, precision review | cursor-agent → subagent |
-| grok-4.5 | default Q workhorse | cursor-agent → grok CLI → subagent |
-| composer-2.5 | fast/light, vision | cursor-agent → subagent |
-| kimi-k3 | 1M ctx, vision, frontend | kimi-code → cursor-agent → subagent |
-| deepseek-v4 | bulk codegen/tests | dscode → arkcode → subagent |
+| hard | hard tier, long unattended, precision review | `hard` |
+| default_q | default Q workhorse | `default_q` |
+| fast_light | fast/light, vision | `fast_light` |
+| long_context | 1M ctx, vision, frontend | `long_context` |
+| bulk | bulk codegen/tests | `bulk` |
 | anthropic family | needs this session's ecosystem | subagent (floor) |
 
-Image tasks: vision model or media-understanding fallback ([vendor-onboarding.md](vendor-onboarding.md)).
-Quota: cursor Ultra favors grok-4.5; gpt-5.6-sol for hard tier; kimi-k3 for diversity/1M/vision only.
+Image tasks: `vision`-capable slot or media-understanding fallback
+([vendor-onboarding.md](vendor-onboarding.md)).
+Quota: prefer the manifest `default_pool`; scarce pools for diversity-core /
+`long_context` only.
 
 ## Advisory — 第二意见
 
@@ -27,7 +39,7 @@ Execution floor does not apply.
 |---|---|
 | fresh context | subagent (reads brief paths) |
 | stronger reasoning | `claude -p --model fable --effort high` |
-| foreign family | vendor sheets (#3/#10) |
+| foreign family | a manifest cell outside the anthropic family (carrier sheets) |
 
 Brief + output: [advisory.md](advisory.md). Ledger as `why:advice`. Verdict is hypothesis until you Read cited paths.
 

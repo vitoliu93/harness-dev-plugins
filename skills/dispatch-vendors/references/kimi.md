@@ -1,6 +1,6 @@
 # kimi — Kimi Code CLI (k3 / K2.7)
 
-Primary carrier for kimi-k3 (chain: kimi-code → cursor `kimi-k3-high` → subagent). Quota: user's Kimi Code subscription. opencode × kimi-k2.7-code cell is **disabled** (0-token no-op) — use this native CLI for kimi models.
+Primary carrier for the `long_context` slot (slot model per vendor manifest). Quota: user's Kimi Code subscription. The opencode × kimi-k2.7-code cell is **disabled** (0-token no-op) — use this native CLI for kimi models.
 
 ```bash
 kimi -p "<brief>" --output-format stream-json
