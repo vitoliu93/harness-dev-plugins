@@ -30,7 +30,7 @@
       "enabled": true,
       "quota_pool": "kimi",
       "carrier_sheet": "kimi.md",
-      "capabilities": ["vision", "long_context", "resume", "unattended"],
+      "capabilities": ["vision", "resume", "unattended"],
       "launch": "kimi -p '<brief>' --output-format stream-json [--plan]",
       "notes": "stdout block-buffered until exit; session id from session.resume_hint",
       "slots": {
@@ -44,7 +44,7 @@
       "quota_pool": "deepseek",
       "carrier_sheet": "claude-variants.md",
       "capabilities": ["unattended"],
-      "launch": "zsh -ic \"dscode -p '<brief>' --model deepseek-v4-flash --output-format stream-json --verbose\"",
+      "launch": "zsh -ic \"dscode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
       "notes": "rc function — needs zsh -ic; text-only",
       "slots": {
         "bulk": { "model": "deepseek-v4-flash", "family": "deepseek", "status": "supported", "note": "text-only" },
@@ -57,8 +57,8 @@
       "enabled": true,
       "quota_pool": "volcengine",
       "carrier_sheet": "claude-variants.md",
-      "capabilities": ["long_context", "unattended"],
-      "launch": "zsh -ic \"arkcode -p '<brief>' --model glm-5.2 --output-format stream-json --verbose\"",
+      "capabilities": ["unattended"],
+      "launch": "zsh -ic \"arkcode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
       "notes": "never send images — API 400 fatal",
       "slots": {
         "long_context": { "model": "glm-5.2", "family": "zhipu", "status": "supported", "note": "1M ctx; image fatal" }
@@ -70,8 +70,8 @@
       "enabled": true,
       "quota_pool": "kimi",
       "carrier_sheet": "claude-variants.md",
-      "capabilities": ["vision", "long_context", "unattended"],
-      "launch": "zsh -ic \"kicode -p '<brief>' --model k3 --output-format stream-json --verbose\"",
+      "capabilities": ["vision", "unattended"],
+      "launch": "zsh -ic \"kicode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
       "notes": "1M ctx; vision; small quota",
       "slots": {
         "long_context": { "model": "k3", "family": "moonshot", "status": "supported" }

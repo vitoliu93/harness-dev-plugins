@@ -18,10 +18,12 @@
 
 #### Gate 1: 零成本放行（不调 LLM）
 
-两个条件**任一满足**即放行：
+四个条件**任一满足**即放行：
 
-1. **长度 ≤15 Unicode codepoints**：太短，不可能从 rewrite 中受益（e.g. "ok", "run tests", "修复登录页按钮"）
-2. **命中确认词表**：意图明确的简短确认/指令词，不论长度
+1. **斜杠命令**：`/` 开头的输入是 command 展开，绝不 rewrite
+2. **长度 ≤15 Unicode codepoints**：太短，不可能从 rewrite 中受益（e.g. "ok", "run tests", "修复登录页按钮"）
+3. **命中确认词表**：意图明确的简短确认/指令词，不论长度
+4. **具体锚点启发式**：含反引号代码段、路径（`src/auth/login.ts`）、文件扩展名、`foo()` 调用、`:42` 行号——已经足够具体，不值得调 LLM
 
 确认词表（case-insensitive，trim 后匹配）：
 
@@ -36,7 +38,7 @@ zh: 好, 好的, 行, 可以, 继续, 接着, 做, 干, 执行, 跑, 对, 嗯, �
 emoji: 👍, ✅, 👌, 🚀, 💯
 ```
 
-**设计理由**：Gate 1 的存在不是为了"准确分类"，而是为了**零延迟零成本**——确认词和短输入占了交互流量的很大比例，为这些调 LLM 是浪费。15 字符阈值覆盖了 "fix the bug"（12 chars）、"跑测试"（3 chars）、"deploy to prod"（14 chars）等短指令——它们虽可能模糊，但在对话上下文里 agent 通常能正确消歧。
+**设计理由**：Gate 1 的存在不是为了"准确分类"，而是为了**零延迟零成本**——确认词和短输入占了交互流量的很大比例，为这些调 LLM 是浪费。15 字符阈值覆盖了 "fix the bug"（12 chars）、"跑测试"（3 chars）、"deploy to prod"（14 chars）等短指令——它们虽可能模糊，但在对话上下文里 agent 通常能正确消歧。锚点启发式砍掉"长但已具体"prompt 的 Gate 2 调用——带路径/代码引用的 prompt 极少需要 rewrite，误放行的代价只是回到无 hook 的原状。
 
 #### Gate 2: LLM 判定与改写
 
@@ -79,7 +81,7 @@ rewrite 时注入的 additionalContext 格式：
 | 字段 | 用途 | 读取量 |
 |---|---|---|
 | `prompt` | 需要判定的用户输入 | 全部 |
-| `transcript_path` | 会话历史，推断"上次讨论的方案"、"那个文件" | 最后 200 行（约 5-10 轮） |
+| `transcript_path` | 会话历史，推断"上次讨论的方案"、"那个文件" | 剪枝后全量：只留 user/assistant 文本轮次，去 tool_use/tool_result/thinking/图片 base64，尾部截断 500K chars（适配 flash 1M 窗口） |
 | `cwd` | 仓库根目录，读取 git 信号 | `git branch --show-current`, `git log --oneline -5`, `git diff --name-only HEAD~1`, `git status --short` |
 | `session_id` | 日志标识 | — |
 
@@ -105,6 +107,7 @@ rewrite 时注入的 additionalContext 格式：
 | 禁用 | `[prompt-forge] disabled (PROMPT_FORGE=0)` |
 | Gate 1 放行 | `[prompt-forge] gate1 pass: short input (11 ≤ 15)` / `confirmation word` |
 | Gate 2 开始 | `[prompt-forge] gate2: classifying "fix the bug" (11 chars) via llm-call` |
+| 上下文装配 | `[prompt-forge] context: pruned transcript 8123 chars, git signals [branch, recent_commits]` |
 | verdict=pass | `[prompt-forge] gate2 verdict=pass in 3.2s → prompt unchanged` |
 | verdict=rewrite | `[prompt-forge] gate2 verdict=rewrite in 4.1s (enriched=312 chars) → injecting additionalContext` |
 | LLM 失败/超时 | `[prompt-forge] gate2 llm-call failed in 61.0s → fail-open, prompt unchanged` |
@@ -186,12 +189,12 @@ rewrite 时注入的 additionalContext 格式：
 | Gate 2 pass（长但清晰） | 1（判定 only） | ~2-5s |
 | Gate 2 rewrite（长且模糊） | 1（判定+改写） | ~5-15s |
 
-每次 rewrite 的 token 成本：~500-2000 prompt tokens + ~200-500 completion tokens。以 deepseek-v4-flash 价格（≈$0.28/$1.10 per 1M tokens），单次调用约 $0.001-0.003。
+每次调用的 token 成本取决于剪枝后 transcript 大小：短会话 ~500-2000 prompt tokens（<$0.01）；上限 500K chars ≈ 15-40 万 tokens，以 deepseek-v4-flash 价格（≈$0.28/$1.10 per 1M tokens）单次约 $0.04-0.12。
 
 ### 隐私
 
 - prompt 内容发送至 DeepSeek API
-- transcript 片段（最后 200 行）发送至 DeepSeek API
+- 剪枝后 transcript（user/assistant 文本轮次，≤500K chars）发送至 DeepSeek API；工具输出与图片不发送
 - 不发送文件内容，只发送文件路径（来自 git diff）
 - 敏感项目需用户自行评估是否启用
 
@@ -214,7 +217,7 @@ rewrite 时注入的 additionalContext 格式：
 | 确认词表语言 | en + zh + emoji | 覆盖中英双语工作环境 |
 | LLM 模型 | deepseek-v4-flash | 与 llm-call 默认一致，成本低，判定任务不需要最强模型 |
 | 超时 | 60s | 足够 flash 模型返回，超出说明出了问题，不值得等 |
-| 上下文行数 | 200 行 transcript + git 信号 | 足够的会话上下文而不撑爆 prompt |
+| 上下文预算 | 剪枝 transcript ≤500K chars + git 信号 | 只留对话文本（去 tool 块/图片），尾部截断，适配 flash 1M 窗口 |
 | 脚本语言 | TypeScript (bun) | 用户指定；test_hooks.py 通过 subprocess 调 bun run |
 | Hook 类型 | command | `bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/prompt-forge.ts` |
 | 静默 fail | 所有异常 exit(0) | 永不阻塞用户输入 |

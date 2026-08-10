@@ -11,17 +11,10 @@ from [vendor-onboarding.md](vendor-onboarding.md).
 ## Capability roster — dispatch a capability, not a model
 
 Pick capability first; the manifest slot names the model; the carrier sheet
-names the CLI. Chains floor on Anthropic subagent. Details:
-[model-use-guide.md](model-use-guide.md), carrier sheets.
-
-| Capability | Route for | Manifest slot |
-|---|---|---|
-| hard | hard tier, long unattended, precision review | `hard` |
-| default_q | default Q workhorse | `default_q` |
-| fast_light | fast/light, vision | `fast_light` |
-| long_context | 1M ctx, vision, frontend | `long_context` |
-| bulk | bulk codegen/tests | `bulk` |
-| anthropic family | needs this session's ecosystem | subagent (floor) |
+names the CLI. Slot roles `hard` · `default_q` · `fast_light` ·
+`long_context` · `bulk` — what each routes for:
+[model-use-guide.md](model-use-guide.md). Chains floor on Anthropic subagent
+(needs this session's ecosystem — not a manifest slot).
 
 Image tasks: `vision`-capable slot or media-understanding fallback
 ([vendor-onboarding.md](vendor-onboarding.md)).

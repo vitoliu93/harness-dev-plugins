@@ -32,6 +32,8 @@ dispatch time. The skill docs carry the portable part — provider 坑
    `${VENDOR_SHELL_RC:-$HOME/.zshrc}`, provider docs).
 4. Record `status` per the [vendor-onboarding.md](vendor-onboarding.md) ladder;
    a fresh cell stays `unknown` until rungs pass.
+5. Self-check after every hand edit (exit 0 = valid JSON):
+   `bun -e 'JSON.parse(await Bun.file(process.argv.at(-1)).text())' "$MANIFEST"`
 
 ## Schema
 
@@ -52,7 +54,7 @@ dispatch time. The skill docs carry the portable part — provider 坑
 | `enabled` | bool | `false` = verdict history only (e.g. a disabled carrier) |
 | `quota_pool` | string | key into `quota_pools` |
 | `carrier_sheet` | string | `references/<sheet>.md` holding the 坑 |
-| `capabilities` | array | `index` `vision` `resume` `unattended` `long_context` |
+| `capabilities` | array | `index` `vision` `resume` `unattended` — long-context ability is expressed by a `long_context` slot, not listed here |
 | `launch` | string | template incantation; `<slot>` = the chosen slot model |
 | `notes` | string | cell-level 坑 |
 | `slots` | map | role key → slot (below) |

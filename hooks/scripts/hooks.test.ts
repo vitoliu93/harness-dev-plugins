@@ -234,6 +234,16 @@ test("prompt-forge-logging", async () => {
   // Gate 1 reasons are distinguishable in the log
   expect((await runCase("ok")).stderr).toContain("confirmation word");
   expect((await runCase("fix the bug")).stderr).toContain("short input");
+  // Mock as a safety net: if gate 1 regresses these must not hit the real API
+  expect(
+    (await runCase("/code-review the entire branch with high effort please", '{"verdict":"pass"}')).stderr,
+  ).toContain("slash command");
+  expect(
+    (await runCase("refactor the retry helper in src/auth/login.ts to return Result", '{"verdict":"pass"}')).stderr,
+  ).toContain("specific anchor");
+  expect(
+    (await runCase("把 handleSubmit() 的错误处理改成统一的模式然后跑一遍测试", '{"verdict":"pass"}')).stderr,
+  ).toContain("specific anchor");
 
   const longPrompt = "make the authentication system more robust and fix all the issues";
   const okRes = await runCase(longPrompt, '{"verdict":"pass"}');
@@ -258,4 +268,44 @@ test("prompt-forge-logging", async () => {
   );
   expect(disabled.stderr).toContain("disabled");
   expect(disabled.stdout).toBe("");
+}, TIMEOUT);
+
+test("prompt-forge-transcript-prune", async () => {
+  // Session JSONL is pruned to user/assistant text turns before the LLM call:
+  // tool_use/tool_result blocks, base64 images, and junk lines are dropped.
+  const d = tmp();
+  try {
+    const tp = join(d, "t.jsonl");
+    const big = "A".repeat(10_000);
+    writeFileSync(
+      tp,
+      [
+        JSON.stringify({ type: "user", message: { role: "user", content: "hello world" } }),
+        JSON.stringify({
+          type: "assistant",
+          message: {
+            content: [
+              { type: "text", text: "reading file" },
+              { type: "tool_use", name: "Read", input: { big } },
+            ],
+          },
+        }),
+        JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", content: big }] } }),
+        JSON.stringify({ type: "user", message: { content: [{ type: "image", source: { data: big } }] } }),
+        "not json",
+      ].join("\n"),
+    );
+    const res = await spawnHook(
+      ["bun", "run", join(HERE, "prompt-forge.ts")],
+      JSON.stringify({
+        prompt: "make the authentication system more robust and fix all the issues",
+        transcript_path: tp,
+      }),
+      { PROMPT_FORGE_TEST_MOCK: '{"verdict":"pass"}' },
+    );
+    // "user: hello world\n\nassistant: reading file" = 42 chars — the 10K blobs are gone
+    expect(res.stderr).toContain("pruned transcript 42 chars");
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
 }, TIMEOUT);

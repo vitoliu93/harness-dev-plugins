@@ -40,13 +40,21 @@ const CONFIRMATION_WORDS = new Set([
   "👍", "✅", "👌", "🚀", "💯", "🙆", "🆗", "🎯",
 ]);
 
+// Prompts already carrying a concrete anchor — backtick code span, a
+// path-like token, a file extension, foo(), or a :line ref — skip the LLM.
+const SPECIFIC_HINT_RE =
+  /`[^`]+`|[\w.@~-]+\/[\w.@-]|\w\.(ts|tsx|js|jsx|mjs|py|md|json|go|rs|java|rb|sh|zsh|yml|yaml|toml|sql|css|html|vue|c|h|cpp)\b|\w+\(\)|:\d+\b/i;
+
 const LLM_CALL_TIMEOUT_MS = 60_000; // hook-level safety net
 // Worst-case budget vs the 65s hooks.json timeout:
 // 4×git(1s each) + bun boot(~0.5s) + 60s LLM ≈ 64.5s < 65s. Signals are
 // best-effort — a slow repo just loses the signal, never blocks the user.
-// Full transcript is sent; if it overflows the LLM context window the API
-// returns an error → fail-open.
 const GIT_TIMEOUT_MS = 1_000;
+
+// Transcript budget after pruning to user/assistant text. Raw session JSONL
+// reaches tens of MB (tool dumps, base64 images) and overflows the
+// deepseek-v4-flash 1M-token window; keep the pruned tail well under it.
+const MAX_TRANSCRIPT_CHARS = 500_000;
 
 // ---------------------------------------------------------------------------
 // Resolve paths relative to this script
@@ -70,6 +78,10 @@ function log(msg: string): void {
 
 function gate1Pass(prompt: string): { pass: boolean; reason?: string } {
   const text = prompt.trim();
+  // Slash commands expand to their own instructions — never rewrite them.
+  if (text.startsWith("/")) {
+    return { pass: true, reason: "slash command" };
+  }
   // Confirmation words first — the list is meant to pass regardless of length.
   if (CONFIRMATION_WORDS.has(text.toLowerCase())) {
     return { pass: true, reason: "confirmation word" };
@@ -77,6 +89,9 @@ function gate1Pass(prompt: string): { pass: boolean; reason?: string } {
   const len = [...text].length;
   if (len <= GATE1_MAX_LENGTH) {
     return { pass: true, reason: `short input (${len} ≤ ${GATE1_MAX_LENGTH})` };
+  }
+  if (SPECIFIC_HINT_RE.test(text)) {
+    return { pass: true, reason: "specific anchor (path/code ref)" };
   }
   return { pass: false };
 }
@@ -111,13 +126,37 @@ function gitSignals(cwd: string): Record<string, string> {
 // Transcript
 // ---------------------------------------------------------------------------
 
+// Prune session JSONL to user/assistant text turns: tool_use/tool_result
+// blocks, thinking, and base64 images are dropped; tail-capped to budget.
 function transcriptContent(transcriptPath: string | undefined): string {
   if (!transcriptPath || !existsSync(transcriptPath)) return "";
+  let raw: string;
   try {
-    return readFileSync(transcriptPath, "utf-8");
+    raw = readFileSync(transcriptPath, "utf-8");
   } catch {
     return "";
   }
+  const turns: string[] = [];
+  for (const line of raw.split("\n")) {
+    if (!line.trim()) continue;
+    let entry: any;
+    try { entry = JSON.parse(line); } catch { continue; }
+    if (entry.type !== "user" && entry.type !== "assistant") continue;
+    const content = entry.message?.content;
+    let text = "";
+    if (typeof content === "string") {
+      text = content;
+    } else if (Array.isArray(content)) {
+      text = content
+        .filter((b: any) => b?.type === "text" && typeof b.text === "string")
+        .map((b: any) => b.text)
+        .join("\n");
+    }
+    text = text.trim();
+    if (text) turns.push(`${entry.type}: ${text}`);
+  }
+  const joined = turns.join("\n\n");
+  return joined.length > MAX_TRANSCRIPT_CHARS ? joined.slice(-MAX_TRANSCRIPT_CHARS) : joined;
 }
 
 // ---------------------------------------------------------------------------
@@ -131,6 +170,7 @@ function buildLLMPayload(
 ): Record<string, unknown> {
   const signals = gitSignals(cwd);
   const history = transcriptContent(transcriptPath);
+  log(`context: pruned transcript ${history.length} chars, git signals [${Object.keys(signals).join(", ") || "none"}]`);
 
   let contextBlock = "";
   if (Object.keys(signals).length > 0) {
