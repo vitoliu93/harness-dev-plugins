@@ -59,6 +59,7 @@ describe("response and failure contract", () => {
     expect(isRetryable({ status: 429 })).toBeTrue();
     expect(isRetryable({ status: 503 })).toBeTrue();
     expect(isRetryable(new Error("network"))).toBeTrue();
+    expect(isRetryable(Object.assign(new Error("empty content"), { retryable: false }))).toBeFalse();
   });
 
   test("missing config exits 2 without reading request content", () => {

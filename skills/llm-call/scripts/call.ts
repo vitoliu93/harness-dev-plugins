@@ -119,6 +119,7 @@ export function normalizeUsage(usage: unknown): Record<string, number> | null {
 
 export function isRetryable(error: unknown): boolean {
   if (!error || typeof error !== "object") return true;
+  if ((error as { retryable?: unknown }).retryable === false) return false;
   const status = (error as { status?: unknown }).status;
   if (typeof status !== "number") return true;
   return status === 408 || status === 409 || status === 429 || status >= 500;
@@ -155,7 +156,8 @@ async function main(): Promise<void> {
       const choice = completion.choices[0];
       const content = choice?.message?.content;
       if (!content?.trim()) {
-        throw new Error(`empty content (finish_reason=${choice?.finish_reason ?? "missing"})`);
+        // length-starved CoT is deterministic — retrying the same request is pure waste
+        throw Object.assign(new Error(`empty content (finish_reason=${choice?.finish_reason ?? "missing"})`), { retryable: false });
       }
       console.log(
         JSON.stringify({

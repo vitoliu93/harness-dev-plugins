@@ -150,6 +150,7 @@ for (const s of pending) {
   try {
     const res = await fetch(`${cfg.base_url}/chat/completions`, {
       method: "POST",
+      signal: AbortSignal.timeout(300_000),
       headers: {
         "Content-Type": "application/json",
         ...(cfg.api_key ? { Authorization: `Bearer ${cfg.api_key}` } : {}),

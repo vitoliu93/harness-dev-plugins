@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.34.2"
+    "version": "2.34.3"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
       "description": "Claude Code harness with 20 project-agnostic skills, 3 subagents, and direct DeepSeek inference plus skill quality guards.",
-      "version": "2.34.2",
+      "version": "2.34.3",
       "author": {
         "name": "vito"
       }
