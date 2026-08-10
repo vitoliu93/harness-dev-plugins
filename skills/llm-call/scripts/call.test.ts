@@ -61,15 +61,38 @@ describe("response and failure contract", () => {
     expect(isRetryable(new Error("network"))).toBeTrue();
   });
 
-  test("missing API key exits 2 without reading request content", () => {
+  test("missing config exits 2 without reading request content", () => {
+    // CCOBS_DIR points at an empty dir so a real machine-local llm.json can't leak in.
+    const emptyDir = `${import.meta.dir}/.test-empty-ccobs`;
+    require("node:fs").mkdirSync(emptyDir, { recursive: true });
     const result = Bun.spawnSync(["bun", `${import.meta.dir}/call.ts`], {
-      env: { ...process.env, DEEPSEEK_API_KEY: "" },
+      env: { ...process.env, DEEPSEEK_API_KEY: "", CCOBS_DIR: emptyDir },
       stdin: Buffer.from("{}"),
     });
+    require("node:fs").rmSync(emptyDir, { recursive: true, force: true });
 
     expect(result.exitCode).toBe(2);
-    expect(new TextDecoder().decode(result.stderr)).toContain(
-      "DEEPSEEK_API_KEY is required",
+    expect(new TextDecoder().decode(result.stderr)).toContain("config required");
+  });
+
+  test("llm.json satisfies the config gate without DEEPSEEK_API_KEY", () => {
+    const dir = `${import.meta.dir}/.test-llmjson-ccobs`;
+    const fs = require("node:fs");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(
+      `${dir}/llm.json`,
+      JSON.stringify({ base_url: "http://127.0.0.1:1/v1", model: "m", api_key: "k" }),
     );
+    const result = Bun.spawnSync(["bun", `${import.meta.dir}/call.ts`], {
+      env: { ...process.env, DEEPSEEK_API_KEY: "", CCOBS_DIR: dir },
+      stdin: Buffer.from(
+        JSON.stringify({ messages: [{ role: "user", content: "hi" }], max_tokens: 16 }),
+      ),
+    });
+    fs.rmSync(dir, { recursive: true, force: true });
+
+    // Config resolved from llm.json; failure is the unreachable base_url, not the gate.
+    expect(result.exitCode).toBe(2);
+    expect(new TextDecoder().decode(result.stderr)).not.toContain("config required");
   });
 });

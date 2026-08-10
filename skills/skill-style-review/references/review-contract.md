@@ -41,15 +41,16 @@ lines; once grounded, the false-positive adjudicator cannot discard it.
   `LLM_CALL_DIR` (the llm-call skill directory) or `CLAUDE_PLUGIN_ROOT`. The
   runner is never resolved through a relative sibling path; missing all three
   fails the run.
-- `DEEPSEEK_STYLE_MODEL` — optional; defaults to `deepseek-v4-flash`.
+- `DEEPSEEK_STYLE_MODEL` — optional; beats the shared config. Model resolution:
+  `DEEPSEEK_STYLE_MODEL` > `llm.json` `model` > `DEEPSEEK_MODEL` > `deepseek-v4-flash`.
 - `SKILL_STYLE_MAX_CHARS` — optional maximum characters per request chunk;
   defaults to `30000`.
 - `SKILL_STYLE_MAX_TOKENS` and `SKILL_STYLE_ADJUDICATION_MAX_TOKENS` — optional;
   both default to `32768`.
 
-The `llm-call` atom owns Bun/OpenAI installation and all `DEEPSEEK_*`
-configuration. This skill sends JSON through stdin; every call runs at maximum
-reasoning effort.
+The `llm-call` atom owns Bun/OpenAI installation and the shared LLM config
+(`${CCOBS_DIR:-$HOME/.claude/observability}/llm.json`, then `DEEPSEEK_*` env).
+This skill sends JSON through stdin; every call runs at maximum reasoning effort.
 
 ## CLI
 

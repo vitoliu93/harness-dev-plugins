@@ -2,9 +2,12 @@
 
 ## Configuration
 
-- `DEEPSEEK_API_KEY` — required.
-- `DEEPSEEK_BASE_URL` — optional; defaults to `https://api.deepseek.com`.
-- `DEEPSEEK_MODEL` — optional; defaults to `deepseek-v4-flash`.
+Shared API-direct LLM config, first hit wins (same resolution as ccobs `distill.ts`):
+
+1. `${CCOBS_DIR:-$HOME/.claude/observability}/llm.json` — `{"base_url","model","api_key"}`; machine-local, never committed.
+2. `DEEPSEEK_API_KEY` (required at this rung) + optional `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`) and `DEEPSEEK_MODEL` (default `deepseek-v4-flash`).
+
+Neither present → exit 2. Request-level `model` overrides both rungs.
 
 Install the OpenAI SDK once, globally, before the first call:
 

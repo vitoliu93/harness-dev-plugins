@@ -3,7 +3,7 @@
 ## Layout
 
 - DB / queue / logs: `${CCOBS_DIR:-$HOME/.claude/observability/}` (override with `CCOBS_DIR`).
-- Distill LLM override: `${CCOBS_DIR}/llm.json` `{"base_url","model","api_key"}` — read first by `distill.ts`; missing → env-key fallback chain in `resolveCfg()`; neither → skip quietly.
+- Shared API-direct LLM config: `${CCOBS_DIR}/llm.json` `{"base_url","model","api_key"}` — read first by `distill.ts` and the `llm-call` atom (so prompt-forge and skill-style-review inherit it); missing → env-key fallback; vendor CLIs use `vendor-manifest.json` instead.
 - Dynamic ledgers never live in the plugin repo.
 - Scripts under `${CLAUDE_SKILL_DIR}/scripts/`:
   - `schema.sql`, `ingest.ts`, `obs-enqueue.ts`, `install.sh`, `distill.ts`, `distill-prompt.md`

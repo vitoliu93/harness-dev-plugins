@@ -17,7 +17,7 @@ metadata:
 
 ```bash
 bun add -g openai@7
-test -n "$DEEPSEEK_API_KEY"
+test -f "${CCOBS_DIR:-$HOME/.claude/observability}/llm.json" || test -n "$DEEPSEEK_API_KEY"
 ```
 
 Send one JSON request through stdin:
@@ -28,7 +28,7 @@ printf '%s' '<request-json>' | bun "${CLAUDE_SKILL_DIR:?set llm-call base direct
 
 ## Hard gates
 
-- Call DeepSeek through the globally installed OpenAI SDK; do not route through `dispatch-vendors`.
+- Call the configured provider through the globally installed OpenAI SDK; do not route through `dispatch-vendors`.
 - Keep this skill directory dependency-free: no `package.json`, `node_modules`, or lockfile.
 - Always request thinking at `reasoning_effort=max`; expose no lower tier.
 - Keep prompts and credentials out of argv; pass request data through stdin.

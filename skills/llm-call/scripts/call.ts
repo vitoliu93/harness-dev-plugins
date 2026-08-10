@@ -1,5 +1,9 @@
 #!/usr/bin/env bun
 
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
 export type Message = {
   role: "system" | "user" | "assistant";
   content: string;
@@ -15,6 +19,24 @@ export type CallInput = {
 const DEFAULT_BASE_URL = "https://api.deepseek.com";
 const DEFAULT_MODEL = "deepseek-v4-flash";
 const DEFAULT_MAX_TOKENS = 32_768;
+
+// Shared API-direct LLM config, same file distill.ts reads. Resolution:
+// llm.json ({"base_url","model","api_key"}) > DEEPSEEK_* env > built-in defaults.
+export function llmConfigPath(): string {
+  return join(process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability"), "llm.json");
+}
+
+export function resolveCfg(): { base_url: string; model: string; api_key: string } | null {
+  const path = llmConfigPath();
+  if (existsSync(path)) return JSON.parse(readFileSync(path, "utf8"));
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) return null;
+  return {
+    base_url: process.env.DEEPSEEK_BASE_URL ?? DEFAULT_BASE_URL,
+    model: process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL,
+    api_key: apiKey,
+  };
+}
 const ROLES = new Set<Message["role"]>(["system", "user", "assistant"]);
 
 function fail(message: string): never {
@@ -103,8 +125,8 @@ export function isRetryable(error: unknown): boolean {
 }
 
 async function main(): Promise<void> {
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) fail("DEEPSEEK_API_KEY is required");
+  const cfg = resolveCfg();
+  if (!cfg?.api_key) fail(`config required: ${llmConfigPath()} or DEEPSEEK_API_KEY`);
 
   let input: CallInput;
   try {
@@ -119,12 +141,12 @@ async function main(): Promise<void> {
   // stays out of `bun test`, which does not resolve global packages.
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({
-    apiKey,
-    baseURL: process.env.DEEPSEEK_BASE_URL ?? DEFAULT_BASE_URL,
+    apiKey: cfg.api_key,
+    baseURL: cfg.base_url ?? DEFAULT_BASE_URL,
     maxRetries: 0,
     timeout: 300_000,
   });
-  const request = buildRequest(input, process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL);
+  const request = buildRequest(input, cfg.model ?? DEFAULT_MODEL);
 
   let lastError = "unknown completion error";
   for (let attempt = 0; attempt < 2; attempt++) {

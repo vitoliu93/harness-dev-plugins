@@ -751,11 +751,21 @@ async function main(): Promise<void> {
     return;
   }
 
-  const apiKey = process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) fail("DEEPSEEK_API_KEY is required");
+  // Shared API-direct LLM config; same file the llm-call atom and ccobs distill read.
+  const llmJson = resolve(
+    process.env.CCOBS_DIR ?? resolve(process.env.HOME ?? "~", ".claude", "observability"),
+    "llm.json",
+  );
+  if (!process.env.DEEPSEEK_API_KEY && !existsSync(llmJson)) {
+    fail(`config required: ${llmJson} or DEEPSEEK_API_KEY`);
+  }
   const runner = resolveLlmRunner();
   if (!existsSync(runner)) fail(`llm-call runner not found: ${runner}`);
-  const model = process.env.DEEPSEEK_STYLE_MODEL ?? process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL;
+  const llmJsonModel = existsSync(llmJson)
+    ? (JSON.parse(readFileSync(llmJson, "utf8")).model as string | undefined)
+    : undefined;
+  const model =
+    process.env.DEEPSEEK_STYLE_MODEL ?? llmJsonModel ?? process.env.DEEPSEEK_MODEL ?? DEFAULT_MODEL;
   const prompt = readFileSync(resolve(import.meta.dir, "../references/review-prompt.md"), "utf8");
   const adjudicationPrompt = readFileSync(
     resolve(import.meta.dir, "../references/adjudication-prompt.md"),
