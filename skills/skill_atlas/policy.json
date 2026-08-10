@@ -1,0 +1,6 @@
+{
+  "schema_version": "1",
+  "notes": "Single-maintainer fleet: owner/review_cadence/maturity manifests are not used. Staleness derives from git last-commit dates.",
+  "disabled_checks": ["owner_review_gaps"],
+  "scope_rules": []
+}

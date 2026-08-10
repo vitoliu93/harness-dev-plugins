@@ -6,6 +6,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import {
   F,
   PyFloat,
@@ -149,12 +150,23 @@ function load_scope_policy(workspaceRoot: string): Record<string, any> {
   }
   const payload = load_json(p);
   const rules = get(payload, "scope_rules", []);
+  const disabled = get(payload, "disabled_checks", []);
   return {
     present: true,
     path: safe_rel(workspaceRoot, p),
     schema_version: pyStr(get(payload, "schema_version", "")),
     rules: Array.isArray(rules) ? rules : [],
+    disabled_checks: Array.isArray(disabled) ? disabled.map((item: any) => pyStr(item)) : [],
   };
+}
+
+// Last commit date (YYYY-MM-DD) touching skillDir; "" when git or history is absent.
+function git_last_commit_date(skillDir: string): string {
+  const r = spawnSync("git", ["-C", skillDir, "log", "-1", "--format=%cs", "--", "."], {
+    encoding: "utf8",
+    timeout: 10_000,
+  });
+  return r.status === 0 ? pyStrip(r.stdout ?? "") : "";
 }
 
 export function should_skip(p: string, root: string): boolean {
@@ -267,7 +279,7 @@ function collect_skill(workspaceRoot: string, skillDir: string, policy: Record<s
     version: pyStr(get(manifest, "version", "")),
     status: pyStr(get(manifest, "status", "")),
     maturity: pyStr(get(manifest, "maturity_tier", get(manifest, "skill_archetype", ""))),
-    updated_at: pyStr(get(manifest, "updated_at", "")),
+    updated_at: pyOr(pyStr(get(manifest, "updated_at", "")), git_last_commit_date(skillDir)),
     review_cadence: pyStr(get(manifest, "review_cadence", "")),
     targets: Array.isArray(targets) ? targets.map((item) => pyStr(item)) : [],
     resources: resource_names(skillDir),
@@ -545,8 +557,9 @@ export function build_atlas(
   }
   const [overlapRows, collisions] = route_overlap(skills, threshold);
   const graph = dependency_graph(skills);
-  const stale = stale_skills(skills, today);
-  const ownerGaps = owner_review_gaps(skills);
+  const disabledChecks = new Set<string>(get(scopePolicy, "disabled_checks", []) ?? []);
+  const stale = disabledChecks.has("stale_skills") ? [] : stale_skills(skills, today);
+  const ownerGaps = disabledChecks.has("owner_review_gaps") ? [] : owner_review_gaps(skills);
   const opportunities = no_route_opportunities(root, driftSignals, should_skip, safe_rel);
   const actionableSkills = skills.filter((skill) => pyTruthy(get(skill, "actionable")));
   const actionableCollisions = collisions.filter((item) => pyTruthy(get(item, "actionable")));

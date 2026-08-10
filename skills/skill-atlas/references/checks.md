@@ -50,6 +50,10 @@ Read `$ATLAS/atlas/route_overlap_matrix.csv`: pair ≥0.42 → tighten or merge.
 
 ## 4. Staleness
 
+The atlas derives each skill's `updated_at` from its git last-commit date
+(`manifest.json` `updated_at` overrides when present); >120d → `stale_skills`
+finding. Manual sweep for context:
+
 ```bash
 for d in $PLUGIN/skills/*/; do
   printf '%-16s %s\n' "$(basename $d)" "$(git -C $PLUGIN log -1 --format=%cs -- "skills/$(basename $d)")"
@@ -57,6 +61,10 @@ done | sort -k2
 ```
 
 >90d untouched → flag refresh or archive via debrief.
+
+Portfolio checks can be disabled fleet-wide in `$PLUGIN/skills/skill_atlas/policy.json`
+`disabled_checks` (e.g. `owner_review_gaps` on a single-maintainer fleet). Style
+findings cannot be disabled.
 
 ## 5. Trigger eval
 
