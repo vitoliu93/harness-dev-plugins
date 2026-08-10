@@ -11,7 +11,7 @@ SELECT * FROM v_tool_overview;
 WHERE t.model LIKE 'deepseek%'
 ```
 
-## Eight adapters
+## Nine adapters
 
 | source | raw location | increment | tokens | body detail | skill/subagent |
 |---|---|---|---|---|---|
@@ -23,5 +23,6 @@ WHERE t.model LIKE 'deepseek%'
 | cursor-ide | Cursor state.vscdb (read-only) | composerData watermark | ~0 | message_parts | no |
 | cursor-agent | `~/.cursor/chats/*/*/store.db` | meta.json watermark | no | message_parts | no |
 | kimi-code | `~/.kimi-code/sessions/.../wire.jsonl` | byte offset | usage.record | no | Skill/Agent |
+| pi | `~/.pi/agent/sessions/<cwd-slug>/*.jsonl` | byte offset | per turn | no | no |
 
 `project` = CC dir encoding of cwd; hooks are claude-code only.

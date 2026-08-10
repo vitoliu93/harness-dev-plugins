@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 // ccobs ingest — incremental, idempotent sweep of agent observability data into obs.db.
-// Seven adapters: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
+// Nine adapters: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent, kimi-code, pi.
 // Facts + pointers for every source; locally available Cursor transcript parts are retained.
 // Safe to re-run any time; safe to delete the DB and rebuild.
 //
@@ -1149,6 +1149,96 @@ function ingestKimiFile(path: string, stmts: Stmts): number {
   return n
 }
 
+// ===================== adapter: pi =====================
+
+const PI_ROOT = join(homedir(), ".pi", "agent", "sessions")
+
+const pi: Adapter = {
+  name: "pi",
+  discover() { return scanGlob(PI_ROOT, "*/*.jsonl") },
+  ingest(stmts: Stmts) {
+    let total = 0
+    for (const path of this._files) {
+      total += ingestPiFile(path, stmts)
+    }
+    return total
+  },
+  _files: [] as string[],
+}
+
+function ingestPiFile(path: string, stmts: Stmts): number {
+  // .../sessions/<cwd-slug>/<timestamp>_<uuid>.jsonl — uuid after the last "_"
+  const stem = basename(path, ".jsonl")
+  let sid = stem.slice(stem.lastIndexOf("_") + 1)
+
+  const row = stmts.getState.get(path) as { offset: number } | null
+  let offset = row?.offset ?? 0
+  const { size } = statSync(path)
+  if (size < offset) offset = 0
+  if (size === offset) return 0
+
+  const meta: Meta = { started_at: null, ended_at: null, cwd: null, git_branch: null, cc_version: null, subagent_type: null }
+  const buf: Buf = { turns: [], tools: [], toolErrs: [], slashes: [], hooks: [], hookErrs: [] }
+
+  const fd = openSync(path, "r")
+  const chunk = Buffer.allocUnsafe(size - offset)
+  const bytesRead = readSync(fd, chunk, 0, size - offset, offset)
+  closeSync(fd)
+  const data = chunk.subarray(0, bytesRead)
+
+  let pos = 0
+  let n = 0
+  while (pos < data.length) {
+    const nl = data.indexOf(10, pos)
+    if (nl === -1) break
+    const line = data.toString("utf8", pos, nl)
+    pos = nl + 1
+    let o: any
+    try { o = JSON.parse(line) } catch { continue }
+    n++
+
+    const ts: string | null = o.timestamp ?? null
+    if (ts) {
+      meta.started_at = meta.started_at && meta.started_at < ts ? meta.started_at : ts
+      meta.ended_at = meta.ended_at && meta.ended_at > ts ? meta.ended_at : ts
+    }
+
+    if (o.type === "session") {
+      meta.cwd ??= o.cwd ?? null
+      if (o.id) sid = o.id
+    } else if (o.type === "message") {
+      const m = o.message ?? {}
+      if (m.role === "assistant") {
+        const u = m.usage ?? {}
+        // event ids are 8-hex — prefix with sid to avoid cross-session collisions
+        buf.turns.push([
+          `pi-${sid}-${o.id ?? offset + pos}`, sid, ts, m.model ?? null,
+          u.input ?? null, u.output ?? null,
+          u.cacheRead ?? null, u.cacheWrite ?? null,
+          m.stopReason ?? null,
+        ])
+        for (const c of Array.isArray(m.content) ? m.content : []) {
+          if (c?.type !== "toolCall") continue
+          buf.tools.push([`pi-${sid}-${c.id ?? offset + pos}`, sid, ts, c.name ?? null, null, null, null, null])
+        }
+      } else if (m.role === "toolResult" && m.isError) {
+        const snippet = (Array.isArray(m.content) ? m.content : [])
+          .filter((c: any) => c?.type === "text").map((c: any) => c.text).join(" ")
+        buf.toolErrs.push([snippet ? snippet.slice(0, 300) : null, `pi-${sid}-${m.toolCallId}`])
+      }
+    }
+  }
+
+  for (const t of buf.turns) stmts.turn.run(...t)
+  for (const t of buf.tools) stmts.tool.run(...t)
+  for (const t of buf.toolErrs) stmts.toolErr.run(...t)
+
+  stmts.session.run(sid, "main", null, null, encodeProject(meta.cwd), meta.cwd, null, null,
+    meta.started_at, meta.ended_at, path, "pi")
+  stmts.putState.run(path, offset + pos)
+  return n
+}
+
 // ===================== adapter type + registry =====================
 
 type Adapter = {
@@ -1158,7 +1248,7 @@ type Adapter = {
   _files: string[]
 }
 
-const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode, cursorIde, cursorAgent, kimiCode]
+const ADAPTERS: Adapter[] = [claudeCode, codex, droid, grok, opencode, cursorIde, cursorAgent, kimiCode, pi]
 
 // ===================== main =====================
 
