@@ -45,7 +45,7 @@ const CONFIRMATION_WORDS = new Set([
 const SPECIFIC_HINT_RE =
   /`[^`]+`|[\w.@~-]+\/[\w.@-]|\w\.(ts|tsx|js|jsx|mjs|py|md|json|go|rs|java|rb|sh|zsh|yml|yaml|toml|sql|css|html|vue|c|h|cpp)\b|\w+\(\)|:\d+\b/i;
 
-const LLM_CALL_TIMEOUT_MS = 60_000; // hook-level safety net
+const LLM_CALL_TIMEOUT_MS = 120_000; // hook-level safety net; reasoning_effort=max on long transcripts runs 30-60s+
 // Worst-case budget vs the 65s hooks.json timeout:
 // 4×git(1s each) + bun boot(~0.5s) + 60s LLM ≈ 64.5s < 65s. Signals are
 // best-effort — a slow repo just loses the signal, never blocks the user.
@@ -271,7 +271,7 @@ Return JSON: {"verdict": "pass"} if clear, or {"verdict": "rewrite", "enriched":
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    max_tokens: 4096,
+    max_tokens: 65_536, // llm-call cap; reasoning_effort=max burns most of it as CoT before content
     temperature: 0,
     response_format: "json_object",
   };

@@ -90,9 +90,10 @@ rewrite 时注入的 additionalContext 格式：
 ### 超时与 fail-open
 
 - llm-call 内部超时：300s（call.ts 的 SDK timeout）
-- Hook 层兜底超时：60s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）
+- Hook 层兜底超时：120s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）——reasoning_effort=max 在长会话 transcript 上单次 30-70s
 - git 信号每次 1s（`GIT_TIMEOUT_MS`）——信号是 best-effort，慢仓库丢信号不阻塞用户
-- hooks.json 注册 timeout：65s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 60s(LLM) ≈ 64.5s < 65s ✅
+- hooks.json 注册 timeout：125s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 120s(LLM) ≈ 124.5s < 125s ✅
+- `max_tokens: 65536`（llm-call 上限）——max 档思维链单次可烧 6K+ tokens，4096 会 `finish_reason=length` 空正文
 - 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变（stdout 无输出）
 - Hook 自身 `process.exit(0)` 永远是最后一行——任何异常都被吞掉（stderr 留一行日志）
 
@@ -186,8 +187,8 @@ rewrite 时注入的 additionalContext 格式：
 | 场景 | LLM 调用 | 延迟 |
 |---|---|---|
 | Gate 1 放行（短输入/确认词） | 0 | ~0ms |
-| Gate 2 pass（长但清晰） | 1（判定 only） | ~2-5s |
-| Gate 2 rewrite（长且模糊） | 1（判定+改写） | ~5-15s |
+| Gate 2 pass（长但清晰） | 1（判定 only） | 短会话 ~2-5s |
+| Gate 2 rewrite（长且模糊） | 1（判定+改写） | 短会话 ~5-15s；长会话 transcript（30K+ chars 剪枝后）30-70s |
 
 每次调用的 token 成本取决于剪枝后 transcript 大小：短会话 ~500-2000 prompt tokens（<$0.01）；上限 500K chars ≈ 15-40 万 tokens，以 deepseek-v4-flash 价格（≈$0.28/$1.10 per 1M tokens）单次约 $0.04-0.12。
 
@@ -216,7 +217,7 @@ rewrite 时注入的 additionalContext 格式：
 | Gate 1 阈值 | ≤15 codepoints | 覆盖绝大多数确认/短指令；中文 15 字可表达完整指令但长度上仍是短输入 |
 | 确认词表语言 | en + zh + emoji | 覆盖中英双语工作环境 |
 | LLM 模型 | deepseek-v4-flash | 与 llm-call 默认一致，成本低，判定任务不需要最强模型 |
-| 超时 | 60s | 足够 flash 模型返回，超出说明出了问题，不值得等 |
+| 超时 | 120s | max 档 reasoning 在长会话 payload 上单次 30-70s，60s 会频繁误杀 |
 | 上下文预算 | 剪枝 transcript ≤500K chars + git 信号 | 留 text/thinking/tool_use（入参截 2K），去 tool_result/图片，尾部截断，适配 flash 1M 窗口 |
 | 脚本语言 | TypeScript (bun) | 用户指定；test_hooks.py 通过 subprocess 调 bun run |
 | Hook 类型 | command | `bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/prompt-forge.ts` |
