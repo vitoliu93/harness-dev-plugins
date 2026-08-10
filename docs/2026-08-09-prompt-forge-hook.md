@@ -97,6 +97,10 @@ rewrite 时注入的 additionalContext 格式：
 - 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变（stdout 无输出）
 - Hook 自身 `process.exit(0)` 永远是最后一行——任何异常都被吞掉（stderr 留一行日志）
 
+### 可观测性：结果台账
+
+每次 hook 运行在 `${CCOBS_DIR:-~/.claude/observability}/prompt-forge.log` 追加一行 JSONL：`ts`、`session_id`、`gate`（1/2）、`verdict`（pass/rewrite/fail-open/fatal）、`elapsed_s`、`prompt_chars`、`transcript_chars`、`enriched_chars`。触发率、超时率、rewrite 率直接 grep/jq 可得。写入 best-effort，失败不阻塞。
+
 ### 可观测性：进度日志
 
 **界面实时信号**：hooks.json 为 UserPromptSubmit 注册了 `statusMessage`——hook 运行时终端显示 spinner「prompt-forge: 分析输入是否需要增强…」。这是界面唯一实时可见的信号（官方文档：`statusMessage` 是配置项，只能静态设置，hook 无法动态更新）。

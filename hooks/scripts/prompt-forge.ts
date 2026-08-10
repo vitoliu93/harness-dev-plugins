@@ -18,7 +18,8 @@
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, appendFileSync } from "node:fs";
+import { homedir } from "node:os";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -45,9 +46,9 @@ const CONFIRMATION_WORDS = new Set([
 const SPECIFIC_HINT_RE =
   /`[^`]+`|[\w.@~-]+\/[\w.@-]|\w\.(ts|tsx|js|jsx|mjs|py|md|json|go|rs|java|rb|sh|zsh|yml|yaml|toml|sql|css|html|vue|c|h|cpp)\b|\w+\(\)|:\d+\b/i;
 
-const LLM_CALL_TIMEOUT_MS = 120_000; // hook-level safety net; reasoning_effort=max on long transcripts runs 30-60s+
-// Worst-case budget vs the 65s hooks.json timeout:
-// 4×git(1s each) + bun boot(~0.5s) + 60s LLM ≈ 64.5s < 65s. Signals are
+const LLM_CALL_TIMEOUT_MS = 120_000; // hook-level safety net; reasoning_effort=max on long transcripts runs 30-70s
+// Worst-case budget vs the 125s hooks.json timeout:
+// 4×git(1s each) + bun boot(~0.5s) + 120s LLM ≈ 124.5s < 125s. Signals are
 // best-effort — a slow repo just loses the signal, never blocks the user.
 const GIT_TIMEOUT_MS = 1_000;
 
@@ -70,6 +71,19 @@ const LLM_CALL_SCRIPT = join(PLUGIN_ROOT, "skills", "llm-call", "scripts", "call
 // ---------------------------------------------------------------------------
 // Logging (stderr only — stdout must stay pure hook JSON)
 // ---------------------------------------------------------------------------
+
+// Durable outcome ledger — one JSONL line per hook run, queryable after the fact.
+const LEDGER_PATH = join(
+  process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability"),
+  "prompt-forge.log",
+);
+let transcriptChars = 0; // set by buildLLMPayload, read at ledger exits
+
+function ledger(fields: Record<string, unknown>): void {
+  try {
+    appendFileSync(LEDGER_PATH, JSON.stringify({ ts: new Date().toISOString(), ...fields }) + "\n");
+  } catch { /* ledger is best-effort — never block the hook */ }
+}
 
 function log(msg: string): void {
   process.stderr.write(`[prompt-forge] ${msg}\n`);
@@ -186,6 +200,7 @@ function buildLLMPayload(
 ): Record<string, unknown> {
   const signals = gitSignals(cwd);
   const history = transcriptContent(transcriptPath);
+  transcriptChars = history.length;
   log(`context: pruned transcript ${history.length} chars, git signals [${Object.keys(signals).join(", ") || "none"}]`);
 
   let contextBlock = "";
@@ -336,8 +351,10 @@ function run(): void {
 
   // Gate 1: zero-cost pass-through
   const g1 = gate1Pass(prompt);
+  const sid = String(payload.session_id || "");
   if (g1.pass) {
     log(`gate1 pass: ${g1.reason}`);
+    ledger({ session_id: sid, gate: 1, verdict: "pass", reason: g1.reason, prompt_chars: [...prompt].length });
     return;
   }
 
@@ -355,21 +372,26 @@ function run(): void {
   const result = callLLM(llmPayload);
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
 
+  const g2 = { session_id: sid, gate: 2, elapsed_s: Number(elapsed), prompt_chars: [...prompt].length, transcript_chars: transcriptChars };
   if (!result) {
     log(`gate2 llm-call failed in ${elapsed}s → fail-open, prompt unchanged`);
+    ledger({ ...g2, verdict: "fail-open" });
     return;
   }
   if (result.verdict !== "rewrite") {
     log(`gate2 verdict=pass in ${elapsed}s → prompt unchanged`);
+    ledger({ ...g2, verdict: "pass" });
     return;
   }
   const enriched = String(result.enriched || "").trim();
   if (!enriched) {
     log("gate2 verdict=rewrite but enriched empty → fail-open, prompt unchanged");
+    ledger({ ...g2, verdict: "fail-open", reason: "enriched empty" });
     return;
   }
 
   log(`gate2 verdict=rewrite in ${elapsed}s (enriched=${[...enriched].length} chars) → injecting additionalContext`);
+  ledger({ ...g2, verdict: "rewrite", enriched_chars: [...enriched].length });
   console.log(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
@@ -380,5 +402,6 @@ function run(): void {
 
 try { run(); } catch (e) {
   log(`fatal: ${e instanceof Error ? e.message : String(e)} → fail-open`);
+  ledger({ verdict: "fatal", reason: String(e instanceof Error ? e.message : e).slice(0, 200) });
 }
 process.exit(0);
