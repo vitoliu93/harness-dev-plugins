@@ -6,7 +6,8 @@
     "cursor": "Cursor Ultra subscription",
     "kimi": "Kimi Code subscription",
     "deepseek": "DeepSeek quota via dscode",
-    "volcengine": "Volcengine coding plan"
+    "volcengine": "Volcengine coding plan",
+    "google": "Gemini API key"
   },
   "cells": [
     {
@@ -75,6 +76,20 @@
       "notes": "1M ctx; vision; small quota",
       "slots": {
         "long_context": { "model": "k3", "family": "moonshot", "status": "supported" }
+      }
+    },
+    {
+      "id": "pi",
+      "cli": "pi",
+      "enabled": true,
+      "quota_pool": "google",
+      "carrier_sheet": "pi.md",
+      "capabilities": ["vision", "resume", "unattended"],
+      "launch": "pi -p --mode json --model google/<slot> '<brief>'",
+      "notes": "no permission flags — tools auto-run headless, worktree mandatory; check `pi auth check --provider google --json` before dispatch; other ready providers (deepseek/moonshotai/…) duplicate native carriers — use those instead",
+      "slots": {
+        "fast_light":   { "model": "gemini-3.5-flash",     "family": "google", "status": "supported", "note": "vision ok; 1M ctx" },
+        "long_context": { "model": "gemini-3.1-pro-preview", "family": "google", "status": "unknown",  "note": "text probe ok; write path unprobed" }
       }
     },
     {
