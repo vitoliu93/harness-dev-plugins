@@ -271,8 +271,8 @@ test("prompt-forge-logging", async () => {
 }, TIMEOUT);
 
 test("prompt-forge-transcript-prune", async () => {
-  // Session JSONL is pruned to user/assistant text turns before the LLM call:
-  // tool_use/tool_result blocks, base64 images, and junk lines are dropped.
+  // Session JSONL pruning: text/thinking/tool_use (input capped at 2K) are
+  // kept; tool_result blocks, base64 images, and junk lines are dropped.
   const d = tmp();
   try {
     const tp = join(d, "t.jsonl");
@@ -285,6 +285,7 @@ test("prompt-forge-transcript-prune", async () => {
           type: "assistant",
           message: {
             content: [
+              { type: "thinking", thinking: "pondering" },
               { type: "text", text: "reading file" },
               { type: "tool_use", name: "Read", input: { big } },
             ],
@@ -303,8 +304,13 @@ test("prompt-forge-transcript-prune", async () => {
       }),
       { PROMPT_FORGE_TEST_MOCK: '{"verdict":"pass"}' },
     );
-    // "user: hello world\n\nassistant: reading file" = 42 chars — the 10K blobs are gone
-    expect(res.stderr).toContain("pruned transcript 42 chars");
+    // Mirror the expected pruned output: 10K tool_result/image blobs gone,
+    // tool_use input capped to 2000 chars + ellipsis.
+    const cappedInput = JSON.stringify({ big }).slice(0, 2_000) + "…";
+    const expected =
+      "user: hello world\n\n" +
+      `assistant: [thinking] pondering\nreading file\n[tool_use] Read ${cappedInput}`;
+    expect(res.stderr).toContain(`pruned transcript ${expected.length} chars`);
   } finally {
     rmSync(d, { recursive: true, force: true });
   }

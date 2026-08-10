@@ -51,10 +51,13 @@ const LLM_CALL_TIMEOUT_MS = 60_000; // hook-level safety net
 // best-effort — a slow repo just loses the signal, never blocks the user.
 const GIT_TIMEOUT_MS = 1_000;
 
-// Transcript budget after pruning to user/assistant text. Raw session JSONL
-// reaches tens of MB (tool dumps, base64 images) and overflows the
-// deepseek-v4-flash 1M-token window; keep the pruned tail well under it.
+// Transcript budget after pruning. Raw session JSONL reaches tens of MB
+// (tool results, base64 images) and overflows the deepseek-v4-flash
+// 1M-token window; keep the pruned tail well under it.
 const MAX_TRANSCRIPT_CHARS = 500_000;
+// tool_use inputs are kept as work trace but a single Write/Edit body can
+// crowd the tail out of the budget — cap each block's serialized input.
+const MAX_TOOL_USE_INPUT_CHARS = 2_000;
 
 // ---------------------------------------------------------------------------
 // Resolve paths relative to this script
@@ -126,8 +129,9 @@ function gitSignals(cwd: string): Record<string, string> {
 // Transcript
 // ---------------------------------------------------------------------------
 
-// Prune session JSONL to user/assistant text turns: tool_use/tool_result
-// blocks, thinking, and base64 images are dropped; tail-capped to budget.
+// Prune session JSONL to user/assistant turns. Kept: text, thinking, and
+// tool_use (input capped) — the assistant's work trace. Dropped: tool_result
+// and base64 images, the token bulk. Tail-capped to budget.
 function transcriptContent(transcriptPath: string | undefined): string {
   if (!transcriptPath || !existsSync(transcriptPath)) return "";
   let raw: string;
@@ -147,10 +151,22 @@ function transcriptContent(transcriptPath: string | undefined): string {
     if (typeof content === "string") {
       text = content;
     } else if (Array.isArray(content)) {
-      text = content
-        .filter((b: any) => b?.type === "text" && typeof b.text === "string")
-        .map((b: any) => b.text)
-        .join("\n");
+      const parts: string[] = [];
+      for (const b of content) {
+        if (b?.type === "text" && typeof b.text === "string") {
+          parts.push(b.text);
+        } else if (b?.type === "thinking" && typeof b.thinking === "string") {
+          parts.push(`[thinking] ${b.thinking}`);
+        } else if (b?.type === "tool_use") {
+          let input = "";
+          try { input = JSON.stringify(b.input ?? {}); } catch { /* keep name only */ }
+          if (input.length > MAX_TOOL_USE_INPUT_CHARS) {
+            input = input.slice(0, MAX_TOOL_USE_INPUT_CHARS) + "…";
+          }
+          parts.push(`[tool_use] ${b.name} ${input}`);
+        }
+      }
+      text = parts.join("\n");
     }
     text = text.trim();
     if (text) turns.push(`${entry.type}: ${text}`);

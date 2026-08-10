@@ -81,7 +81,7 @@ rewrite 时注入的 additionalContext 格式：
 | 字段 | 用途 | 读取量 |
 |---|---|---|
 | `prompt` | 需要判定的用户输入 | 全部 |
-| `transcript_path` | 会话历史，推断"上次讨论的方案"、"那个文件" | 剪枝后全量：只留 user/assistant 文本轮次，去 tool_use/tool_result/thinking/图片 base64，尾部截断 500K chars（适配 flash 1M 窗口） |
+| `transcript_path` | 会话历史，推断"上次讨论的方案"、"那个文件" | 剪枝后全量：保留 text/thinking/tool_use（单块入参截断 2K，工作留痕），去 tool_result 与图片 base64（token 大头），尾部截断 500K chars（适配 flash 1M 窗口） |
 | `cwd` | 仓库根目录，读取 git 信号 | `git branch --show-current`, `git log --oneline -5`, `git diff --name-only HEAD~1`, `git status --short` |
 | `session_id` | 日志标识 | — |
 
@@ -194,7 +194,7 @@ rewrite 时注入的 additionalContext 格式：
 ### 隐私
 
 - prompt 内容发送至 DeepSeek API
-- 剪枝后 transcript（user/assistant 文本轮次，≤500K chars）发送至 DeepSeek API；工具输出与图片不发送
+- 剪枝后 transcript（对话文本 + thinking + tool_use 入参，≤500K chars）发送至 DeepSeek API；工具输出结果与图片不发送
 - 不发送文件内容，只发送文件路径（来自 git diff）
 - 敏感项目需用户自行评估是否启用
 
@@ -217,7 +217,7 @@ rewrite 时注入的 additionalContext 格式：
 | 确认词表语言 | en + zh + emoji | 覆盖中英双语工作环境 |
 | LLM 模型 | deepseek-v4-flash | 与 llm-call 默认一致，成本低，判定任务不需要最强模型 |
 | 超时 | 60s | 足够 flash 模型返回，超出说明出了问题，不值得等 |
-| 上下文预算 | 剪枝 transcript ≤500K chars + git 信号 | 只留对话文本（去 tool 块/图片），尾部截断，适配 flash 1M 窗口 |
+| 上下文预算 | 剪枝 transcript ≤500K chars + git 信号 | 留 text/thinking/tool_use（入参截 2K），去 tool_result/图片，尾部截断，适配 flash 1M 窗口 |
 | 脚本语言 | TypeScript (bun) | 用户指定；test_hooks.py 通过 subprocess 调 bun run |
 | Hook 类型 | command | `bun run ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/prompt-forge.ts` |
 | 静默 fail | 所有异常 exit(0) | 永不阻塞用户输入 |
