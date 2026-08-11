@@ -1,0 +1,106 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": [
+    "解释",
+    "实现",
+    "委派"
+  ],
+  "should_trigger": [
+    {
+      "text": "这个界面改动帮我验收一下，每项要 PASS/FAIL 和证据",
+      "family": "ui_acceptance"
+    },
+    {
+      "text": "验一下界面，别只看截图，拿 DOM 证据来",
+      "family": "dom_evidence"
+    },
+    {
+      "text": "选中框没出现，是 bug 还是设计，取证判定一下",
+      "family": "canvas_target"
+    },
+    {
+      "text": "分层画布上点不中目标元素，选中的是覆盖层，怎么验",
+      "family": "canvas_target"
+    },
+    {
+      "text": "verify this UI change and give me PASS/FAIL with computed style assertion",
+      "family": "ui_acceptance"
+    },
+    {
+      "text": "时间线条目的选中态验一下，要元素几何数值",
+      "family": "dom_evidence"
+    },
+    {
+      "text": "把这轮界面验收沉淀成可重跑探针，复验直接跑脚本",
+      "family": "probe_verdict"
+    },
+    {
+      "text": "这个交互改动生效了吗，给我证据包和复现步骤",
+      "family": "probe_verdict"
+    },
+    {
+      "text": "图层面板的角标没渲染，判 FAIL 之前先查清楚",
+      "family": "canvas_target"
+    },
+    {
+      "text": "前端改动验收，只验 diff 触及的行为，输出 JSON verdict",
+      "family": "ui_acceptance"
+    },
+    {
+      "text": "像素判读靠不住，改成断言元素属性再判定",
+      "family": "dom_evidence"
+    },
+    {
+      "text": "accept this UI behavior with a browser probe and one decisive evidence per item",
+      "family": "probe_verdict"
+    }
+  ],
+  "should_not_trigger": [
+    {
+      "text": "帮我打开这个页面登录一下，把表单填了",
+      "family": "browser_driving_only"
+    },
+    {
+      "text": "点一下这个按钮，然后抓一下页面上的列表数据",
+      "family": "browser_driving_only"
+    },
+    {
+      "text": "核验这份文档还准不准，逐条对照代码取证",
+      "family": "doc_verify"
+    },
+    {
+      "text": "fact-check this doc against the codebase claim by claim",
+      "family": "doc_verify"
+    },
+    {
+      "text": "这个组件帮我实现一下，顺便调一下样式",
+      "family": "build_ui"
+    },
+    {
+      "text": "解释一下这个渲染流程是什么意思",
+      "family": "explain_only"
+    },
+    {
+      "text": "curl 这个端点看接口返回对不对",
+      "family": "backend_check"
+    }
+  ],
+  "near_neighbor": [
+    {
+      "text": "用浏览器打开后台页面，把这几个字段抓出来给我",
+      "family": "browser_driving_only"
+    },
+    {
+      "text": "这份说明文档里的声明还成立吗，给我核验报告",
+      "family": "doc_verify"
+    },
+    {
+      "text": "把这批任务委派出去，编排一下别让 worker 撞车",
+      "family": "delegation"
+    },
+    {
+      "text": "查一下数据库和服务日志，看这次请求发生了什么",
+      "family": "backend_check"
+    }
+  ]
+}

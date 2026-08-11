@@ -1,0 +1,139 @@
+{
+  "positive_concepts": {
+    "ui_acceptance": {
+      "weight": 0.5,
+      "phrases": [
+        "UI 验收",
+        "界面验收",
+        "验收",
+        "验一下界面",
+        "界面改动",
+        "前端改动",
+        "交互改动",
+        "UI change",
+        "UI behavior",
+        "accept this UI",
+        "怎么验",
+        "验一下"
+      ]
+    },
+    "dom_evidence": {
+      "weight": 0.45,
+      "phrases": [
+        "DOM",
+        "计算样式",
+        "元素几何",
+        "元素属性",
+        "截图",
+        "像素",
+        "computed style",
+        "数值证据",
+        "断言"
+      ]
+    },
+    "canvas_target": {
+      "weight": 0.4,
+      "phrases": [
+        "画布",
+        "时间线",
+        "图层",
+        "选中框",
+        "角标",
+        "手柄",
+        "选中态",
+        "列表行",
+        "覆盖层",
+        "没渲染"
+      ]
+    },
+    "probe_verdict": {
+      "weight": 0.35,
+      "phrases": [
+        "探针",
+        "PASS/FAIL",
+        "证据包",
+        "verdict",
+        "复现步骤",
+        "probe",
+        "可重跑",
+        "决定性证据",
+        "取证",
+        "判定",
+        "FAIL"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "browser_driving_only": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "打开这个页面",
+        "帮我登录一下",
+        "把表单填了",
+        "抓一下这个页面的数据",
+        "点一下这个按钮",
+        "open the page and click"
+      ]
+    },
+    "doc_verify": {
+      "weight": 0.32,
+      "exclusive": true,
+      "phrases": [
+        "核验文档",
+        "文档还准不准",
+        "逐条对照代码取证",
+        "README 声明",
+        "fact-check this doc"
+      ]
+    },
+    "delegation": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "委派出去",
+        "编排一下",
+        "fan out",
+        "派给 vendor",
+        "并行开发别撞车"
+      ]
+    },
+    "build_ui": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "写个页面",
+        "做个原型",
+        "实现这个组件",
+        "调一下样式",
+        "改一下布局"
+      ]
+    },
+    "backend_check": {
+      "weight": 0.28,
+      "exclusive": true,
+      "phrases": [
+        "接口返回对不对",
+        "查一下数据库",
+        "看服务日志",
+        "curl 这个端点"
+      ]
+    },
+    "explain_only": {
+      "weight": 0.3,
+      "exclusive": true,
+      "phrases": [
+        "解释",
+        "什么意思",
+        "是什么",
+        "讲讲"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "ui_acceptance",
+    "dom_evidence",
+    "canvas_target",
+    "probe_verdict"
+  ]
+}

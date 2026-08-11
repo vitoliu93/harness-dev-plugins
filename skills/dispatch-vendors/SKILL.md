@@ -32,6 +32,17 @@ the provider 坑 (carrier sheets) and the capability-level
 [model-use-guide.md](references/model-use-guide.md) — concrete model names
 live in the manifest only.
 
+## Transport — herdr first
+
+Dispatch's structural weakness is opacity: the work runs in someone else's
+process and surfaces only as a final receipt, so a stale brief burns a whole
+run before anyone notices. Inside Herdr (`HERDR_ENV=1`), give each vendor its
+own split — the run stays observable while it happens, and mid-flight
+correction is cheap in a visible pane, expensive after a receipt. Headless
+launchers are the same dispatch minus the observability: use them only when
+nobody is there to watch (outside Herdr, unattended/cron). Per-cell herdr
+support (agent kind, launch quirks) is recorded in the manifest.
+
 ## Hard rule
 
 Advice is hypothesis until you Read cited code paths. Vendor does not commit — you verify.

@@ -27,6 +27,22 @@ Delegation pays when spec + acceptance is cheaper than coding yourself.
 - **Subagent**: needs session context
 - **Host**: boundaries, spec, acceptance, arbitration, L3+ rescue
 
+## Verification lanes
+
+Machine acceptance proves a change was built right; it cannot prove it
+*presents* right. Route by where the change's truth is observable, not by which
+layer of the stack it edits: a diff whose outcome is fully machine-assertable
+(a contract, a row, a pipeline state) needs no eyes — even in a frontend repo.
+When the truth only exists in a rendered page, mount the **visual role** on top
+of machine acceptance.
+
+The visual role is an abstract slot: "an agent with eyes on a browser". This
+layer knows only that the slot exists; which agent fills it, what it certifies,
+and how it drives the browser belong to the SOP layer (`visual-evidence`,
+`opencli-browser`) and the project's own binding. Presentation verification is
+token-expensive while a human look is fast — the visual agent runs full
+acceptance by default; the human is the cheap recheck and fallback channel.
+
 Details: [spec-pack.md](references/spec-pack.md) · [gates.md](references/gates.md) · [recovery-ledger.md](references/recovery-ledger.md)
 
 ## Recovery

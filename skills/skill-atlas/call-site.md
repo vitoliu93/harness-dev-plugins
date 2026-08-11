@@ -28,6 +28,7 @@
 | no-ai-slop | atom | 收尾汇报 · "汇报/说人话/去 AI 味" | ②③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | doc-claim-verify | sop | "核验/实证文档声明·文档还准不准" · cto-audit/debrief 文档取证 | ③ |
+| visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 
 新增/改名原子 → 本表补一行。填不出 call site → 别 ship 或显式豁免低频按需。
 
