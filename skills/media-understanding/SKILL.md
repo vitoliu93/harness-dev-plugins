@@ -24,9 +24,12 @@ Requires GEMINI_API_KEY; optional GEMINI_BASE_URL.
 
 - audio-only for speech-only (cheapest)
 - full video when screen content matters
-- media longer than one chunk is segmented automatically (default 30min audio /
-  10min video), understood per segment, then merged. Output = merged digest +
-  per-segment notes with absolute timestamps. `--chunk-minutes 0` disables it.
+- big files (screen recordings, 100MB+) are shrunk and still ride one request —
+  cheaper than segmenting, since Gemini bills video by duration, not bytes
+- only media over 45min is segmented (30min audio / 10min video chunks),
+  understood per segment, then merged. Output = merged digest + per-segment notes
+  with absolute timestamps. `--chunk-minutes 0` disables, `--chunk-minutes N`
+  forces N-minute chunks on anything longer than N.
 
 See workflow.md in references/.
 

@@ -40,13 +40,26 @@ Gemini bills media by duration. Audio ≈ 32 tokens/sec; video ≈ 258 tokens/se
 ~29.6k tokens. **Default to `--audio-only`**; reach for video only when the
 screen carries meaning the speech doesn't.
 
-## Long media (1h+ talks, streams, full YouTube lectures)
+## Size vs. duration — two different problems
 
-The script segments anything longer than one chunk, understands each segment
-separately, then merges. Defaults: 30min per chunk for audio, 10min for video
-(video bills 258 tok/s, so a 30min video chunk alone is ~465k tokens). Three
-segments upload and generate concurrently. `--chunk-minutes N` overrides,
-`--chunk-minutes 0` forces one request.
+- **Size** (a 300MB screen recording): shrink it. The script does this itself
+  above 100MB. One request, and it costs nothing extra — Gemini bills video by
+  duration, so fewer bytes ≠ fewer tokens. This is the cheap path; prefer it.
+- **Duration** (a 2h talk): segment it. Nothing but fewer minutes per request
+  lowers the token count, and segmenting pays N+1 requests for it.
+
+A 100MB+ 20-minute recording is a size problem only — it gets shrunk, not split.
+
+## Long media (45min+ talks, streams, full YouTube lectures)
+
+Media over **45 minutes** is segmented: each segment is understood separately,
+then merged. Chunk defaults are 30min for audio, 10min for video (video bills
+258 tok/s, so a 30min video chunk alone is ~465k tokens). Three segments upload
+and generate concurrently. `--chunk-minutes N` sets the chunk length *and* lowers
+the segmenting bar to N minutes; `--chunk-minutes 0` forces one request.
+
+A long file that is also huge needs no special handling — the segmenting pass
+re-encodes to 720p/1fps anyway, so size is solved on the way through.
 
 - Output is the merged digest, then `# Segment notes` with one section per
   segment headed by its absolute range (`## 01:30:00–02:00:00`).

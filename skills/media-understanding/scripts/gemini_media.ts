@@ -107,6 +107,15 @@ async function req(
 /** Video bigger than this is downscaled before upload (see the shrink block below). */
 const SHRINK_OVER_BYTES = 100 * 1024 * 1024;
 
+/**
+ * Only media longer than this is segmented. Size and duration are separate problems:
+ * a fat screen recording is a size problem — shrinking fixes the upload and still
+ * rides one request, and costs nothing extra since Gemini bills video by duration,
+ * not bytes. Segmenting is for the duration problem alone, and pays for it with N+1
+ * requests. `--chunk-minutes 0` forces one request regardless.
+ */
+const SEGMENT_OVER_SEC = 45 * 60;
+
 const mb = (n: number): string => `${(n / 1024 / 1024).toFixed(1)}MB`;
 
 /** 非零退出 → throw, so callers' finally blocks still clean up their temp files. */
@@ -282,15 +291,19 @@ async function main(): Promise<void> {
   let instruction = prompt ?? DEFAULT_PROMPT;
   if (question) instruction = `Focus on answering: "${question}".\n\n` + instruction;
 
-  // Long media (2-3h talks, streams) can't ride one request: full video at 258 tok/s
-  // blows past the context window, and a single 3h call loses everything if it fails.
-  // Segment it, understand each part with absolute timestamps, then reduce.
+  // Only genuinely long media (45min+ talks, streams) is segmented: full video at
+  // 258 tok/s blows past the context window there, and a single 3h call loses
+  // everything if it fails. Anything shorter rides one request — oversized files
+  // are handled by the shrink below, which is cheaper than N+1 requests.
   const chunkSec = (chunkMinutes ?? (audioOnly ? 30 : 10)) * 60;
+  // An explicit --chunk-minutes N means "I want N-minute chunks", so it also lowers
+  // the bar for segmenting; the 45min policy is only the default.
+  const segmentOver = chunkMinutes === null ? SEGMENT_OVER_SEC : chunkSec * 1.2;
   if (chunkSec > 0) {
     const duration = await probeSeconds(file);
     if (duration === 0) {
       process.stderr.write("warning: duration unknown, sending as one request\n");
-    } else if (duration > chunkSec * 1.2) {
+    } else if (duration > segmentOver) {
       await runSegmented(api, file, instruction, audioOnly, duration, chunkSec);
       return;
     }
