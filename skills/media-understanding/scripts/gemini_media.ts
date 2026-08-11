@@ -78,12 +78,23 @@ interface Resp {
 /** urllib.request.urlopen 语义: 4xx/5xx → stderr + exit 1 */
 async function req(
   url: string,
-  opts: { data?: BodyInit; headers?: Record<string, string>; method?: string } = {},
+  opts: {
+    data?: BodyInit;
+    headers?: Record<string, string>;
+    method?: string;
+    timeoutMs?: number;
+  } = {},
 ): Promise<Resp> {
   const method = opts.method ?? "GET";
   let resp: Response;
   try {
-    resp = await fetch(url, { method, headers: opts.headers, body: opts.data });
+    resp = await fetch(url, {
+      method,
+      headers: opts.headers,
+      body: opts.data,
+      // ponytail: without a deadline a stalled upload/generate hangs forever, silently.
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 600_000),
+    });
   } catch (e) {
     process.stderr.write(`${e instanceof Error ? e.message : String(e)}\n`);
     process.exit(1);
@@ -95,6 +106,27 @@ async function req(
     process.exit(1);
   }
   return { headers: resp.headers, body: Buffer.from(await resp.arrayBuffer()) };
+}
+
+/** Video bigger than this is downscaled before upload (see the shrink block below). */
+const SHRINK_OVER_BYTES = 100 * 1024 * 1024;
+
+const mb = (n: number): string => `${(n / 1024 / 1024).toFixed(1)}MB`;
+
+/** subprocess.run(check=True) 语义: 非零退出 → stderr + exit 1 */
+async function ffmpeg(args: string[]): Promise<void> {
+  const proc = Bun.spawn(["ffmpeg", "-y", "-v", "error", ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const code = await proc.exited;
+  if (code !== 0) {
+    process.stderr.write(
+      `Command '["ffmpeg", ...]' returned non-zero exit status ${code}.\n` +
+        (await new Response(proc.stderr).text()),
+    );
+    process.exit(1);
+  }
 }
 
 function usage(): never {
@@ -152,19 +184,27 @@ async function main(): Promise<void> {
   let path = file;
   if (audioOnly) {
     tmp = join(tmpdir(), `gemini_media_${process.pid}_${Date.now()}.mp3`);
-    const proc = Bun.spawn(
-      ["ffmpeg", "-y", "-i", path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "libmp3lame", tmp],
-      { stdout: "pipe", stderr: "pipe" },
-    );
-    const code = await proc.exited;
-    if (code !== 0) {
-      // subprocess.run(check=True) → CalledProcessError → exit 1
-      process.stderr.write(
-        `Command '["ffmpeg", ...]' returned non-zero exit status ${code}.\n`,
-      );
-      process.exit(1);
-    }
+    await ffmpeg(["-i", path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "libmp3lame", tmp]);
     path = tmp;
+  } else if (
+    (MIME[extname(path).toLowerCase()] ?? "").startsWith("video/") &&
+    statSync(path).size > SHRINK_OVER_BYTES
+  ) {
+    // Retina screen recordings run 100MB+; the resumable upload has no recovery path
+    // and just stalls. 1080p/6fps keeps UI text readable and bills far fewer tokens.
+    const before = statSync(path).size;
+    tmp = join(tmpdir(), `gemini_media_${process.pid}_${Date.now()}.mp4`);
+    await ffmpeg([
+      "-i", path,
+      "-vf", "scale='min(1920,iw)':-2,fps=6",
+      "-c:v", "libx264", "-crf", "28", "-preset", "veryfast",
+      "-c:a", "aac", "-b:a", "64k", "-ac", "1",
+      tmp,
+    ]);
+    path = tmp;
+    process.stderr.write(
+      `shrank video ${mb(before)} -> ${mb(statSync(path).size)} before upload\n`,
+    );
   }
 
   const size = statSync(path).size;
@@ -193,6 +233,7 @@ async function main(): Promise<void> {
   }
 
   // 2. upload bytes + finalize
+  process.stderr.write(`uploading ${mb(size)}...\n`);
   const bytes = new Uint8Array(await Bun.file(path).arrayBuffer());
   const r2 = await req(session, {
     data: bytes,

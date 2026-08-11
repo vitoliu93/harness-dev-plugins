@@ -75,5 +75,8 @@ full audio then trim locally: `ffmpeg -y -i in.webm -t 120 -ac 1 -ar 16000 out.m
 - Auth is sent as the `x-goog-api-key` header.
 - Large files: the File API handles them via resumable upload; the script then
   polls until the file is `ACTIVE` (server-side processing) before generating.
+- Video over 100MB is downscaled to 1080p/6fps by the script before upload
+  (a 128MB Retina screen recording becomes ~4MB). Raw Retina captures stall the
+  upload; every request also carries a 600s deadline so a stall errors out.
 - Confirm the model id is listed on the endpoint: list with
   `curl -s "${GEMINI_BASE_URL}/models?key=${GEMINI_API_KEY}"`.
