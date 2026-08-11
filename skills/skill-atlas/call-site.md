@@ -27,6 +27,7 @@
 | use-html | atom | 可视化(skill-guard→executor) · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
 | no-ai-slop | atom | 收尾汇报 · "汇报/说人话/去 AI 味" | ②③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
+| doc-claim-verify | sop | "核验/实证文档声明·文档还准不准" · cto-audit/debrief 文档取证 | ③ |
 
 新增/改名原子 → 本表补一行。填不出 call site → 别 ship 或显式豁免低频按需。
 
@@ -37,6 +38,7 @@
 - **recall** — 仅触发词;观察"以前查过吗"是否长成肌肉记忆
 - **use-html 原型模式** — 非 S 的 UI 任务走完计划却没有 prototype.html → 闸门位置错
 - **cto-audit** — debrief 提醒是否真触发
+- **doc-claim-verify** — 仅触发词;观察 cto-audit / debrief 是否该固定接一段文档取证
 - **resume-learning vs take-over/advanced-plan** — 裸"继续"争路由;收紧到"读档"
 
 ## 已归档
