@@ -10,6 +10,9 @@
  * Designed to be run by a content-understanding subagent so the media and raw
  * transcript never touch the main window — only the returned digest does.
  *
+ * Long media (2-3h talks, full streams) is split into segments, each understood
+ * separately with absolute timestamps, then merged in one text-only reduce pass.
+ *
  * Usage:
  *     gemini_media.ts <file> [--audio-only] [--question "..."] [--model gemini-3.5-flash-lite]
  *
@@ -19,11 +22,13 @@
  *     --model M      Gemini model id (default gemini-3.5-flash-lite; the cheaper
  *                    gemini-2.5-flash-lite also works)
  *     --prompt P     fully override the instruction sent to Gemini
+ *     --chunk-minutes N  segment length for long media (default 30 audio / 10 video,
+ *                    0 disables segmenting)
  *
  * Python 原版 gemini_media.py 的逐字节兼容移植 (bun 驱动, 零三方依赖)。
  */
 
-import { existsSync, statSync, unlinkSync } from "node:fs";
+import { mkdirSync, readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 
@@ -75,7 +80,7 @@ interface Resp {
   body: Buffer;
 }
 
-/** urllib.request.urlopen 语义: 4xx/5xx → stderr + exit 1 */
+/** 4xx/5xx → throw, so a failed segment can be skipped instead of killing the run. */
 async function req(
   url: string,
   opts: {
@@ -86,24 +91,15 @@ async function req(
   } = {},
 ): Promise<Resp> {
   const method = opts.method ?? "GET";
-  let resp: Response;
-  try {
-    resp = await fetch(url, {
-      method,
-      headers: opts.headers,
-      body: opts.data,
-      // ponytail: without a deadline a stalled upload/generate hangs forever, silently.
-      signal: AbortSignal.timeout(opts.timeoutMs ?? 600_000),
-    });
-  } catch (e) {
-    process.stderr.write(`${e instanceof Error ? e.message : String(e)}\n`);
-    process.exit(1);
-  }
+  const resp = await fetch(url, {
+    method,
+    headers: opts.headers,
+    body: opts.data,
+    // ponytail: without a deadline a stalled upload/generate hangs forever, silently.
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 600_000),
+  });
   if (!resp.ok) {
-    process.stderr.write(
-      `HTTP ${resp.status} on ${method} ${url}\n${await resp.text()}\n`,
-    );
-    process.exit(1);
+    throw new Error(`HTTP ${resp.status} on ${method} ${url}\n${await resp.text()}`);
   }
   return { headers: resp.headers, body: Buffer.from(await resp.arrayBuffer()) };
 }
@@ -129,10 +125,119 @@ async function ffmpeg(args: string[]): Promise<void> {
   }
 }
 
-function usage(): never {
-  process.stderr.write(
-    "usage: gemini_media.ts [-h] [--audio-only] [--question QUESTION] [--model MODEL] [--prompt PROMPT] file\n",
+/** Duration in seconds, 0 if ffprobe can't tell (streams without a header). */
+async function probeSeconds(path: string): Promise<number> {
+  const proc = Bun.spawn(
+    ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+    { stdout: "pipe", stderr: "ignore" },
   );
+  const out = await new Response(proc.stdout).text();
+  await proc.exited;
+  return Number.parseFloat(out.trim()) || 0;
+}
+
+const hhmmss = (s: number): string =>
+  [s / 3600, (s % 3600) / 60, s % 60].map((n) => String(Math.floor(n)).padStart(2, "0")).join(":");
+
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, i: number) => Promise<R>,
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, async () => {
+      for (let i = next++; i < items.length; i = next++) out[i] = await fn(items[i], i);
+    }),
+  );
+  return out;
+}
+
+interface Api {
+  base: string;
+  upload: string;
+  auth: Record<string, string>;
+  model: string;
+}
+
+let tokensUsed = 0;
+
+/** generateContent on already-built parts (media parts or plain text). */
+async function generate(api: Api, parts: unknown[]): Promise<string> {
+  const r = await req(`${api.base}/models/${api.model}:generateContent`, {
+    data: dumpsAscii({ contents: [{ parts }] }),
+    headers: { ...api.auth, "Content-Type": "application/json" },
+    method: "POST",
+  });
+  const resp = JSON.parse(r.body.toString("utf-8"));
+  const got = resp?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(got)) {
+    throw new Error("unexpected response:\n" + JSON.stringify(resp).slice(0, 1000));
+  }
+  tokensUsed += resp?.usageMetadata?.totalTokenCount ?? 0;
+  return got.map((p: any) => p?.text ?? "").join("");
+}
+
+/** Upload one media file via the File API, wait for ACTIVE, then generate. */
+async function understand(api: Api, path: string, instruction: string): Promise<string> {
+  const size = statSync(path).size;
+  const mime = MIME[extname(path).toLowerCase()] ?? "application/octet-stream";
+
+  // 1. start resumable upload session
+  const h1 = (
+    await req(api.upload, {
+      data: dumpsAscii({ file: { display_name: basename(path) } }),
+      headers: {
+        ...api.auth,
+        "X-Goog-Upload-Protocol": "resumable",
+        "X-Goog-Upload-Command": "start",
+        "X-Goog-Upload-Header-Content-Length": String(size),
+        "X-Goog-Upload-Header-Content-Type": mime,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+  ).headers;
+  const session = h1.get("x-goog-upload-url");
+  if (!session) throw new Error("no x-goog-upload-url in upload session response");
+
+  // 2. upload bytes + finalize
+  process.stderr.write(`uploading ${basename(path)} (${mb(size)})...\n`);
+  const r2 = await req(session, {
+    data: new Uint8Array(await Bun.file(path).arrayBuffer()),
+    headers: {
+      ...api.auth,
+      "Content-Length": String(size),
+      "X-Goog-Upload-Offset": "0",
+      "X-Goog-Upload-Command": "upload, finalize",
+      // urllib 对无显式 Content-Type 的字节 data 默认加 application/x-www-form-urlencoded
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    method: "POST",
+  });
+  const f = JSON.parse(r2.body.toString("utf-8")).file;
+  let state: string | undefined = f.state;
+
+  // 3. wait for ACTIVE (video/audio is processed server-side)
+  for (let waited = 0; state === "PROCESSING" && waited < 300; waited += 3) {
+    await Bun.sleep(3000);
+    state = JSON.parse((await req(`${api.base}/${f.name}`, { headers: api.auth })).body.toString("utf-8")).state;
+  }
+  if (state !== "ACTIVE") throw new Error(`file did not become ACTIVE (state=${state})`);
+
+  // 4. generate
+  return generate(api, [
+    { file_data: { mime_type: mime, file_uri: f.uri } },
+    { text: instruction },
+  ]);
+}
+
+const USAGE =
+  "usage: gemini_media.ts [-h] [--audio-only] [--question QUESTION] [--model MODEL] [--prompt PROMPT] [--chunk-minutes N] file\n";
+
+function usage(): never {
+  process.stderr.write(USAGE);
   process.exit(2);
 }
 
@@ -143,6 +248,7 @@ async function main(): Promise<void> {
   let question: string | null = null;
   let model = "gemini-3.5-flash-lite";
   let prompt: string | null = null;
+  let chunkMinutes: number | null = null;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const takeVal = (flag: string): string => {
@@ -156,10 +262,11 @@ async function main(): Promise<void> {
     else if (a.startsWith("--model=")) model = a.slice("--model=".length);
     else if (a === "--prompt") prompt = takeVal(a);
     else if (a.startsWith("--prompt=")) prompt = a.slice("--prompt=".length);
+    else if (a === "--chunk-minutes") chunkMinutes = Number(takeVal(a));
+    else if (a.startsWith("--chunk-minutes="))
+      chunkMinutes = Number(a.slice("--chunk-minutes=".length));
     else if (a === "-h" || a === "--help") {
-      process.stdout.write(
-        "usage: gemini_media.ts [-h] [--audio-only] [--question QUESTION] [--model MODEL] [--prompt PROMPT] file\n",
-      );
+      process.stdout.write(USAGE);
       process.exit(0);
     } else if (!a.startsWith("-") && file === undefined) file = a;
     else usage();
@@ -172,10 +279,23 @@ async function main(): Promise<void> {
     process.stderr.write("KeyError: 'GEMINI_API_KEY'\n");
     process.exit(1);
   }
-  const { base, upload: uploadUrl } = apiUrls(
+  const urls = apiUrls(
     process.env.GEMINI_BASE_URL ?? "https://generativelanguage.googleapis.com/v1beta",
   );
-  const auth = { "x-goog-api-key": key };
+  const api: Api = { ...urls, auth: { "x-goog-api-key": key }, model };
+
+  let instruction = prompt ?? DEFAULT_PROMPT;
+  if (question) instruction = `Focus on answering: "${question}".\n\n` + instruction;
+
+  // Long media (2-3h talks, streams) can't ride one request: full video at 258 tok/s
+  // blows past the context window, and a single 3h call loses everything if it fails.
+  // Segment it, understand each part with absolute timestamps, then reduce.
+  const duration = await probeSeconds(file);
+  const chunkSec = (chunkMinutes ?? (audioOnly ? 30 : 10)) * 60;
+  if (chunkSec > 0 && duration > chunkSec * 1.2) {
+    await runSegmented(api, file, instruction, audioOnly, duration, chunkSec);
+    return;
+  }
 
   // --audio-only: transcode any container to a Gemini-supported 16k mono mp3.
   // Downloads commonly arrive as opus-in-webm or m4a (audio/mp4), which the
@@ -207,99 +327,91 @@ async function main(): Promise<void> {
     );
   }
 
-  const size = statSync(path).size;
-  const ext = extname(path).toLowerCase();
-  const mime = MIME[ext] ?? "application/octet-stream";
-
-  // 1. start resumable upload session
-  const h1 = (
-    await req(uploadUrl, {
-      data: dumpsAscii({ file: { display_name: basename(path) } }),
-      headers: {
-        ...auth,
-        "X-Goog-Upload-Protocol": "resumable",
-        "X-Goog-Upload-Command": "start",
-        "X-Goog-Upload-Header-Content-Length": String(size),
-        "X-Goog-Upload-Header-Content-Type": mime,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    })
-  ).headers;
-  const session = h1.get("x-goog-upload-url");
-  if (!session) {
-    process.stderr.write("no x-goog-upload-url in upload session response\n");
-    process.exit(1);
+  try {
+    console.log((await understand(api, path, instruction)).trim());
+  } finally {
+    if (tmp) unlinkSync(tmp);
   }
-
-  // 2. upload bytes + finalize
-  process.stderr.write(`uploading ${mb(size)}...\n`);
-  const bytes = new Uint8Array(await Bun.file(path).arrayBuffer());
-  const r2 = await req(session, {
-    data: bytes,
-    headers: {
-      ...auth,
-      "Content-Length": String(size),
-      "X-Goog-Upload-Offset": "0",
-      "X-Goog-Upload-Command": "upload, finalize",
-      // urllib 对无显式 Content-Type 的字节 data 默认加 application/x-www-form-urlencoded
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
-  });
-  if (tmp) unlinkSync(tmp);
-  const f = JSON.parse(r2.body.toString("utf-8")).file;
-  const name: string = f.name;
-  const uri: string = f.uri;
-  let state: string | undefined = f.state;
-
-  // 3. wait for ACTIVE (video/audio is processed server-side)
-  let waited = 0;
-  while (state === "PROCESSING" && waited < 300) {
-    await Bun.sleep(3000);
-    waited += 3;
-    const r = await req(`${base}/${name}`, { headers: auth });
-    state = JSON.parse(r.body.toString("utf-8")).state;
-  }
-  if (state !== "ACTIVE") {
-    process.stderr.write(`file did not become ACTIVE (state=${state})\n`);
-    process.exit(1);
-  }
-
-  // 4. generate
-  let instruction = prompt ?? DEFAULT_PROMPT;
-  if (question) {
-    instruction = `Focus on answering: "${question}".\n\n` + instruction;
-  }
-  const payload = {
-    contents: [
-      {
-        parts: [
-          { file_data: { mime_type: mime, file_uri: uri } },
-          { text: instruction },
-        ],
-      },
-    ],
-  };
-  const r4 = await req(`${base}/models/${model}:generateContent`, {
-    data: dumpsAscii(payload),
-    headers: { ...auth, "Content-Type": "application/json" },
-    method: "POST",
-  });
-  const resp = JSON.parse(r4.body.toString("utf-8"));
-  const parts = resp?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) {
-    process.stderr.write(
-      "unexpected response:\n" + [...JSON.stringify(resp)].slice(0, 1000).join("") + "\n",
-    );
-    process.exit(1);
-  }
-  const text = parts.map((p: any) => p?.text ?? "").join("");
-  const usageMeta = resp?.usageMetadata ?? {};
-  console.log(text.trim());
-  process.stderr.write(
-    `\n---\n_(via ${model}, ${usageMeta.totalTokenCount ?? "?"} tokens)_\n`,
-  );
+  process.stderr.write(`\n---\n_(via ${model}, ${tokensUsed} tokens)_\n`);
 }
 
-main();
+/**
+ * Map-reduce over a long recording: one ffmpeg pass cuts it into chunks, each chunk
+ * is understood with its absolute time range, then a text-only pass merges them.
+ */
+async function runSegmented(
+  api: Api,
+  file: string,
+  instruction: string,
+  audioOnly: boolean,
+  duration: number,
+  chunkSec: number,
+): Promise<void> {
+  const dir = join(tmpdir(), `gemini_media_${process.pid}_${Date.now()}`);
+  mkdirSync(dir, { recursive: true });
+  try {
+    process.stderr.write(
+      `segmenting ${hhmmss(duration)} of ${audioOnly ? "audio" : "video"} into ${chunkSec / 60}min chunks...\n`,
+    );
+    await ffmpeg(
+      audioOnly
+        ? ["-i", file, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "libmp3lame",
+           "-f", "segment", "-segment_time", String(chunkSec), "-reset_timestamps", "1",
+           join(dir, "c_%03d.mp3")]
+        : // ponytail: 1fps + 720p — long video is billed per sampled frame, and the
+          // segment muxer needs a keyframe at each cut point or chunks drift.
+          ["-i", file, "-vf", "scale='min(1280,iw)':-2,fps=1",
+           "-c:v", "libx264", "-crf", "30", "-preset", "veryfast",
+           "-force_key_frames", `expr:gte(t,n_forced*${chunkSec})`,
+           "-c:a", "aac", "-b:a", "64k", "-ac", "1",
+           "-f", "segment", "-segment_time", String(chunkSec), "-reset_timestamps", "1",
+           join(dir, "c_%03d.mp4")],
+    );
+    const chunks = readdirSync(dir).filter((f) => f.startsWith("c_")).sort();
+    if (chunks.length === 0) throw new Error(`ffmpeg produced no segments in ${dir}`);
+
+    // 3 at a time: enough to hide upload latency, low enough to stay off rate limits.
+    const digests = await mapLimit(chunks, 3, async (name, i) => {
+      const from = i * chunkSec;
+      const span = `${hhmmss(from)}–${hhmmss(Math.min(from + chunkSec, duration))}`;
+      const segPrompt =
+        `This is segment ${i + 1}/${chunks.length} of one long recording, covering ${span} ` +
+        `of the whole. Every timestamp you emit MUST be absolute in the whole recording ` +
+        `(the segment starts at ${hhmmss(from)}).\n\n${instruction}`;
+      try {
+        return { span, text: (await understand(api, join(dir, name), segPrompt)).trim() };
+      } catch (e) {
+        // One bad segment must not cost the other 5 hours of work.
+        process.stderr.write(`segment ${span} failed: ${e instanceof Error ? e.message : e}\n`);
+        return { span, text: null };
+      }
+    });
+
+    const ok = digests.filter((d) => d.text);
+    if (ok.length === 0) throw new Error("every segment failed");
+    const sections = ok.map((d) => `## ${d.span}\n${d.text}`).join("\n\n");
+    const merged = await generate(api, [
+      {
+        text:
+          `Below are digests of consecutive segments of ONE recording (total ${hhmmss(duration)}), in order.\n` +
+          `Merge them into a single coherent digest as instructed below. Keep the absolute ` +
+          `timestamps on key points so they can be located later. Do not invent anything ` +
+          `not present in the segments.\n\n${instruction}\n\n---\n\n${sections}`,
+      },
+    ]);
+
+    const failed = digests.filter((d) => !d.text).map((d) => d.span);
+    console.log(merged.trim());
+    console.log(`\n\n---\n\n# Segment notes (${hhmmss(duration)}, ${chunks.length} segments)\n`);
+    console.log(sections);
+    if (failed.length) console.log(`\n> Segments that failed and are NOT covered: ${failed.join(", ")}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  process.stderr.write(`\n---\n_(via ${api.model}, ${tokensUsed} tokens)_\n`);
+}
+
+main().catch((e) => {
+  process.stderr.write(`${e instanceof Error ? e.message : String(e)}\n`);
+  process.exit(1);
+});

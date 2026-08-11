@@ -40,6 +40,31 @@ Gemini bills media by duration. Audio ≈ 32 tokens/sec; video ≈ 258 tokens/se
 ~29.6k tokens. **Default to `--audio-only`**; reach for video only when the
 screen carries meaning the speech doesn't.
 
+## Long media (1h+ talks, streams, full YouTube lectures)
+
+The script segments anything longer than one chunk, understands each segment
+separately, then merges. Defaults: 30min per chunk for audio, 10min for video
+(video bills 258 tok/s, so a 30min video chunk alone is ~465k tokens). Three
+segments upload and generate concurrently. `--chunk-minutes N` overrides,
+`--chunk-minutes 0` forces one request.
+
+- Output is the merged digest, then `# Segment notes` with one section per
+  segment headed by its absolute range (`## 01:30:00–02:00:00`).
+- A segment that fails is skipped and listed at the bottom; the rest still return.
+- Segment prompts demand absolute timestamps, but the model sometimes emits a
+  segment-relative one — the section header range is the reliable anchor.
+
+Cost at 3h: audio-only ≈ 350k tokens (~$0.10 on `gemini-3.5-flash-lite`);
+full video ≈ 2.8M tokens, only worth it when the screen carries the meaning.
+
+Targeted follow-up on one part — cut the range from the local file and re-run
+against the already-downloaded media instead of re-processing the whole thing:
+
+```bash
+ffmpeg -y -ss 01:30:00 -to 01:45:00 -i in.webm -ac 1 -ar 16000 slice.mp3
+bun .../gemini_media.ts slice.mp3 --question "<targeted question>"
+```
+
 ## Supported formats
 
 Gemini's audio endpoint accepts wav, mp3, aiff, aac, ogg, flac — but **not**
