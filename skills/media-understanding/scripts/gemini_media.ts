@@ -109,7 +109,7 @@ const SHRINK_OVER_BYTES = 100 * 1024 * 1024;
 
 const mb = (n: number): string => `${(n / 1024 / 1024).toFixed(1)}MB`;
 
-/** subprocess.run(check=True) 语义: 非零退出 → stderr + exit 1 */
+/** 非零退出 → throw, so callers' finally blocks still clean up their temp files. */
 async function ffmpeg(args: string[]): Promise<void> {
   const proc = Bun.spawn(["ffmpeg", "-y", "-v", "error", ...args], {
     stdout: "pipe",
@@ -117,42 +117,30 @@ async function ffmpeg(args: string[]): Promise<void> {
   });
   const code = await proc.exited;
   if (code !== 0) {
-    process.stderr.write(
+    throw new Error(
       `Command '["ffmpeg", ...]' returned non-zero exit status ${code}.\n` +
         (await new Response(proc.stderr).text()),
     );
-    process.exit(1);
   }
 }
 
-/** Duration in seconds, 0 if ffprobe can't tell (streams without a header). */
+/** Duration in seconds, 0 if ffprobe is missing or the container has no header. */
 async function probeSeconds(path: string): Promise<number> {
-  const proc = Bun.spawn(
-    ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
-    { stdout: "pipe", stderr: "ignore" },
-  );
-  const out = await new Response(proc.stdout).text();
-  await proc.exited;
-  return Number.parseFloat(out.trim()) || 0;
+  try {
+    const proc = Bun.spawn(
+      ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+      { stdout: "pipe", stderr: "ignore" },
+    );
+    const out = await new Response(proc.stdout).text();
+    await proc.exited;
+    return Number.parseFloat(out.trim()) || 0;
+  } catch {
+    return 0;
+  }
 }
 
 const hhmmss = (s: number): string =>
   [s / 3600, (s % 3600) / 60, s % 60].map((n) => String(Math.floor(n)).padStart(2, "0")).join(":");
-
-async function mapLimit<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T, i: number) => Promise<R>,
-): Promise<R[]> {
-  const out = new Array<R>(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, async () => {
-      for (let i = next++; i < items.length; i = next++) out[i] = await fn(items[i], i);
-    }),
-  );
-  return out;
-}
 
 interface Api {
   base: string;
@@ -175,6 +163,9 @@ async function generate(api: Api, parts: unknown[]): Promise<string> {
   if (!Array.isArray(got)) {
     throw new Error("unexpected response:\n" + JSON.stringify(resp).slice(0, 1000));
   }
+  const finish = resp?.candidates?.[0]?.finishReason;
+  // A truncated digest is still valid-looking text — say so rather than drop content silently.
+  if (finish && finish !== "STOP") process.stderr.write(`warning: finishReason=${finish}\n`);
   tokensUsed += resp?.usageMetadata?.totalTokenCount ?? 0;
   return got.map((p: any) => p?.text ?? "").join("");
 }
@@ -262,9 +253,13 @@ async function main(): Promise<void> {
     else if (a.startsWith("--model=")) model = a.slice("--model=".length);
     else if (a === "--prompt") prompt = takeVal(a);
     else if (a.startsWith("--prompt=")) prompt = a.slice("--prompt=".length);
-    else if (a === "--chunk-minutes") chunkMinutes = Number(takeVal(a));
-    else if (a.startsWith("--chunk-minutes="))
-      chunkMinutes = Number(a.slice("--chunk-minutes=".length));
+    else if (a === "--chunk-minutes" || a.startsWith("--chunk-minutes=")) {
+      const v = a.includes("=") ? a.slice("--chunk-minutes=".length) : takeVal(a);
+      chunkMinutes = Number(v);
+      // NaN would silently fall through to the single-request path — the exact
+      // failure this flag exists to prevent. Reject it loudly.
+      if (!Number.isFinite(chunkMinutes) || chunkMinutes < 0) usage();
+    }
     else if (a === "-h" || a === "--help") {
       process.stdout.write(USAGE);
       process.exit(0);
@@ -290,11 +285,15 @@ async function main(): Promise<void> {
   // Long media (2-3h talks, streams) can't ride one request: full video at 258 tok/s
   // blows past the context window, and a single 3h call loses everything if it fails.
   // Segment it, understand each part with absolute timestamps, then reduce.
-  const duration = await probeSeconds(file);
   const chunkSec = (chunkMinutes ?? (audioOnly ? 30 : 10)) * 60;
-  if (chunkSec > 0 && duration > chunkSec * 1.2) {
-    await runSegmented(api, file, instruction, audioOnly, duration, chunkSec);
-    return;
+  if (chunkSec > 0) {
+    const duration = await probeSeconds(file);
+    if (duration === 0) {
+      process.stderr.write("warning: duration unknown, sending as one request\n");
+    } else if (duration > chunkSec * 1.2) {
+      await runSegmented(api, file, instruction, audioOnly, duration, chunkSec);
+      return;
+    }
   }
 
   // --audio-only: transcode any container to a Gemini-supported 16k mono mp3.
@@ -370,9 +369,8 @@ async function runSegmented(
     const chunks = readdirSync(dir).filter((f) => f.startsWith("c_")).sort();
     if (chunks.length === 0) throw new Error(`ffmpeg produced no segments in ${dir}`);
 
-    // 3 at a time: enough to hide upload latency, low enough to stay off rate limits.
-    const digests = await mapLimit(chunks, 3, async (name, i) => {
-      const from = i * chunkSec;
+    const one = async (name: string, i: number) => {
+      const from = Math.min(i * chunkSec, duration);
       const span = `${hhmmss(from)}–${hhmmss(Math.min(from + chunkSec, duration))}`;
       const segPrompt =
         `This is segment ${i + 1}/${chunks.length} of one long recording, covering ${span} ` +
@@ -383,27 +381,45 @@ async function runSegmented(
       } catch (e) {
         // One bad segment must not cost the other 5 hours of work.
         process.stderr.write(`segment ${span} failed: ${e instanceof Error ? e.message : e}\n`);
-        return { span, text: null };
+        return { span, text: null as string | null };
       }
-    });
+    };
+    // 3 at a time: enough to hide upload latency, low enough to stay off rate limits.
+    const digests: Awaited<ReturnType<typeof one>>[] = [];
+    for (let i = 0; i < chunks.length; i += 3) {
+      digests.push(...(await Promise.all(chunks.slice(i, i + 3).map((n, k) => one(n, i + k)))));
+    }
 
     const ok = digests.filter((d) => d.text);
     if (ok.length === 0) throw new Error("every segment failed");
-    const sections = ok.map((d) => `## ${d.span}\n${d.text}`).join("\n\n");
-    const merged = await generate(api, [
-      {
-        text:
-          `Below are digests of consecutive segments of ONE recording (total ${hhmmss(duration)}), in order.\n` +
-          `Merge them into a single coherent digest as instructed below. Keep the absolute ` +
-          `timestamps on key points so they can be located later. Do not invent anything ` +
-          `not present in the segments.\n\n${instruction}\n\n---\n\n${sections}`,
-      },
-    ]);
+    const sections =
+      `# Segment notes (${hhmmss(duration)}, ${chunks.length} segments)\n\n` +
+      ok.map((d) => `## ${d.span}\n${d.text}`).join("\n\n");
+
+    // Print the segment work even if the merge fails — by here the whole recording
+    // has already been uploaded and billed; losing it to one bad request is the
+    // failure this whole function exists to avoid.
+    let merged = "";
+    try {
+      merged = (
+        await generate(api, [
+          {
+            text:
+              `Below are digests of consecutive segments of ONE recording (total ${hhmmss(duration)}), in order.\n` +
+              `Merge them into a single coherent digest as instructed below. Keep the absolute ` +
+              `timestamps on key points so they can be located later. Do not invent anything ` +
+              `not present in the segments.\n\n${instruction}\n\n---\n\n${sections}`,
+          },
+        ])
+      ).trim();
+    } catch (e) {
+      process.stderr.write(`merge failed: ${e instanceof Error ? e.message : e}\n`);
+      merged = "> Merge pass failed — the per-segment digests below are unmerged but complete.";
+    }
 
     const failed = digests.filter((d) => !d.text).map((d) => d.span);
-    console.log(merged.trim());
-    console.log(`\n\n---\n\n# Segment notes (${hhmmss(duration)}, ${chunks.length} segments)\n`);
-    console.log(sections);
+    console.log(merged);
+    console.log(`\n\n---\n\n${sections}`);
     if (failed.length) console.log(`\n> Segments that failed and are NOT covered: ${failed.join(", ")}`);
   } finally {
     rmSync(dir, { recursive: true, force: true });

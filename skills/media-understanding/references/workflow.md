@@ -89,8 +89,8 @@ yt-dlp "<url>" -f ba -o "/tmp/m.%(ext)s"
 ```
 
 Note: `yt-dlp --download-sections` to grab only part of a video is unreliable in
-some environments (ffmpeg keyframe cut errors). To sample a clip, download the
-full audio then trim locally: `ffmpeg -y -i in.webm -t 120 -ac 1 -ar 16000 out.mp3`.
+some environments (ffmpeg keyframe cut errors). Download the full audio, then
+trim locally — see the `ffmpeg -ss/-to` recipe under "Long media".
 
 ## Endpoint notes
 
