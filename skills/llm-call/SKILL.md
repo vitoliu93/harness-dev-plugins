@@ -32,6 +32,7 @@ printf '%s' '<request-json>' | bun "${CLAUDE_SKILL_DIR:?set llm-call base direct
 - Keep this skill directory dependency-free: no `package.json`, `node_modules`, or lockfile.
 - Always request thinking at `reasoning_effort=max`; expose no lower tier.
 - Keep prompts and credentials out of argv; pass request data through stdin.
+- Route a single request elsewhere with `base_url` + `model` (+ `api_key`) — e.g. a vision model for `image_url` content blocks; the configured provider stays the default.
 - Return content, finish reason, model, reasoning effort, and token usage as one JSON envelope.
 - Fail on missing credentials, malformed input, empty content, or invalid API output.
 

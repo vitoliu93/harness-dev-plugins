@@ -7,7 +7,8 @@ Shared API-direct LLM config, first hit wins (same resolution as ccobs `distill.
 1. `${CCOBS_DIR:-$HOME/.claude/observability}/llm.json` — `{"base_url","model","api_key"}`; machine-local, never committed.
 2. `DEEPSEEK_API_KEY` (required at this rung) + optional `DEEPSEEK_BASE_URL` (default `https://api.deepseek.com`) and `DEEPSEEK_MODEL` (default `deepseek-v4-flash`).
 
-Neither present → exit 2. Request-level `model` overrides both rungs.
+Neither present → exit 2, unless the request carries its own `api_key`.
+Request-level `model`, `base_url`, and `api_key` override both rungs.
 
 Install the OpenAI SDK once, globally, before the first call:
 
@@ -37,14 +38,41 @@ Write one JSON object to stdin:
 
 Required:
 
-- `messages` — non-empty `system`, `user`, or `assistant` messages with text content.
+- `messages` — non-empty `system`, `user`, or `assistant` messages. `content` is
+  either a non-empty string or an array of provider-shaped content blocks, each
+  carrying a non-empty `type`.
 
 Optional:
 
 - `model` — overrides `DEEPSEEK_MODEL`.
+- `base_url` — routes this one request to another provider; requires `model`.
+- `api_key` — credential for that request; overrides the resolved config.
 - `max_tokens` — 1 to 65536; defaults to `32768`.
 - `temperature` — omitted unless supplied.
 - `response_format` — `text` or `json_object`; defaults to `text`.
+
+## Multimodal and per-request routing
+
+Content blocks pass through unvalidated beyond `type` — the provider is the
+authority on block shape. Pair them with a vision model and its provider:
+
+```json
+{
+  "messages": [
+    {"role": "user", "content": [
+      {"type": "text", "text": "Describe this screenshot."},
+      {"type": "image_url", "image_url": {"url": "data:image/png;base64,iVBOR…"}}
+    ]}
+  ],
+  "model": "openai/gpt-5.6-luna",
+  "base_url": "https://openrouter.ai/api/v1",
+  "api_key": "<OPENROUTER_API_KEY>",
+  "max_tokens": 2048
+}
+```
+
+Resolution order for the effective provider: request `base_url`/`api_key` >
+`llm.json` > `DEEPSEEK_*` env > built-in defaults.
 
 ## Reasoning effort
 

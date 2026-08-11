@@ -18,12 +18,13 @@
 
 #### Gate 1: 零成本放行（不调 LLM）
 
-四个条件**任一满足**即放行：
+五个条件**任一满足**即放行：
 
 1. **斜杠命令**：`/` 开头的输入是 command 展开，绝不 rewrite
-2. **长度 ≤15 Unicode codepoints**：太短，不可能从 rewrite 中受益（e.g. "ok", "run tests", "修复登录页按钮"）
+2. **长度 ≤6 Unicode codepoints**（先剔除全部空白，不只是首尾）：太短，不可能从 rewrite 中受益（e.g. "ok", "跑测试", "再试一次"）
 3. **命中确认词表**：意图明确的简短确认/指令词，不论长度
 4. **具体锚点启发式**：含反引号代码段、路径（`src/auth/login.ts`）、文件扩展名、`foo()` 调用、`:42` 行号——已经足够具体，不值得调 LLM
+5. **带图输入**：含 `[Image #N]` 占位符。hook 收到的 `prompt` 只有占位符，base64 在 transcript 的 image block 里，而当前这轮在 hook 运行时尚未落盘——分类器看不到刚贴的那张图，改写只能凭空补内容。上一轮及更早的图另行处理，见「视觉路由」
 
 确认词表（case-insensitive，trim 后匹配）：
 
@@ -38,7 +39,7 @@ zh: 好, 好的, 行, 可以, 继续, 接着, 做, 干, 执行, 跑, 对, 嗯, �
 emoji: 👍, ✅, 👌, 🚀, 💯
 ```
 
-**设计理由**：Gate 1 的存在不是为了"准确分类"，而是为了**零延迟零成本**——确认词和短输入占了交互流量的很大比例，为这些调 LLM 是浪费。15 字符阈值覆盖了 "fix the bug"（12 chars）、"跑测试"（3 chars）、"deploy to prod"（14 chars）等短指令——它们虽可能模糊，但在对话上下文里 agent 通常能正确消歧。锚点启发式砍掉"长但已具体"prompt 的 Gate 2 调用——带路径/代码引用的 prompt 极少需要 rewrite，误放行的代价只是回到无 hook 的原状。
+**设计理由**：Gate 1 的存在不是为了"准确分类"，而是为了**零延迟零成本**——确认词和极短输入占了交互流量的很大比例，为这些调 LLM 是浪费。阈值取 6 而非更高：中文密度高，15 个码点是一整句话（"把那个配置清理一下顺便更新文档" 正好 15），而那正是最该被增强的模糊 prompt；确认类输入由词表单独覆盖，不依赖长度。锚点启发式砍掉"长但已具体"prompt 的 Gate 2 调用——带路径/代码引用的 prompt 极少需要 rewrite，误放行的代价只是回到无 hook 的原状。
 
 #### Gate 2: LLM 判定与改写
 
@@ -72,7 +73,36 @@ rewrite 时注入的 additionalContext 格式：
 {llm 生成的 enriched prompt}
 ```
 
-**关键设计选择**：不隐藏原始 prompt，但明确标记 rewrite 为权威版本。agent 自然会跟随最具体、最可执行的指令。
+**关键设计选择**：不隐藏原始 prompt。措辞是"可作为执行依据"而非"以此为准"，并附一句"如与仓库实际不符，以仓库实际为准"——改写是对意图的展开，不是对仓库的断言。
+
+### 两种改写契约
+
+按 transcript 有无切换，二者共用分类骨架，只换 sourcing 规则：
+
+| | evidence 模式（有 transcript） | no-evidence 模式（无 transcript） |
+|---|---|---|
+| git 信号 | 装配进 payload，作背景 | **整个不装配** |
+| 允许写路径 | 只能写 prompt 或 transcript 里逐字出现过的 | 一个都不许写 |
+| 判定依据 | 是否缺具体目标、指代是否可解 | 动作 / 对象 / 范围 / 完成条件是否完整 |
+| 产出形态 | 解指代，替换成具体目标 | 只扩写措辞，目标按角色描述，未知处打 `TODO: clarify` |
+
+no-evidence 模式下 git 信号是被**扣留**而非被劝阻的：`changed_files` 讲的是仓库最近做了什么，和用户现在想要什么是两回事，把它放进 payload 就是在邀请模型把前者冒充成后者。约束可以被无视，缺失不能。
+
+### 视觉路由
+
+hook 拿到的 transcript 逐字节等于「当前这轮之前的全部内容」，所以刚粘贴的图取不到，但**上一轮的图能取到**——而那正是追问句（"这个按钮改一下"、"右边那块间距别扭"）指向的对象。
+
+- 回溯窗口按**用户轮**计，不按 JSONL 条目：一次 assistant 工作循环写几十条 tool_use/tool_result，按条目计的窗口够不到图。取最近 2 个用户轮，最多 2 张，单张上限 4M base64 chars，扫描行数硬上限 300
+- 命中且 `OPENROUTER_API_KEY` 存在 → 该次请求路由到 `openai/gpt-5.6-luna`（OpenRouter），图片以 `image_url` content block 随 prompt 一起发；否则维持默认 provider 的纯文本路径
+- 台账记 `vision` 与 `images`
+
+prompt 自带 `[Image #N]` 的仍在 Gate 1 放行：用户指的是刚贴的那张，把上一轮的图喂进去比不喂更糟。
+
+### 出处校验
+
+改写产出注入前，正则抽出其中的路径 token，逐个比对语料——**语料是「原 prompt + 剪枝后 transcript」，不含 git 信号**（信号正是伪造路径的来源，拿它校验等于不校验）。有任何一个对不上，整条改写作废，原 prompt 原样放行，台账记 `verdict: "discarded"` 与 `unsourced` 清单。
+
+误杀是可接受的：transcript 丢弃了 tool_result，只在 grep/glob 输出里出现过的路径会被判无出处。作废即 fail-open，代价是零。
 
 ### 上下文装配
 
@@ -90,16 +120,18 @@ rewrite 时注入的 additionalContext 格式：
 ### 超时与 fail-open
 
 - llm-call 内部超时：300s（call.ts 的 SDK timeout）
-- Hook 层兜底超时：120s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）——reasoning_effort=max 在长会话 transcript 上单次 30-70s
+- Hook 层兜底超时：90s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）——reasoning_effort=max 单次 4-70s 且长尾明显；90s 不损失台账里任何一次 rewrite，更紧的档（45s/30s）开始丢有效改写
 - git 信号每次 1s（`GIT_TIMEOUT_MS`）——信号是 best-effort，慢仓库丢信号不阻塞用户
-- hooks.json 注册 timeout：125s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 120s(LLM) ≈ 124.5s < 125s ✅
+- hooks.json 注册 timeout：125s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 90s(LLM) ≈ 94.5s < 125s ✅
 - `max_tokens: 65536`（llm-call 上限）——max 档思维链单次可烧 6K+ tokens，4096 会 `finish_reason=length` 空正文
 - 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变（stdout 无输出）
 - Hook 自身 `process.exit(0)` 永远是最后一行——任何异常都被吞掉（stderr 留一行日志）
 
 ### 可观测性：结果台账
 
-每次 hook 运行在 `${CCOBS_DIR:-~/.claude/observability}/prompt-forge.log` 追加一行 JSONL：`ts`、`session_id`、`gate`（1/2）、`verdict`（pass/rewrite/fail-open/fatal）、`elapsed_s`、`prompt_chars`、`transcript_chars`、`enriched_chars`。触发率、超时率、rewrite 率直接 grep/jq 可得。写入 best-effort，失败不阻塞。
+每次 hook 运行在 `${CCOBS_DIR:-~/.claude/observability}/prompt-forge.log` 追加一行 JSONL：`ts`、`session_id`、`gate`（1/2）、`verdict`（pass/rewrite/discarded/fail-open/fatal）、`elapsed_s`、`prompt_chars`、`transcript_chars`、`mode`（evidence/no-evidence）、`cwd`、`prompt_on_disk`、`enriched_chars`、`unsourced`。触发率、超时率、rewrite 率直接 grep/jq 可得。写入 best-effort，失败不阻塞。
+
+`prompt_on_disk` 记录 hook 运行时当前这轮是否已写入 transcript：`null` = 没有 transcript 文件，`false` = 文件在但本轮尚未落盘。它同时回答两件事——带图输入能否取到图，以及哪些会话全程读不到历史。
 
 ### 可观测性：进度日志
 
@@ -110,11 +142,12 @@ rewrite 时注入的 additionalContext 格式：
 | 节点 | stderr 日志 |
 |---|---|
 | 禁用 | `[prompt-forge] disabled (PROMPT_FORGE=0)` |
-| Gate 1 放行 | `[prompt-forge] gate1 pass: short input (11 ≤ 15)` / `confirmation word` |
+| Gate 1 放行 | `[prompt-forge] gate1 pass: short input (11 ≤ 15)` / `confirmation word` / `image attached` |
 | Gate 2 开始 | `[prompt-forge] gate2: classifying "fix the bug" (11 chars) via llm-call` |
 | 上下文装配 | `[prompt-forge] context: pruned transcript 8123 chars, git signals [branch, recent_commits]` |
 | verdict=pass | `[prompt-forge] gate2 verdict=pass in 3.2s → prompt unchanged` |
 | verdict=rewrite | `[prompt-forge] gate2 verdict=rewrite in 4.1s (enriched=312 chars) → injecting additionalContext` |
+| 出处校验作废 | `[prompt-forge] gate2 rewrite cites unsourced paths [src/login.ts] → discarded, prompt unchanged` |
 | LLM 失败/超时 | `[prompt-forge] gate2 llm-call failed in 61.0s → fail-open, prompt unchanged` |
 | 任何异常 | `[prompt-forge] fatal: <msg> → fail-open` |
 

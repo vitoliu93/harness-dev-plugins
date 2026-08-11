@@ -4,13 +4,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+// Content is either plain text or OpenAI-shaped blocks (text / image_url) for
+// vision models. Blocks pass through unvalidated beyond their `type` — the
+// provider is the authority on block shape.
+export type ContentBlock = { type: string; [k: string]: unknown };
 export type Message = {
   role: "system" | "user" | "assistant";
-  content: string;
+  content: string | ContentBlock[];
 };
 export type CallInput = {
   messages: Message[];
   model?: string;
+  base_url?: string;
+  api_key?: string;
   max_tokens: number;
   temperature?: number;
   response_format?: "text" | "json_object";
@@ -54,8 +60,18 @@ export function parseInput(value: unknown): CallInput {
     if (!raw || typeof raw !== "object") throw new Error(`messages[${index}] must be an object`);
     const message = raw as Record<string, unknown>;
     const role = String(message.role ?? "") as Message["role"];
-    const content = String(message.content ?? "");
     if (!ROLES.has(role)) throw new Error(`messages[${index}].role is invalid`);
+    if (Array.isArray(message.content)) {
+      const blocks = message.content as ContentBlock[];
+      if (!blocks.length) throw new Error(`messages[${index}].content must be non-empty`);
+      for (const [i, b] of blocks.entries()) {
+        if (!b || typeof b !== "object" || !String(b.type ?? "").trim()) {
+          throw new Error(`messages[${index}].content[${i}] must be a block with a type`);
+        }
+      }
+      return { role, content: blocks };
+    }
+    const content = String(message.content ?? "");
     if (!content.trim()) throw new Error(`messages[${index}].content must be non-empty`);
     return { role, content };
   });
@@ -74,11 +90,22 @@ export function parseInput(value: unknown): CallInput {
       throw new Error("temperature must be between 0 and 2");
     }
   }
-  const model = input.model === undefined ? undefined : String(input.model).trim();
-  if (input.model !== undefined && !model) throw new Error("model must be non-empty");
+  const optStr = (key: "model" | "base_url" | "api_key"): string | undefined => {
+    if (input[key] === undefined) return undefined;
+    const value = String(input[key]).trim();
+    if (!value) throw new Error(`${key} must be non-empty`);
+    return value;
+  };
+  const model = optStr("model");
+  const baseUrl = optStr("base_url");
+  // A foreign base_url with the configured provider's model name yields an
+  // opaque 404 — demand the pair.
+  if (baseUrl && !model) throw new Error("base_url requires model");
   return {
     messages,
     model,
+    base_url: baseUrl,
+    api_key: optStr("api_key"),
     max_tokens: maxTokens,
     temperature,
     response_format: responseFormat as CallInput["response_format"],
@@ -126,9 +153,6 @@ export function isRetryable(error: unknown): boolean {
 }
 
 async function main(): Promise<void> {
-  const cfg = resolveCfg();
-  if (!cfg?.api_key) fail(`config required: ${llmConfigPath()} or DEEPSEEK_API_KEY`);
-
   let input: CallInput;
   try {
     const raw = await Bun.stdin.text();
@@ -137,6 +161,11 @@ async function main(): Promise<void> {
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error));
   }
+
+  // Request-level base_url/api_key override the resolved config, so one caller
+  // can route a single request to a different provider (e.g. a vision model).
+  const cfg = { ...resolveCfg(), ...(input.base_url && { base_url: input.base_url }), ...(input.api_key && { api_key: input.api_key }) };
+  if (!cfg.api_key) fail(`config required: ${llmConfigPath()}, DEEPSEEK_API_KEY, or request api_key`);
 
   // ponytail: dynamic import so the globally installed SDK (`bun add -g openai@7`)
   // stays out of `bun test`, which does not resolve global packages.

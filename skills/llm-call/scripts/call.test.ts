@@ -14,6 +14,38 @@ describe("input contract", () => {
     );
     expect(() => parseInput({ messages, max_tokens: 99_999 })).toThrow("max_tokens must be");
   });
+
+  test("carries multimodal content blocks through untouched", () => {
+    const blocks = [
+      { type: "text", text: "what is this?" },
+      { type: "image_url", image_url: { url: "data:image/png;base64,iVBOR" } },
+    ];
+    const parsed = parseInput({ messages: [{ role: "user", content: blocks }] });
+    expect(parsed.messages[0].content).toEqual(blocks);
+  });
+
+  test("rejects empty or typeless content blocks", () => {
+    expect(() => parseInput({ messages: [{ role: "user", content: [] }] })).toThrow(
+      "must be non-empty",
+    );
+    expect(() => parseInput({ messages: [{ role: "user", content: [{ text: "x" }] }] })).toThrow(
+      "must be a block with a type",
+    );
+  });
+
+  test("accepts a per-request provider override, and demands model with base_url", () => {
+    const parsed = parseInput({
+      messages,
+      model: "openai/gpt-5.6-luna",
+      base_url: "https://openrouter.ai/api/v1",
+      api_key: "sk-test",
+    });
+    expect(parsed.base_url).toBe("https://openrouter.ai/api/v1");
+    expect(parsed.api_key).toBe("sk-test");
+    expect(() => parseInput({ messages, base_url: "https://openrouter.ai/api/v1" })).toThrow(
+      "base_url requires model",
+    );
+  });
 });
 
 describe("DeepSeek request mapping", () => {
@@ -62,18 +94,36 @@ describe("response and failure contract", () => {
     expect(isRetryable(Object.assign(new Error("empty content"), { retryable: false }))).toBeFalse();
   });
 
-  test("missing config exits 2 without reading request content", () => {
+  // A request may carry its own api_key, so the config gate runs after parsing.
+  const noConfig = (request: unknown): { exitCode: number; stderr: string } => {
     // CCOBS_DIR points at an empty dir so a real machine-local llm.json can't leak in.
     const emptyDir = `${import.meta.dir}/.test-empty-ccobs`;
     require("node:fs").mkdirSync(emptyDir, { recursive: true });
     const result = Bun.spawnSync(["bun", `${import.meta.dir}/call.ts`], {
       env: { ...process.env, DEEPSEEK_API_KEY: "", CCOBS_DIR: emptyDir },
-      stdin: Buffer.from("{}"),
+      stdin: Buffer.from(JSON.stringify(request)),
     });
     require("node:fs").rmSync(emptyDir, { recursive: true, force: true });
+    return { exitCode: result.exitCode, stderr: new TextDecoder().decode(result.stderr) };
+  };
 
+  test("missing config exits 2", () => {
+    const result = noConfig({ messages: [{ role: "user", content: "hi" }], max_tokens: 16 });
     expect(result.exitCode).toBe(2);
-    expect(new TextDecoder().decode(result.stderr)).toContain("config required");
+    expect(result.stderr).toContain("config required");
+  });
+
+  test("a request api_key satisfies the config gate", () => {
+    const result = noConfig({
+      messages: [{ role: "user", content: "hi" }],
+      max_tokens: 16,
+      model: "openai/gpt-5.6-luna",
+      base_url: "http://127.0.0.1:1/v1",
+      api_key: "sk-test",
+    });
+    // Failure is the unreachable base_url, not the gate.
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).not.toContain("config required");
   });
 
   test("llm.json satisfies the config gate without DEEPSEEK_API_KEY", () => {

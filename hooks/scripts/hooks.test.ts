@@ -172,10 +172,15 @@ test("prompt-forge-gate1", async () => {
   // Gate 1: short inputs and confirmation words pass through silently.
   // Enabled by default — no env flag needed
   expect(await runBun("prompt-forge.ts", { prompt: "ok" })).toBe("");
-  expect(await runBun("prompt-forge.ts", { prompt: "fix the bug" })).toBe("");
+  expect(await runBun("prompt-forge.ts", { prompt: "跑一下测试" })).toBe("");
   expect(await runBun("prompt-forge.ts", { prompt: "  好  " })).toBe("");
   expect(await runBun("prompt-forge.ts", { prompt: "go ahead" })).toBe("");
   expect(await runBun("prompt-forge.ts", { prompt: "got it" })).toBe("");
+  // A pasted image is unreachable at hook time — the prompt points at pixels
+  // the classifier cannot see, so it passes through.
+  expect(
+    await runBun("prompt-forge.ts", { prompt: "[Image #2] 这个位置对吗，帮我调整一下布局" }),
+  ).toBe("");
   // Long non-confirmation with mock pass → silent
   expect(
     await runBun(
@@ -195,18 +200,34 @@ test("prompt-forge-gate2", async () => {
     await runBun("prompt-forge.ts", { prompt: longPrompt }, { PROMPT_FORGE_TEST_MOCK: '{"verdict":"pass"}' }),
   ).toBe("");
 
-  // Mock: verdict rewrite → injects additionalContext
+  // Mock: verdict rewrite with no path claims → injects additionalContext
   const out = await runBun(
     "prompt-forge.ts",
     { prompt: longPrompt },
-    { PROMPT_FORGE_TEST_MOCK: '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}' },
+    {
+      PROMPT_FORGE_TEST_MOCK:
+        '{"verdict":"rewrite","enriched":"Harden the authentication flow: enumerate its failure paths, fix each, and confirm the suite passes."}',
+    },
   );
   const result = JSON.parse(out);
   expect(result.hookSpecificOutput.hookEventName).toBe("UserPromptSubmit");
   const ctx = result.hookSpecificOutput.additionalContext;
   expect(ctx).toContain("prompt-forge");
   expect(ctx).toContain("Enriched Prompt");
-  expect(ctx).toContain("src/login.ts");
+  expect(ctx).toContain("以仓库实际为准");
+
+  // Mock: rewrite citing a path found nowhere in prompt or transcript →
+  // discarded, prompt passes through unchanged.
+  expect(
+    await runBun(
+      "prompt-forge.ts",
+      { prompt: longPrompt },
+      { PROMPT_FORGE_TEST_MOCK: '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}' },
+    ),
+  ).toBe("");
+
+  // A prompt that names a path never reaches gate 2 (gate 1 anchors on it), so
+  // the transcript is the only corpus that can source one — covered below.
 
   // Mock: invalid JSON → fail-open silently
   expect(
@@ -233,7 +254,11 @@ test("prompt-forge-logging", async () => {
 
   // Gate 1 reasons are distinguishable in the log
   expect((await runCase("ok")).stderr).toContain("confirmation word");
-  expect((await runCase("fix the bug")).stderr).toContain("short input");
+  expect((await runCase("跑一下测试")).stderr).toContain("short input");
+  // Interior whitespace does not count toward the threshold
+  expect((await runCase("跑 一下 测试")).stderr).toContain("short input (5");
+  // 7 codepoints clears the threshold — a fuzzy Chinese sentence must reach gate 2
+  expect((await runCase("把那个配置清理一下", '{"verdict":"pass"}')).stderr).toContain("gate2");
   // Mock as a safety net: if gate 1 regresses these must not hit the real API
   expect(
     (await runCase("/code-review the entire branch with high effort please", '{"verdict":"pass"}')).stderr,
@@ -251,10 +276,14 @@ test("prompt-forge-logging", async () => {
   expect(okRes.stderr).toContain("verdict=pass");
   expect(okRes.stdout).toBe(""); // stdout must stay empty on pass
 
-  const rw = await runCase(longPrompt, '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}');
+  const rw = await runCase(longPrompt, '{"verdict":"rewrite","enriched":"Harden the auth flow end to end."}');
   expect(rw.stderr).toContain("verdict=rewrite");
   expect(rw.stderr).toContain("injecting additionalContext");
   expect(JSON.parse(rw.stdout).hookSpecificOutput.hookEventName).toBe("UserPromptSubmit");
+
+  const unsourced = await runCase(longPrompt, '{"verdict":"rewrite","enriched":"Fix auth in src/login.ts"}');
+  expect(unsourced.stderr).toContain("unsourced paths");
+  expect(unsourced.stdout).toBe("");
 
   const bad = await runCase(longPrompt, "not json");
   expect(bad.stderr).toContain("llm-call failed");
@@ -268,6 +297,85 @@ test("prompt-forge-logging", async () => {
   );
   expect(disabled.stderr).toContain("disabled");
   expect(disabled.stdout).toBe("");
+}, TIMEOUT);
+
+test("prompt-forge-path-provenance", async () => {
+  // A path the transcript actually mentions is sourced and survives; git
+  // signals are deliberately not part of the corpus.
+  const d = tmp();
+  try {
+    const tp = join(d, "t.jsonl");
+    writeFileSync(
+      tp,
+      JSON.stringify({
+        type: "assistant",
+        message: { content: [{ type: "text", text: "the retry lives in src/login.ts" }] },
+      }),
+    );
+    const run = (enriched: string) =>
+      runBun(
+        "prompt-forge.ts",
+        {
+          prompt: "make the authentication system more robust and fix all the issues",
+          transcript_path: tp,
+        },
+        { PROMPT_FORGE_TEST_MOCK: JSON.stringify({ verdict: "rewrite", enriched }) },
+      );
+
+    const kept = await run("Fix the retry in src/login.ts");
+    expect(JSON.parse(kept).hookSpecificOutput.additionalContext).toContain("src/login.ts");
+
+    expect(await run("Fix the retry in src/session.ts")).toBe("");
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
+}, TIMEOUT);
+
+test("prompt-forge-vision-routing", async () => {
+  // An image from a recent turn is readable and routes the classifier to the
+  // vision provider; without a key, or with no image, it stays on the default.
+  const d = tmp();
+  try {
+    const tp = join(d, "t.jsonl");
+    writeFileSync(
+      tp,
+      [
+        JSON.stringify({
+          type: "user",
+          message: {
+            content: [
+              { type: "text", text: "[Image #1] 看下这个页面" },
+              { type: "image", source: { type: "base64", media_type: "image/png", data: "iVBORw0KGgo=" } },
+            ],
+          },
+        }),
+        JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text: "看到了。" }] } }),
+        // A real work loop between the image and the follow-up: dozens of
+        // tool_use/tool_result entries. The window counts user turns, so these
+        // must not push the image out of reach.
+        ...Array.from({ length: 20 }, () =>
+          [
+            JSON.stringify({
+              type: "assistant",
+              message: { content: [{ type: "tool_use", name: "Read", input: { file: "a.ts" } }] },
+            }),
+            JSON.stringify({ type: "user", message: { content: [{ type: "tool_result", content: "ok" }] } }),
+          ].join("\n"),
+        ),
+      ].join("\n"),
+    );
+    const payload = JSON.stringify({ prompt: "右边那块间距别扭，帮我调一下", transcript_path: tp });
+    const call = (env: Record<string, string>) =>
+      spawnHook(["bun", "run", join(HERE, "prompt-forge.ts")], payload, {
+        PROMPT_FORGE_TEST_MOCK: '{"verdict":"pass"}',
+        ...env,
+      });
+
+    expect((await call({ OPENROUTER_API_KEY: "sk-test" })).stderr).toContain("vision: 1 recent image");
+    expect((await call({ OPENROUTER_API_KEY: "" })).stderr).not.toContain("vision:");
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
 }, TIMEOUT);
 
 test("prompt-forge-transcript-prune", async () => {
