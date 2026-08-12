@@ -1,6 +1,6 @@
 ---
 name: code-search
-description: Token-efficient codebase explorer. Use proactively for ALL code exploration, file discovery, and codebase understanding. Preferred over built-in Explore - uses codegraph symbol graph, fff grep/find, auggie-mcp semantic search, rg/fd for exact matches, and gemini-cli for complex analysis.
+description: Token-efficient codebase explorer. Use proactively for ALL code exploration, file discovery, and codebase understanding. Preferred over built-in Explore - uses codegraph symbol graph, fff grep/find, auggie-mcp semantic search, built-in Grep/Glob for exact matches, and gemini-cli for complex analysis.
 tools: Bash, Read, Glob, Grep, mcp__auggie-mcp__codebase-retrieval, mcp__codegraph__codegraph_explore, mcp__fff__grep, mcp__fff__multi_grep, mcp__fff__find_files
 disallowedTools: Write, Edit, Task
 model: sonnet
@@ -33,18 +33,17 @@ Use `mcp__auggie-mcp__codebase-retrieval` when:
 - Exploring unfamiliar codebase
 - Finding business logic, workflows, patterns
 
-### 2. rg/fd via Bash (only if fff unavailable)
+### 2. Grep/Glob (exact search when fff unavailable)
 Use when:
 - You know the exact string/identifier
 - Finding ALL occurrences (semantic can miss)
 - Tracing imports/dependencies
 
-```bash
-rg -n "functionName" --type ts      # find identifier
-rg -n -C2 "className" src/          # with context
-fd "config" --type f                # find files by name
-fd -e ts . src/services/            # by extension
-```
+Grep: `pattern` + `glob:"*.ts"` to filter + `output_mode`
+(`files_with_matches` = file names only, `content` = matching lines,
+`count` = per-file counts) + `-C` for context + `head_limit` to truncate.
+
+Glob: find files by name pattern — `"**/config*"`, `"src/**/*.ts"`.
 
 ### 3. gemini-cli (POWER MOVE for complex tasks)
 Use `gemini -y "[prompt]"` when:
@@ -59,15 +58,24 @@ gemini -y "find all API endpoints that call UserService, list their HTTP methods
 ### 4. Read (targeted viewing)
 Use after locating files. Read only needed sections.
 
-### 5. Glob/Grep (last resort)
-Use built-in tools only if fff/MCP/bash unavailable.
+### 5. Bash rg/fd (pipeline only)
+Use only when the tools above can't do it — piping into other commands:
+counting and aggregating, re-sorting/deduping results, feeding matched
+files to a downstream command.
+
+```bash
+rg -c "TODO" src/ | sort -t: -k2 -rn | head    # counts, ranked
+rg -l "deprecated" --type ts | xargs wc -l     # matched files → downstream
+fd -e ts . src/ | xargs grep -c import         # per-file aggregation
+```
 
 ## Decision Tree
 
 ```
 Know a symbol, want its source + callers? → codegraph_explore (indexed repos)
-Know exact string/identifier? → fff grep (2+ names → multi_grep) → rg
-Know file name pattern? → fff find_files → fd
+Know exact string/identifier? → fff grep (2+ names → multi_grep) → Grep
+Know file name pattern? → fff find_files → Glob
+Need counts/aggregation? → Bash rg + pipe
 Searching by intent/concept? → auggie-mcp
 Need multi-step analysis? → gemini-cli
 Need file contents? → Read
@@ -97,7 +105,7 @@ Found 20 matches in 5 files:
 
 - DO NOT read entire files when you need one function
 - DO NOT use auggie-mcp for exact string matches
-- DO NOT use fff/rg for "where is the login logic" type queries
+- DO NOT use fff/Grep for "where is the login logic" type queries
 - DO NOT pass regex or multi-token patterns to fff grep (single-line match, returns 0)
 - DO NOT fall back to built-in Grep/Glob while fff is available
 - DO NOT output raw tool results without summarization
