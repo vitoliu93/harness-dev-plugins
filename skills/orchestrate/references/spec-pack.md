@@ -39,6 +39,17 @@ needs: []             # db / dev_server / object storage etc. (locked, paralleli
   provenance:          # spec | escaping:<issue_id> (protects commands from deletion)
 ```
 
+## Repo hygiene floor (acceptance_cmds 最低配置)
+
+For execution briefs, acceptance_cmds must include the target repo's full
+self-check floor, run green by the worker before handoff — tests alone are
+not the bar:
+
+- **TS repos (opencut 类)**: unit tests on touched areas + `bunx biome check
+  <touched paths>` (format included) + repo-level `tsc --noEmit`.
+- **py repos**: pytest on touched areas + the repo's configured linter
+  (e.g. `ruff check`) when one exists.
+
 ## Spec lint (zero-model, before queueing)
 
 A vague-word hit marks an unresolved judgment point; the spec may not enter
