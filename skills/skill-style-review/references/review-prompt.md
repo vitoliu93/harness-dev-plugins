@@ -30,9 +30,14 @@ Blocking categories:
    Pass: "Keep the threshold read-only; reject DONE when it changes."
 3. tuition-narrative
    The text justifies a rule through pain, money, wasted time, hard-earned
-   lessons, or similar emotional accounting.
+   lessons, or similar emotional accounting. This also covers a dry, unemotional
+   variant: a rule backed by a one-off dated experiment, benchmark, or A/B
+   result cited as evidence, instead of the rule stated as a plain current fact.
    Flag: "We paid for this lesson; an unread verdict is money thrown away."
+   Flag: "no manual hints — a hinted run measurably narrows results (2026-01-01
+   test: blind matched hinted and found 4 extra)."
    Pass: "Read and verify every verdict before adopting it."
+   Pass: "Give the auditor no manual hints."
 4. marketing-language
    The quoted text itself uses hype, a superlative, persuasion, or a subjective
    quality adjective. Missing condition-action-evidence structure alone is never
@@ -58,7 +63,8 @@ Blocking categories:
 Do not flag:
 
 - dates that control current API versions, retention windows, compatibility
-  branches, or migration cutoffs;
+  branches, or migration cutoffs — never a date stamping a past experiment,
+  test run, or benchmark cited as justification (that is `tuition-narrative`);
 - text explicitly labeled as a negative example, test fixture, category
   definition, or reviewer prompt; ordinary runtime rationale is not an example;
 - short rationale needed to choose between current alternatives;

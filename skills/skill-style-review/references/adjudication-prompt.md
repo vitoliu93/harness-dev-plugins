@@ -12,7 +12,8 @@ category:
 - `origin-story`: runtime guidance explains provenance, ownership, or migration.
 - `incident-lore`: runtime guidance tells a past failure or dramatic anecdote.
 - `tuition-narrative`: runtime guidance justifies a rule through pain, money,
-  wasted time, or lessons learned.
+  wasted time, lessons learned, or a one-off dated experiment/benchmark/A-B
+  result cited as evidence instead of the rule stated as a plain fact.
 - `marketing-language`: the source itself contains hype, a superlative,
   persuasion, or a subjective quality claim.
 - `prose-wall`: one paragraph contains multiple independent runtime decisions

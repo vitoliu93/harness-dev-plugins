@@ -19,6 +19,12 @@
       "text": "# Runtime\n\nWe paid for this lesson; an unread verdict is money thrown away."
     },
     {
+      "id": "tuition-narrative-dated-benchmark",
+      "expect": "fail",
+      "category": "tuition-narrative",
+      "text": "# Runtime\n\nGive the auditor no manual hints — a hinted run measurably narrows results (2026-01-01 test: blind matched hinted and found 4 extra)."
+    },
+    {
       "id": "marketing-language",
       "expect": "fail",
       "category": "marketing-language",
