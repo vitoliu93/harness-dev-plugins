@@ -13,6 +13,17 @@ metadata:
 Three independent moves from this session + git diff + plan dir. Each skippable; "nothing to sediment" is valid.
 Never interview the user — you were there.
 
+## Audit first — delegate, blind
+
+Before the moves, dispatch an **independent auditor** over the session transcript
+(`~/.claude/projects/<project>/<session-id>.jsonl`) for obstacles, rework, and
+orchestration/tooling optimizations. Prefer a herdr vendor (`HERDR_ENV=1`, strong slot per
+manifest); fallback: subagent. Host writes **questions only** — no self-narrative, no
+known-issue anchors or sampling hints: a led brief measurably narrows findings
+(2026-08-13 A/B: blind matched the led group and found 6 extra). Auditor is read-only,
+report to a file; findings feed Moves 2–3. Trivial session (no delegation, <30min) → skip,
+self-debrief.
+
 ## Moves
 
 1. **Archive** plan dir → `_archive/` ([moves.md](references/moves.md) §1)
