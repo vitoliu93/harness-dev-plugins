@@ -1,6 +1,6 @@
 # Spec templates and context pack
 
-Templates scale by tier to avoid bureaucratic padding.
+Templates scale by tier.
 The spec pack is the content of the vendor brief; transport formatting,
 launch incantations, and vendor quirks belong to dispatch-vendors.
 
@@ -87,5 +87,5 @@ times); still mismatched = re-route.
 A cheap foreign-family model gets only the spec + acceptance commands, with
 a fixed prompt: "You are a lazy coder. List 3 implementations that pass all
 acceptance commands yet miss the intent, plus the acceptance command that
-would catch each." The host takes one minute to adopt or reject each line.
-Mandatory for high-stakes tasks; cost is tiny.
+would catch each." The host adopts or rejects each line.
+Mandatory for high-stakes tasks.

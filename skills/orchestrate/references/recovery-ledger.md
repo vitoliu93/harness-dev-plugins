@@ -19,8 +19,7 @@
   (diagnose before acting, harvest partials, hand over to a different
   family, ledger as fail(quota-limited)).
 - **6-way attribution**: `spec_gap / context_gap / capability / quirk /
-  flake / quota`. Unsure = spec_gap (bias with the evidence: fix templates
-  rather than falsely blacklist a cheap worker). capability is the only
+  flake / quota`. Unsure = spec_gap: fix templates before blacklisting a worker. capability is the only
   value that triggers tier-down or blacklist.
 
 ## Vendor fleet: profiling and admission
@@ -53,8 +52,8 @@
 - Leading indicator of decay: weekly slope of host re-read depth, report
   bounce rate, and escalation rate (fires 1-2 weeks before rework rate);
   positive for 2 consecutive weeks = auto-degrade that task_type.
-- Vendor outages correlate (quotas run out together at month-end). Price
-  the degradation path in advance: which task_types queue frozen, which
+- Assume vendor quotas exhaust together at month-end; price the
+  degradation path in advance: which task_types queue frozen, which
   the host does itself; chaos-drill it quarterly, cost counted into ROI.
 
 ## Ledger (extends ccobs obs.db; writes are zero-model)

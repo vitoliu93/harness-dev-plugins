@@ -24,8 +24,7 @@ test (a hook can fake-green tsc or vitest).
   integrity_violation (three of them = routing blacklist).
 - Acceptance commands are visible to the worker (useful for self-checking)
   but never writable.
-- Retry loops teach the worker what acceptance looks like; overfitting
-  worsens with each retry.
+- Cap retries: each retry increases acceptance overfitting.
 
 ## 3. Machine receipts (run_receipt + validator)
 
@@ -65,12 +64,12 @@ acceptance ran on the exact tree being merged.
   re-check with `git diff --name-only`; out-of-bounds = reject.
 - Contract files in the intersection = the task split failed; the host
   lands the contract first, then parallelizes on the frozen contract.
-- Lockfile iron rule: dependency changes always go first, serially;
+- Lockfile rule: dependency changes go first, serially;
   parallel tasks may not install new packages.
 - Shared state (DB, ports, object storage) is a first-class locked
   resource; parallelism = 1.
 - Worktree break-even: task duration < 2x environment setup time = don't
-  open one。
+  open one.
 
 ## 7. Mutation spot-checks (sampling acceptance sensitivity)
 
