@@ -91,9 +91,9 @@ other agent ledgers, never in a repo (debrief reads it at 收盘):
 date | vendor | scenario | why:econ|obs|advice | pass/fail(+fixups) | resumes:N
 ```
 
-**Write the row in the same Bash call that launches** (`… | dispatched`), then
-amend the verdict on return. Log a fixup caused by the host brief as a host
-fixup, not a vendor fixup. Use the ledger to evaluate the dispatch gate.
+- **Write the row in the same Bash call that launches** (`… | dispatched`), then amend the verdict on return.
+- Log a fixup caused by the host brief as a host fixup, not a vendor fixup.
+- Use the ledger to evaluate the dispatch gate.
 
 **`why:` field rules**
 
@@ -111,11 +111,14 @@ Diagnose before acting:
 - Window sizes and reset times are console-side facts you cannot see — never guess them.
 - wait-for-reset is only an option when the user explicitly offers it.
 
-Once limited, **hand over**: retain the session id for a later resume and use
-the partial work already on disk. Kill the run, harvest the worktree + report,
-then re-dispatch to a DIFFERENT vendor family or take it inline — takeover
-brief = original brief + `## Prior findings (from a limited run)` pasting the
-partial report verbatim and listing what's already excluded/confirmed, so the
-successor doesn't re-derive it. Takeover also dies → inline.
+Once limited, **hand over**:
+
+- Retain the session id for a later resume; use the partial work already on disk.
+- Kill the run, harvest the worktree + report.
+- Re-dispatch to a DIFFERENT vendor family, or take it inline.
+- Takeover brief = original brief + `## Prior findings (from a limited run)`,
+  pasting the partial report verbatim and listing what's already
+  excluded/confirmed, so the successor doesn't re-derive it.
+- Takeover also dies → inline.
 
 Ledger the limited run as `fail(quota-limited)` so debrief sees the pattern.
