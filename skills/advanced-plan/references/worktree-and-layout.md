@@ -43,9 +43,9 @@ for wt in $(git worktree list --porcelain | awk '/^worktree /{print $2}'); do
 done
 ```
 
-## Exit safety (the #1 observed failure mode)
+## Exit safety
 
-The order is fixed — violating it has caused deadlocks and lost work:
+Exit in this fixed order — commit, keep, merge, then remove from outside the worktree:
 
 1. **Commit** (or cherry-pick out) everything worth keeping. Uncommitted work is
    invisible to every other worktree, machine, and future session.

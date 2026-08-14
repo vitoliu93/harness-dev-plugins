@@ -5,10 +5,9 @@ writing `goal.md`.
 
 ## 1. Squeeze the ambiguity out at planning time
 
-Ambiguous scope → ask *before* doing anything; a wrong north star wastes the
-whole plan. Planning is where the user's time is cheap and yours is expensive:
-settle it here (`grill-me` builds the decision tree) so execution runs without
-interrupting them.
+Ambiguous scope → ask *before* doing anything (`grill-me` builds the decision
+tree). Settle scope during planning; execution should not need to interrupt
+the user.
 
 ## 2. Pull reference sources in, then read them whole
 

@@ -66,10 +66,10 @@ wall of thumbnails; tiny per-card inits for sparklines are fine.
 
 ## Mermaid — quick sketches & fallback
 
-Still pre-loaded (v11) and still the fastest path for gitGraph, mindmap,
-timeline, journey, quadrantChart, block-beta — and the fallback when the artifact
-must render without plantuml.com. Any `<pre class="mermaid">` block auto-renders
-on page load:
+Pre-loaded (v11). Use it for gitGraph, mindmap, timeline, journey,
+quadrantChart, block-beta — and as the fallback when the artifact must render
+without plantuml.com. Any `<pre class="mermaid">` block auto-renders on page
+load:
 
     <pre class="mermaid">
     gitGraph

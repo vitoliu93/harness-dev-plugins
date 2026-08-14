@@ -31,13 +31,16 @@ test (a hook can fake-green tsc or vitest).
 Delivery must include a machine-generated (not self-reported) receipt:
 `{exit_code, acceptance_runs:[{cmd, stdout_sha256, exit_code}], diff_stat,
 files_touched, env_digest}`.
-Reports pass a zero-model validator first: evidence_ref must resolve,
-hedge-word scan (should / looks like / probably / untested but) bounces the
-report, the unconfirmed section is mandatory, env fingerprint must match.
-The host spends tokens only after all green, and audits artifact
-completeness, never narrative. Residual risk: the validator catches
-omissions, not forgery; true-source spot checks are reserved for
-high-stakes tasks.
+
+Reports pass a zero-model validator first:
+- evidence_ref must resolve.
+- hedge-word scan (should / looks like / probably / untested but) bounces the report.
+- the unconfirmed section is mandatory.
+- env fingerprint must match.
+
+The host spends tokens only after all green, and audits artifact completeness,
+never narrative. The validator catches omissions, not forgery — reserve
+true-source spot checks for high-stakes tasks.
 
 ## 4. Three review layers (three checks, three owners; coder self-review excluded)
 
@@ -75,9 +78,10 @@ acceptance ran on the exact tree being merged.
 
 Every ~20 dispatches, mechanically inject one known break into one of them
 (drop a validation, off-by-one a boundary, swap arguments, swallow an
-exception) and re-run acceptance; it must catch the break, otherwise freeze
-that task_type until the suite is hardened. Escaped defects get three-way
-attribution: missing acceptance command (add one) / spec gap (fix the
-template) / reviewer blind spot (fix the attack prompt); if one layer
-accounts for >50%, fix that layer's template. New acceptance commands carry
-provenance so they can't be quietly deleted.
+exception) and re-run acceptance.
+
+- It must catch the break; otherwise freeze that task_type until the suite is hardened.
+- Escaped defects get three-way attribution: missing acceptance command (add
+  one) / spec gap (fix the template) / reviewer blind spot (fix the attack
+  prompt). If one layer accounts for >50%, fix that layer's template.
+- New acceptance commands carry provenance so they can't be quietly deleted.

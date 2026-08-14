@@ -30,7 +30,7 @@ hand-drawn SVG bars.
 
 **PR / code explainer.** Annotated diff alongside a small SVG flow of the
 affected subsystem, with 2–3 numbered callouts pointing at the lines that
-matter. Beats GitHub's default diff view; attach the file to PRs.
+matter. Attach the file to PRs.
 
 **Throwaway editor / tool.** Controls on one side, live visual preview on the
 other, **export button** at the bottom. The state has to round-trip back out as

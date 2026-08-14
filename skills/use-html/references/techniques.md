@@ -8,10 +8,11 @@
   `stroke` on direct SVG shapes (`<rect>`, `<circle>`, `<text>`) but **fails
   silently** on `<line>` strokes and inside `<defs>`/`<marker>` elements in many
   browsers (Safari, some Chromium versions). The line or arrowhead simply
-  doesn't render — no error, no fallback. **Always use hardcoded hex values**
-  for `<line stroke="...">` and `<marker>` / `<path>` fills. Keep CSS variables
-  for the surrounding HTML/Tailwind layer only. Define a comment block mapping
-  hex → semantic name for maintainability:
+  doesn't render — no error, no fallback.
+
+  - Use hardcoded hex values for `<line stroke="...">` and `<marker>` / `<path>` fills.
+  - Keep CSS variables for the surrounding HTML/Tailwind layer only.
+  - Define a comment block mapping hex → semantic name:
 
   ```
   <!-- Palette: #6a9bcc = sys-a/sky, #d97757 = sys-b/clay,
