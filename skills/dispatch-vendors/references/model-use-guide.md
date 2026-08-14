@@ -9,8 +9,7 @@ Anthropic models.
 
 ## `hard` — hard-tier closer
 
-- SOTA-tier coding endurance; long unattended runs; precision review and
-  adversarial verification.
+- Long unattended runs; precision review and adversarial verification.
 - Weakness: UI/design taste vs the Claude family.
 - **Route**: hardest agentic runs, long Q work, precision review /
   adversarial verification. Not look-and-feel judgment.

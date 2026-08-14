@@ -52,13 +52,10 @@ incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
 `zsh -ic '…'` and pass `--model` explicitly; cursor-agent takes
 `source ~/.zshenv &&` for keys.
 
-Use `stream-json` (variants add `--verbose`; cursor's `json` can hang
-unflushed). stdout to scratchpad, stderr separate (never `2>&1` — merging
-mangles the JSON). Capture the **session id at launch** from line 1's `init`
-event (cursor: chatId) — it survives a kill, a buffered `json` run's does not.
-Inspect the file only via `wc -l` / `tail -N | jq -c`; never `cat`/`head`/Read
-it whole, and never poll on a timer — the redirect only keeps megabytes out of
-context if you don't pull them back in.
+- Use `stream-json` (variants add `--verbose`; cursor's `json` can hang unflushed).
+- Redirect stdout to the scratchpad; keep stderr separate — never `2>&1`, merging mangles the JSON.
+- Capture the **session id at launch** from line 1's `init` event (cursor: chatId); it survives a kill, a buffered `json` run's does not.
+- Inspect the file only via `wc -l` / `tail -N | jq -c`; never `cat`/`head`/Read it whole, and never poll on a timer — the redirect only keeps megabytes out of context if you don't pull them back in.
 
 **Launch is the fragile moment.** A probe that passed earlier does not prove
 launch-time health (TLS interception, gateway resets). No `init` line within
@@ -72,9 +69,9 @@ your scratchpad, so the report never lands. Either drop `--mode plan` and put
 
 ## 3. Verify
 
-Run the acceptance yourself, read the artifact; never accept the vendor's
-self-report. Fix round = resume by session id with one consolidated list. Two
-resumes max, then take it back inline.
+- Run the acceptance yourself, read the artifact; never accept the vendor's self-report.
+- Fix round = resume by session id with one consolidated list.
+- Two resumes max, then take it back inline.
 
 Harvest the final report from the deliverable artifact or the whole `result`
 event — a byte-capped stdout slice can silently drop acceptance evidence from
@@ -107,11 +104,12 @@ fixup, not a vendor fixup. Use the ledger to evaluate the dispatch gate.
 
 ## Recovery — vendor limited mid-run
 
-Diagnose before acting — a stall is not proof: process alive + session jsonl
-still advancing = still working, leave it alone. Confirmed limit = 429/quota
-errors in the jsonl tail, or the user says so from the vendor console (window
-sizes and reset times are console-side facts you cannot see — never guess
-them; wait-for-reset is only an option when the user explicitly offers it).
+Diagnose before acting:
+
+- A stall is not proof — process alive + session jsonl still advancing = still working, leave it alone.
+- Confirmed limit = 429/quota errors in the jsonl tail, or the user says so from the vendor console.
+- Window sizes and reset times are console-side facts you cannot see — never guess them.
+- wait-for-reset is only an option when the user explicitly offers it.
 
 Once limited, **hand over**: retain the session id for a later resume and use
 the partial work already on disk. Kill the run, harvest the worktree + report,

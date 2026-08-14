@@ -30,7 +30,6 @@ claude -p --model fable --effort high "<brief>" > "$ans"    # long: < brief.txt
 
 - Run it from the repo root — the headless session has its own Read/Grep/Bash
   loop, so paths in the brief are explorable and writes stay permission-gated.
-  Exactly right for a reviewer.
 - `-p` stdout is the final answer text only; no banner noise to filter.
 - xhigh can run minutes: `timeout: 600000` or `run_in_background: true`. Never
   kill a run for being slow.

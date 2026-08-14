@@ -52,10 +52,13 @@ A 100MB+ 20-minute recording is a size problem only — it gets shrunk, not spli
 ## Long media (45min+ talks, streams, full YouTube lectures)
 
 Media over **45 minutes** is segmented: each segment is understood separately,
-then merged. Chunk defaults are 30min for audio, 10min for video (video bills
-258 tok/s, so a 30min video chunk alone is ~465k tokens). Three segments upload
-and generate concurrently. `--chunk-minutes N` sets the chunk length *and* lowers
-the segmenting bar to N minutes; `--chunk-minutes 0` forces one request.
+then merged.
+
+- Chunk defaults: 30min for audio, 10min for video (video bills 258 tok/s, so
+  a 30min video chunk alone is ~465k tokens).
+- Three segments upload and generate concurrently.
+- `--chunk-minutes N` sets the chunk length and lowers the segmenting bar to N minutes.
+- `--chunk-minutes 0` forces one request.
 
 A long file that is also huge needs no special handling — the segmenting pass
 re-encodes to 720p/1fps anyway, so size is solved on the way through.
