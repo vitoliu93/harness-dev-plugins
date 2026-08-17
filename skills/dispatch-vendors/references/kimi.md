@@ -1,6 +1,6 @@
 # kimi — Kimi Code CLI (k3 / K2.7)
 
-Primary carrier for the `long_context` slot (slot model per vendor manifest). Quota: user's Kimi Code subscription. The opencode × kimi-k2.7-code cell is **disabled** (0-token no-op) — use this native CLI for kimi models.
+Native carrier for kimi models (slot model per vendor manifest). Quota: user's Kimi Code subscription — a small pool, spend it on long reads. No effort knob: the model runs at a fixed level, so the manifest effort floor cannot be honored here.
 
 ```bash
 kimi -p "<brief>" --output-format stream-json

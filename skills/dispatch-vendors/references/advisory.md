@@ -35,8 +35,8 @@ claude -p --model fable --effort high "<brief>" > "$ans"    # long: < brief.txt
   kill a run for being slow.
 - Never `--bare` (restricts auth to `ANTHROPIC_API_KEY`, breaks OAuth/keychain)
   and never `--dangerously-skip-permissions`.
-- Use the real `claude` binary only for advisory dispatch
-  (`claude-variants.md`); reserve interactive quota for main-session work.
+- Use the `claude` binary only for advisory dispatch (`claude-cli.md`); reserve
+  interactive quota for main-session work.
 
 **Vendor** (foreign family) — the vendor sheets, unchanged. This is the D gate
 of the execution side pointed at a question instead of a task.

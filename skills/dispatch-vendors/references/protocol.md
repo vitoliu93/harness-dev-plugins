@@ -48,11 +48,10 @@ session): run "read `<known file>` and echo its first line". No output means
 the vendor tools are unavailable in that tree; go inline.
 
 Launch with Bash `run_in_background: true`, using the vendor sheet's exact
-incantation — dscode/arkcode/kicode are `~/.zshrc` functions, wrap in
-`zsh -ic '…'` and pass `--model` explicitly; cursor-agent takes
-`source ~/.zshenv &&` for keys.
+incantation, always passing `--model` explicitly and the task's effort level in
+that cell's `effort_syntax`; cursor-agent takes `source ~/.zshenv &&` for keys.
 
-- Use `stream-json` (variants add `--verbose`; cursor's `json` can hang unflushed).
+- Use `stream-json` (claude adds `--verbose`; cursor's `json` can hang unflushed).
 - Redirect stdout to the scratchpad; keep stderr separate — never `2>&1`, merging mangles the JSON.
 - Capture the **session id at launch** from line 1's `init` event (cursor: chatId); it survives a kill, a buffered `json` run's does not.
 - Inspect the file only via `wc -l` / `tail -N | jq -c`; never `cat`/`head`/Read it whole, and never poll on a timer — the redirect only keeps megabytes out of context if you don't pull them back in.

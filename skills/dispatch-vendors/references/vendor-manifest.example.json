@@ -1,13 +1,28 @@
 {
   "version": 1,
-  "updated": "2026-08-09",
+  "updated": "2026-08-17",
   "default_pool": "cursor",
+  "roles": {
+    "advisor": "verdicts — review, adjudication, second opinion; top-tier models only",
+    "executor": "artifacts — diffs, suites, migrations, digests"
+  },
+  "effort_policy": {
+    "floor": "medium",
+    "default": null,
+    "rule": "no stored default — pick per task from its difficulty, never below floor; pass it with the cell's effort_syntax"
+  },
+  "fallback_route": {
+    "via": "pi",
+    "provider": "openrouter",
+    "wallet": "OpenRouter credits (OAuth-minted key, billed separately)",
+    "launch": "pi -p --mode json --model openrouter/<vendor>/<model> '<brief>'",
+    "rule": "not a cell, not a normal candidate — reaches the same model on another wallet when the primary pool is exhausted or the carrier is down"
+  },
   "quota_pools": {
     "cursor": "Cursor Ultra subscription",
     "kimi": "Kimi Code subscription",
-    "deepseek": "DeepSeek quota via dscode",
-    "volcengine": "Volcengine coding plan",
-    "google": "Gemini API key"
+    "codex": "ChatGPT Plus/Pro subscription (pi OAuth, provider openai-codex)",
+    "anthropic": "Claude subscription (same pool as the host)"
   },
   "cells": [
     {
@@ -18,91 +33,53 @@
       "carrier_sheet": "cursor-agent.md",
       "capabilities": ["index", "vision", "resume", "unattended"],
       "launch": "cursor-agent -p '<brief>' --output-format stream-json --model <slot> --trust [--mode plan] [--force]",
-      "notes": "model names rotate — re-run --list-models before dispatch; cursor subagent uses the fast_light slot",
+      "effort_syntax": "baked into the model name (-low/-high/-xhigh/-max), or --model 'id[effort=high]'; no medium tier — the floor lands on -high",
+      "notes": "model names rotate — re-run --list-models before dispatch",
       "slots": {
-        "hard":       { "model": "gpt-5.6-sol-high", "family": "openai", "status": "unknown",  "note": "confirm before relying" },
-        "default_q":  { "model": "grok-4.5-high",    "family": "xai",    "status": "supported" },
-        "fast_light": { "model": "composer-2.5",     "family": "cursor", "status": "supported", "note": "vision ok" }
+        "advisor": [
+          { "model": "<top-tier model>-high", "family": "anthropic", "status": "unknown", "note": "confirm before relying" }
+        ],
+        "executor": [
+          { "model": "<workhorse>-high", "family": "xai", "status": "supported", "note": "vision ok" }
+        ]
       }
     },
     {
-      "id": "kimi-code",
-      "cli": "kimi",
-      "enabled": true,
-      "quota_pool": "kimi",
-      "carrier_sheet": "kimi.md",
-      "capabilities": ["vision", "resume", "unattended"],
-      "launch": "kimi -p '<brief>' --output-format stream-json [--plan]",
-      "notes": "stdout block-buffered until exit; session id from session.resume_hint",
-      "slots": {
-        "long_context": { "model": "k3", "family": "moonshot", "status": "supported", "note": "1M ctx; small quota" }
-      }
-    },
-    {
-      "id": "dscode",
-      "cli": "dscode",
-      "enabled": true,
-      "quota_pool": "deepseek",
-      "carrier_sheet": "claude-variants.md",
-      "capabilities": ["unattended"],
-      "launch": "zsh -ic \"dscode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
-      "notes": "rc function — needs zsh -ic; text-only",
-      "slots": {
-        "bulk": { "model": "deepseek-v4-flash", "family": "deepseek", "status": "supported", "note": "text-only" },
-        "hard": { "model": "deepseek-v4-pro",   "family": "deepseek", "status": "unknown",  "note": "1M ctx" }
-      }
-    },
-    {
-      "id": "arkcode",
-      "cli": "arkcode",
-      "enabled": true,
-      "quota_pool": "volcengine",
-      "carrier_sheet": "claude-variants.md",
-      "capabilities": ["unattended"],
-      "launch": "zsh -ic \"arkcode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
-      "notes": "never send images — API 400 fatal",
-      "slots": {
-        "long_context": { "model": "glm-5.2", "family": "zhipu", "status": "supported", "note": "1M ctx; image fatal" }
-      }
-    },
-    {
-      "id": "kicode",
-      "cli": "kicode",
-      "enabled": true,
-      "quota_pool": "kimi",
-      "carrier_sheet": "claude-variants.md",
-      "capabilities": ["vision", "unattended"],
-      "launch": "zsh -ic \"kicode -p '<brief>' --model <slot> --output-format stream-json --verbose\"",
-      "notes": "1M ctx; vision; small quota",
-      "slots": {
-        "long_context": { "model": "k3", "family": "moonshot", "status": "supported" }
-      }
-    },
-    {
-      "id": "pi",
+      "id": "pi-codex",
       "cli": "pi",
       "enabled": true,
-      "quota_pool": "google",
+      "quota_pool": "codex",
       "carrier_sheet": "pi.md",
       "capabilities": ["vision", "resume", "unattended"],
-      "launch": "pi -p --mode json --model google/<slot> '<brief>'",
-      "notes": "no permission flags — tools auto-run headless, worktree mandatory; check `pi auth check --provider google --json` before dispatch; other ready providers (deepseek/moonshotai/…) duplicate native carriers — use those instead",
+      "launch": "pi -p --mode json --model openai-codex/<slot> '<brief>'",
+      "effort_syntax": "--thinking medium|high|xhigh|max, or inline <slot>:<level>",
+      "notes": "one pi cell per provider pool — pick the cell by wallet, not by CLI; `pi auth check --provider openai-codex --json` must be ready",
       "slots": {
-        "fast_light":   { "model": "gemini-3.5-flash",     "family": "google", "status": "supported", "note": "vision ok; 1M ctx" },
-        "long_context": { "model": "gemini-3.1-pro-preview", "family": "google", "status": "unknown",  "note": "text probe ok; write path unprobed" }
+        "advisor": [
+          { "model": "<frontier openai model>", "family": "openai", "status": "supported", "note": "rung ②③ passed; write path unprobed" }
+        ],
+        "executor": [
+          { "model": "<mid openai model>", "family": "openai", "status": "supported", "note": "272K ctx; vision" }
+        ]
       }
     },
     {
-      "id": "opencode",
-      "cli": "opencode",
-      "enabled": false,
-      "quota_pool": "volcengine",
-      "carrier_sheet": "opencode.md",
-      "capabilities": [],
-      "launch": "source ~/.zshenv && opencode run '<brief>' -m volcengine-plan/<model> --format json --auto",
-      "notes": "inactive cell — re-run the onboarding ladder before re-enabling; --auto required or 0-token no-op",
+      "id": "claude",
+      "cli": "claude",
+      "enabled": true,
+      "quota_pool": "anthropic",
+      "carrier_sheet": "claude-cli.md",
+      "capabilities": ["vision", "resume"],
+      "launch": "claude -p '<brief>' --model <slot> --effort <level> --output-format stream-json --verbose",
+      "effort_syntax": "--effort medium|high|xhigh|max",
+      "notes": "same pool as the host — no quota saving; used for a clean second context and as the chain floor; export PROMPT_FORGE=0 before launch",
       "slots": {
-        "bulk": { "model": "glm-5.2", "family": "zhipu", "status": "unsupported", "note": "4096-token output cap" }
+        "advisor": [
+          { "model": "<top-tier anthropic model>", "family": "anthropic", "status": "supported" }
+        ],
+        "executor": [
+          { "model": "<mid anthropic model>", "family": "anthropic", "status": "supported", "note": "lighter work first — cheaper on the shared pool" }
+        ]
       }
     }
   ]

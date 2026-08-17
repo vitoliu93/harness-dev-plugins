@@ -2,11 +2,16 @@
 
 Quota: Cursor subscription. The **workspace index** provides repo-wide localization without cold grep.
 
-Slot models per manifest role (`hard` / `default_q` / `fast_light`). The subagent model inside Cursor is the fast_light slot — hands-off.
+Slot models per manifest role (`advisor` / `executor`). The subagent model inside Cursor is Cursor's own choice — hands-off.
+
+Effort has no flag here: it is a suffix on the model name (`-low` / `-high` /
+`-xhigh` / `-max`), or a parameter override — `--model 'id[effort=high]'`.
+There is no `medium` tier, so a `medium` floor lands on `-high`. The `-fast`
+variants trade depth for latency; keep them off dispatch work.
 
 ```bash
-cursor-agent --mode plan -p "<q>" --output-format stream-json --model <default_q slot> --trust
-cursor-agent -p "<brief>" --output-format stream-json --model <default_q slot> --force
+cursor-agent --mode plan -p "<q>" --output-format stream-json --model <executor slot> --trust
+cursor-agent -p "<brief>" --output-format stream-json --model <executor slot> --force
 cursor-agent -p --resume <chatId> "<consolidated fix list>" --force
 ```
 

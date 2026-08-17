@@ -8,18 +8,21 @@ routing. Schema, bootstrap and example:
 [vendor-manifest.schema.md](vendor-manifest.schema.md). Missing → bootstrap
 from [vendor-onboarding.md](vendor-onboarding.md).
 
-## Capability roster — dispatch a capability, not a model
+## Roster — dispatch a role, not a model
 
-Pick capability first; the manifest slot names the model; the carrier sheet
-names the CLI. Slot roles `hard` · `default_q` · `fast_light` ·
-`long_context` · `bulk` — what each routes for:
-[model-use-guide.md](model-use-guide.md). Chains floor on Anthropic subagent
-(needs this session's ecosystem — not a manifest slot).
+Pick the role first; the manifest names the models under it; the carrier sheet
+names the CLI. Two roles only — `advisor` (verdicts) and `executor` (artifacts)
+— what each routes for: [model-use-guide.md](model-use-guide.md). Chains floor
+on Anthropic subagent (needs this session's ecosystem — not a manifest cell).
 
-Image tasks: `vision`-capable slot or media-understanding fallback
+Effort is per task, never below the manifest `effort_policy.floor`; each cell's
+`effort_syntax` says how to pass it.
+
+Image tasks: `vision`-capable cell or media-understanding fallback
 ([vendor-onboarding.md](vendor-onboarding.md)).
-Quota: prefer the manifest `default_pool`; scarce pools for diversity-core /
-`long_context` only.
+Quota: prefer the manifest `default_pool`; scarce pools for diversity-core and
+long-context reads only. Pool exhausted → `fallback_route` or another cell
+holding the same role.
 
 ## Advisory — 第二意见
 

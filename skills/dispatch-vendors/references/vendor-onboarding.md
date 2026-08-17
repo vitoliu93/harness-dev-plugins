@@ -57,7 +57,8 @@ Long output task: json exit-flush vs stream flush; per-turn cap if any.
 Verdicts per CLI×model are machine-local. Record the fleet in the vendor
 manifest (`status` + `note` per slot; schema:
 [vendor-manifest.schema.md](vendor-manifest.schema.md)), never in this doc.
-Status: **supported** · **unsupported** · **unknown**. Vision:
+Status: **supported** · **unsupported** · **unknown** · **quota-exhausted**
+(pool wall, not a capability verdict — record the reset date). Vision:
 **yes** · **no** · **fallback-only** · **fatal-if-direct**.
 
 **Image fallback (media-understanding)**: text-only carriers — brief must run script first:
@@ -67,6 +68,6 @@ MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}   # after loading media-understanding skill
 "$MEDIA_SKILL_DIR/scripts/gemini_media.py" <file> [--audio-only] [--question "Q"]
 ```
 
-Slot models per role are the machine's choice — the cursor-cell example in
-`vendor-manifest.example.json` shows how the tier rule (fast/light vs hard)
-maps onto slots.
+Which models fill `advisor` and `executor` is the machine's choice —
+`vendor-manifest.example.json` shows the shape. A new model enters as
+`executor` unless it is top-tier; `advisor` stays narrow.

@@ -1,68 +1,56 @@
-# Model use guide — pick a capability, then the manifest slot
+# Model use guide — pick a role, then a model from the manifest
 
 Concrete model names live in the per-machine vendor manifest
 ([vendor-manifest.schema.md](vendor-manifest.schema.md)); this guide is
-capability-level and portable. Roles below are the manifest slot keys.
+role-level and portable. There are two roles.
 **Every chain floor is an Anthropic subagent** (Agent tool): no vendor process,
-no foreign quota — dispatch there when carriers fail or the task needs
-Anthropic models.
+no foreign quota — dispatch there when carriers fail or the task needs this
+session's loaded ecosystem.
 
-## `hard` — hard-tier closer
+## `advisor` — judgment
 
-- Long unattended runs; precision review and adversarial verification.
-- Weakness: UI/design taste vs the Claude family.
-- **Route**: hardest agentic runs, long Q work, precision review /
-  adversarial verification. Not look-and-feel judgment.
+- Review, adjudication, second opinion, adversarial verification, spec
+  interpretation. Produces a verdict, not a diff.
+- Deliberately narrow: only top-tier models belong in this role. Quota saved on
+  a verdict is not a saving — the verdict decides what gets built.
+- **Route**: 第二意见 · diff/branch review · red-team verification · "is this
+  approach right before I build it".
+- Not for: bulk work of any kind. An advisor that starts editing is mis-cast.
 
-## `default_q` — volume workhorse
+## `executor` — work
 
-- Strong agentic loop, high output per token; good on IDE-session-shaped work.
-- Weaknesses: novel-algorithm reasoning; occasional hallucinated API calls;
-  high-recall/low-precision review style.
-- **Route**: default Q dispatch — repo recon, bulk agentic coding, red-team
-  sweeps. Pair findings with a stronger verifier (`hard` slot or headless
-  fable advisory) before acting.
+- Produces artifacts: diffs, test suites, migrations, digests, benchmark runs.
+- Models differ by pool, family, context window and modality, not by tier —
+  read the slot `note` before picking. Text-only models need the
+  media-understanding script for images; 1M-ctx models take the long reads.
+- **Route**: everything that ends in a file, a diff or a report.
+- Pair a `default`-shaped executor sweep with an `advisor` pass before acting on
+  its findings — high recall, unverified precision.
 
-## `fast_light` — fast/light tier
+## Picking within a role
 
-- Cheaper per task than frontier peers; medium-length routine loops; vision
-  when the cell supports it.
-- Weak at one-shot architecture/design-opinion questions.
-- **Route**: fast cheap edits, routine loops, light vision. Escalate
-  architecture calls.
+1. **Pool first.** Prefer `default_pool`; scarce pools go to diversity work and
+   long-context reads. A cell whose pool is exhausted is not a candidate.
+2. **Family for diversity.** The diversity gate needs `family != anthropic`,
+   compared on the slot's `family` field, not on brand names.
+3. **Modality and context** from the slot note — vision, text-only, 1M ctx.
+4. **Status.** Skip `unsupported` and `quota-exhausted`; `unknown` → probe
+   (onboarding rung ②) before relying.
+5. `command -v` the cell CLI; a cell whose binary is gone is skipped.
 
-## `long_context` — 1M-ctx multimodal reader
+## Effort
 
-- Long-context digestion, native vision, strong frontend work.
-- Weaknesses: higher hallucination rate vs peers; over-proactive on ambiguous
-  scope; security tasks need supervision; degrades if the harness truncates
-  thinking.
-- **Route**: long-context research/digestion, vision-grounded work, frontend
-  generation, diversity-core review. Check factual claims; scarce quota —
-  spend deliberately.
+The manifest stores no default level. Choose per task from its difficulty, never
+below `effort_policy.floor`. Cheap mechanical edit → floor. Novel algorithm,
+subtle concurrency, security reasoning → top of the range. Advisory verdicts run
+high by default; the whole point of the role is reasoning depth.
 
-## `bulk` — bulk typist
-
-- Cheap, well-specified mechanical codegen; migration/benchmark grinds.
-- Weakness: weaker sustained tool-use vs frontier; text-only — vision degrades
-  or needs the media-understanding fallback.
-- **Route**: bulk code generation, test authoring, migration/benchmark grinds.
-  Vision or high-trust tool use → other slots or media fallback.
+Each carrier takes it differently (`effort_syntax` on the cell): a suffix in the
+model name, `--thinking`, `--effort`, or no knob at all. A carrier with no knob
+cannot honor the floor — note it and pick accordingly when the task is hard.
 
 ## anthropic family — the floor
 
 - Not vendor dispatch: Agent-tool subagent on this session's quota.
 - **Route**: needs the loaded ecosystem (hooks/skills/session), Anthropic
   models specifically, or every carrier in the chain failed.
-
-## Routing rules
-
-1. Read the manifest; pick the capability the task needs, not a vendor.
-2. Skip `unsupported` slots; `unknown` → probe (onboarding rung ②) before
-   relying.
-3. Diversity gate needs a foreign family — compare the slot's `family` against
-   anthropic, not a brand.
-4. `command -v` the cell CLI before launch; a cell whose binary is gone is
-   skipped.
-5. Quota: prefer the manifest `default_pool`; scarce pools → diversity-core or
-   `long_context` only.

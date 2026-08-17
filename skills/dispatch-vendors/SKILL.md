@@ -26,11 +26,15 @@ Roster + advisory + execution gate: [gates-and-roster.md](references/gates-and-r
 Carriers and models are per-machine, never hardcoded here. Read
 `$VENDOR_MANIFEST` (default
 `${CCOBS_DIR:-$HOME/.claude/observability}/vendor-manifest.json`) before
-dispatching: installed CLIs, quota pools, model slots. Missing → bootstrap
+dispatching: installed CLIs, quota pools, the two role rosters (`advisor` /
+`executor`), the effort floor. Missing → bootstrap
 per [vendor-onboarding.md](references/vendor-onboarding.md). references/ hold
-the provider 坑 (carrier sheets) and the capability-level
+the provider 坑 (carrier sheets) and the role-level
 [model-use-guide.md](references/model-use-guide.md) — concrete model names
 live in the manifest only.
+
+Effort is never stored: pick it per task from the task's difficulty, never below
+the manifest floor, and pass it in that cell's `effort_syntax`.
 
 ## Transport — herdr first
 
