@@ -58,7 +58,9 @@ Verdicts per CLI×model are machine-local. Record the fleet in the vendor
 manifest (`status` + `note` per slot; schema:
 [vendor-manifest.schema.md](vendor-manifest.schema.md)), never in this doc.
 Status: **supported** · **unsupported** · **unknown** · **quota-exhausted**
-(pool wall, not a capability verdict — record the reset date). Vision:
+(a wall, not a capability verdict — record the reset date). A wall can be
+per-model inside a live pool: probe the specific slot, never infer the cell is
+down from one refusal. Vision:
 **yes** · **no** · **fallback-only** · **fatal-if-direct**.
 
 **Image fallback (media-understanding)**: text-only carriers — brief must run script first:

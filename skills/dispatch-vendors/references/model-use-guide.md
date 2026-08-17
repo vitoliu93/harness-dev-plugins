@@ -30,7 +30,9 @@ session's loaded ecosystem.
 ## Picking within a role
 
 1. **Pool first.** Prefer `default_pool`; scarce pools go to diversity work and
-   long-context reads. A cell whose pool is exhausted is not a candidate.
+   long-context reads. Exhaustion can be per-slot inside a live cell — a
+   carrier may bill some models to the subscription and others to a capped
+   allowance — so read `status` per slot, not per cell.
 2. **Family for diversity.** The diversity gate needs `family != anthropic`,
    compared on the slot's `family` field, not on brand names.
 3. **Modality and context** from the slot note — vision, text-only, 1M ctx.
