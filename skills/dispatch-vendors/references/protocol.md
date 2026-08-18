@@ -97,9 +97,9 @@ date | vendor | scenario | why:econ|obs|advice | pass/fail(+fixups) | resumes:N
 **`why:` field rules**
 
 - Tag every row: `why:econ` (economics floor) or `why:obs` (collaboration validation).
-- `econ` rows judge pass/fixup against the token floor; `obs` rows judge whether non-Anthropic collaboration adds signal a subagent would not.
+- `econ` rows judge pass/fixup against the token floor; `obs` rows judge whether different-family collaboration adds signal a host subagent would not.
 - Deliberate under-floor batches must stay tagged `obs` — unmarked rows skew econ stats.
-- Judge `obs` rows by whether non-Anthropic collaboration adds signal; token savings do not decide `obs` rows.
+- Judge `obs` rows by whether different-family collaboration adds signal; token savings do not decide `obs` rows.
 
 ## Recovery — vendor limited mid-run
 

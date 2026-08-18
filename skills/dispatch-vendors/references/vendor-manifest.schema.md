@@ -93,6 +93,6 @@ can offer several models in one role.
 | field | type | meaning |
 |---|---|---|
 | `model` | string | concrete model name, no effort baked in unless the carrier has no other way |
-| `family` | string | vendor family for the diversity gate (anthropic / openai / xai / moonshot / deepseek / zhipu / google / …) |
+| `family` | string | model family for the diversity gate (anthropic / openai / xai / moonshot / deepseek / zhipu / google / …); compare with runtime `host_family` |
 | `status` | string | `supported` · `unknown` (probe first) · `unsupported` · `quota-exhausted` |
 | `note` | string | model-level caveat: context window, text-only, probe date, where to reroute |

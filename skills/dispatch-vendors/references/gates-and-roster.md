@@ -13,7 +13,12 @@ from [vendor-onboarding.md](vendor-onboarding.md).
 Pick the role first; the manifest names the models under it; the carrier sheet
 names the CLI. Two roles only — `advisor` (verdicts) and `executor` (artifacts)
 — what each routes for: [model-use-guide.md](model-use-guide.md). Chains floor
-on Anthropic subagent (needs this session's ecosystem — not a manifest cell).
+on a host subagent (needs this session's ecosystem — not a manifest cell).
+
+`host_family` means the current main-session model family, resolved at runtime
+and never hardcoded in the skill or manifest. A different-family route requires
+`slot.family != host_family`; if the host family is unknown, do not claim the D
+gate—route only on Q or I.
 
 Effort is per task, never below the manifest `effort_policy.floor`; each cell's
 `effort_syntax` says how to pass it.
@@ -28,24 +33,24 @@ holding the same role.
 
 Three moments: before substantive work; stuck (2+ dead hypotheses); before declaring done.
 
-Gate: value is eyes you lack — fresh context, stronger reasoning, or foreign family.
+Gate: value is eyes you lack — fresh context, stronger reasoning, or a different model family.
 Execution floor does not apply.
 
 | Lack | Target |
 |---|---|
-| fresh context | subagent (reads brief paths) |
-| stronger reasoning | `claude -p --model fable --effort high` |
-| foreign family | a manifest cell outside the anthropic family (carrier sheets) |
+| fresh context | host subagent (reads brief paths) |
+| stronger reasoning | host's stronger-reasoning configuration or a manifest `advisor` slot |
+| different family | a manifest slot whose `family` differs from `host_family` |
 
 Brief + output: [advisory.md](advisory.md). Ledger as `why:advice`. Verdict is hypothesis until you Read cited paths.
 
 ## Execution gate — dispatch if ≥1 pays
 
-- **D** Diversity: non-Anthropic eyes (review, red-team, second implementation)
-- **Q** Quota: ≥20 min or ≥300 lines unattended work
+- **D** Diversity: different-family eyes (review, red-team, second implementation)
+- **Q** Quota: estimated ≥20 min of unattended work, or ≥300 lines of output
 - **I** Index: cursor workspace index beats cold grep
 
-**Q floor**: below 20 min / 300 lines → inline or subagent, unless user standing `why:obs` directive.
+**Q floor**: below both thresholds → inline or subagent, unless user standing `why:obs` directive.
 **A veto**: success must be machine-checkable; visual feel stays inline or spec-extraction first.
 
 Also: one-prompt brief · zero mid-task interaction · verify cheaper than re-derive · brief shorter than doing it yourself.

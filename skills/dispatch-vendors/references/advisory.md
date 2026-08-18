@@ -17,29 +17,20 @@ If any section is missing, sharpen the question before dispatching.
 
 ## Engines
 
-**Subagent** (fresh context, same family) — spawn with the five-section brief
+**Host subagent** (fresh context, host family) — spawn with the five-section brief
 plus the output contract below. It has Read/Grep: name the paths and let it
 ground itself in the code rather than in your account of the code.
 
-**Headless fable** (stronger reasoning):
+**Strong-reasoning advisor** — use the host's stronger-reasoning configuration
+or select a manifest `advisor` slot. Follow that cell's carrier sheet for the
+exact launch and safety flags; concrete model names never live here. Run from
+the repo root so cited paths are explorable, capture the answer to a scratch
+artifact, and allow long reasoning runs to finish.
 
-```bash
-ans=$(mktemp -t advice.XXXXXX)
-claude -p --model fable --effort high "<brief>" > "$ans"    # long: < brief.txt
-```
-
-- Run it from the repo root — the headless session has its own Read/Grep/Bash
-  loop, so paths in the brief are explorable and writes stay permission-gated.
-- `-p` stdout is the final answer text only; no banner noise to filter.
-- xhigh can run minutes: `timeout: 600000` or `run_in_background: true`. Never
-  kill a run for being slow.
-- Never `--bare` (restricts auth to `ANTHROPIC_API_KEY`, breaks OAuth/keychain)
-  and never `--dangerously-skip-permissions`.
-- Use the `claude` binary only for advisory dispatch (`claude-cli.md`); reserve
-  interactive quota for main-session work.
-
-**Vendor** (foreign family) — the vendor sheets, unchanged. This is the D gate
-of the execution side pointed at a question instead of a task.
+**Different-family advisor** — choose a manifest slot whose `family` differs
+from `host_family`. This uses the diversity principle behind D; advisory does
+not require the execution gate. If the host family is unknown, describe the
+run as an independent opinion, not as proven family diversity.
 
 ## Output contract
 
@@ -71,10 +62,10 @@ One-shot consults don't fit a multi-hour/-day campaign (采集战役、无人值
 长 issue 队列): the advisor needs the campaign's history to catch drift — the
 worker and advisor compare each round against the same campaign history:
 
-- **Fixed session, resumed** — create once with `claude -p --session-id <uuid>
-  --model fable "<开局审查 brief>"`, continue every round with `claude -p -r
-  <uuid>`; the advisor keeps history and can compare rounds. `--session-id` on
-  an existing session errors — resume (`-r`) is the continuation path.
+- **Fixed session, resumed** — choose a host or manifest advisor with resume
+  support, create one session, retain its id, and continue it with that
+  carrier sheet's resume syntax. The advisor keeps history and can compare
+  rounds; if a carrier cannot resume, use one-shot advisory instead.
 - **Briefs land on disk, fed via stdin** (`< brief.md`) — long briefs blow the
   argv limit; answers archived next to the campaign data, not lost in scrollback.
 - **Sync on milestones, not on the clock** — phase done / anomaly / before any

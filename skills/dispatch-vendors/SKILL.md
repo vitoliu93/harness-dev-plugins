@@ -10,7 +10,7 @@ metadata:
 
 # dispatch-vendors
 
-Two lanes on someone else's quota:
+Two lanes in a separate AI process:
 
 - **Execution** — whole self-contained task → diff + machine acceptance
 - **Advisory** — judgment verdict, no runnable gate

@@ -1,8 +1,8 @@
 # claude — Claude Code itself as a carrier
 
-Shares the host's Anthropic pool, so it saves no quota. Dispatch here for a
-second pair of eyes with a clean context, for work that needs Anthropic models
-specifically, or as the last stop when every foreign carrier failed.
+Uses the Anthropic quota pool; it shares host quota only when the main session
+bills to that same pool. Dispatch here for a clean second context, for work
+that needs Anthropic models specifically, or as a carrier fallback.
 
 ```bash
 F='--output-format stream-json --verbose'   # --verbose required with -p

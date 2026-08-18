@@ -22,7 +22,7 @@
     "cursor": "Cursor Ultra subscription",
     "kimi": "Kimi Code subscription",
     "codex": "ChatGPT Plus/Pro subscription (pi OAuth, provider openai-codex)",
-    "anthropic": "Claude subscription (same pool as the host)"
+    "anthropic": "Claude subscription; shared only when the host bills to this pool"
   },
   "cells": [
     {
@@ -72,7 +72,7 @@
       "capabilities": ["vision", "resume"],
       "launch": "claude -p '<brief>' --model <slot> --effort <level> --output-format stream-json --verbose",
       "effort_syntax": "--effort medium|high|xhigh|max",
-      "notes": "same pool as the host — no quota saving; used for a clean second context and as the chain floor; export PROMPT_FORGE=0 before launch",
+      "notes": "quota saving depends on the host pool; used for a clean second context or provider-specific work; export PROMPT_FORGE=0 before launch",
       "slots": {
         "advisor": [
           { "model": "<top-tier anthropic model>", "family": "anthropic", "status": "supported" }

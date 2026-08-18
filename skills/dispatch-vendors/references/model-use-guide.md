@@ -3,9 +3,9 @@
 Concrete model names live in the per-machine vendor manifest
 ([vendor-manifest.schema.md](vendor-manifest.schema.md)); this guide is
 role-level and portable. There are two roles.
-**Every chain floor is an Anthropic subagent** (Agent tool): no vendor process,
-no foreign quota — dispatch there when carriers fail or the task needs this
-session's loaded ecosystem.
+**Every chain floor is a host subagent**: no vendor process, no foreign quota
+— dispatch there when carriers fail or the task needs this session's loaded
+ecosystem.
 
 ## `advisor` — judgment
 
@@ -33,8 +33,10 @@ session's loaded ecosystem.
    long-context reads. Exhaustion can be per-slot inside a live cell — a
    carrier may bill some models to the subscription and others to a capped
    allowance — so read `status` per slot, not per cell.
-2. **Family for diversity.** The diversity gate needs `family != anthropic`,
-   compared on the slot's `family` field, not on brand names.
+2. **Family for diversity.** Resolve `host_family` from the current main
+   session. The diversity gate needs `slot.family != host_family`, compared on
+   family fields rather than brand names. Unknown host family means D is
+   unproven; route only on Q or I.
 3. **Modality and context** from the slot note — vision, text-only, 1M ctx.
 4. **Status.** Skip `unsupported` and `quota-exhausted`; `unknown` → probe
    (onboarding rung ②) before relying.
@@ -51,8 +53,8 @@ Each carrier takes it differently (`effort_syntax` on the cell): a suffix in the
 model name, `--thinking`, `--effort`, or no knob at all. A carrier with no knob
 cannot honor the floor — note it and pick accordingly when the task is hard.
 
-## anthropic family — the floor
+## Host subagent — the floor
 
-- Not vendor dispatch: Agent-tool subagent on this session's quota.
-- **Route**: needs the loaded ecosystem (hooks/skills/session), Anthropic
-  models specifically, or every carrier in the chain failed.
+- Not vendor dispatch: a subagent on this host session's quota.
+- **Route**: needs the loaded ecosystem (hooks/skills/session) or every carrier
+  in the chain failed.

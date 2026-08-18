@@ -1,6 +1,6 @@
 # Scenario catalog — preset dispatch shapes
 
-Ranked by expected frequency. Gate column: **D**iversity (non-Anthropic eyes) · **Q**uota (heavy/long) · **I**ndex (Cursor workspace index). Any Q scenario can run overnight/detached and resume by session id.
+Ranked by expected frequency. Gate column: **D**iversity (a model family different from the current host) · **Q**uota (heavy/long) · **I**ndex (Cursor workspace index). Any Q scenario can run overnight/detached and resume by session id.
 
 Picks are ROLES (model-use-guide.md); resolve each to a concrete model from the
 vendor manifest (schema: vendor-manifest.schema.md); carrier = the cell holding
@@ -21,8 +21,9 @@ that model. Effort is chosen per task, never below the manifest floor.
 | 11 | Second-opinion implementation | same spec → TWO executors of different families, diff results | `executor` ×2 | mid | **D** |
 | 12 | Benchmark run | "perf bench B, N iters, medians + regressions vs baseline" | `executor`, isolated process | floor | Q |
 
-**Diversity core: #3, #10, #11** — need a model whose `family` is not
-anthropic (any manifest cell qualifies; anthropic subagent floor does NOT).
+**Diversity core: #3, #10, #11** — need a model whose `family` differs from
+`host_family`; the host-subagent floor does not qualify. If `host_family` is
+unknown, D is unproven.
 Low foreign quota → cut from bottom, keep 3/10/11.
 
 **Default routing**: `executor` on the manifest `default_pool` for the Q gate;
