@@ -114,7 +114,7 @@ const pending = db
 
 if (pending.length === 0) {
   console.log("ccobs distill: nothing pending");
-  writeFileSync(join(homedir(), ".claude", "observability", "distill.heartbeat"), new Date().toISOString());
+  writeFileSync(join(OBS_DIR, "distill.heartbeat"), new Date().toISOString());
   process.exit(0);
 }
 
@@ -180,4 +180,4 @@ for (const s of pending) {
 }
 console.log(`ccobs distill: ${ok} ok, ${failed} failed, model=${cfg.model}`);
 // 心跳:跑到这一行才算活着(2026-07-22 起 SIGTRAP 死两周无人知的学费);session-replay hook 检查此文件的年龄
-writeFileSync(join(homedir(), ".claude", "observability", "distill.heartbeat"), new Date().toISOString());
+writeFileSync(join(OBS_DIR, "distill.heartbeat"), new Date().toISOString());

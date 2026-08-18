@@ -50,7 +50,7 @@ describe("build atlas style", () => {
 
   test("style issues are actionable atlas findings", () => {
     _skill("bad", ["Run a task.", "Explain its origin.", "Use when the task is needed."], "Run `/Users/example/work/task.py`.\n");
-    const policy = path.join(skills, "skill_atlas");
+    const policy = path.join(skills, "skill-atlas");
     fs.mkdirSync(policy);
     fs.writeFileSync(
       path.join(policy, "policy.json"),

@@ -21,7 +21,7 @@ const SKIP_PARTS = new Set([
   "evals",
   "node_modules",
   "reports",
-  "skill_atlas",
+  "skill-atlas",
   "tests",
   "venv",
   ".venv",

@@ -67,7 +67,7 @@ down from one refusal. Vision:
 
 ```bash
 MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}   # after loading media-understanding skill
-"$MEDIA_SKILL_DIR/scripts/gemini_media.py" <file> [--audio-only] [--question "Q"]
+bun "$MEDIA_SKILL_DIR/scripts/gemini_media.ts" <file> [--audio-only] [--question "Q"]
 ```
 
 Which models fill `advisor` and `executor` is the machine's choice —

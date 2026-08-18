@@ -2,6 +2,10 @@
 
 ## Sync ledger first
 
+On hosts without Claude Code plugin variables, resolve the loaded `ccobs`
+skill path and export it as `CCOBS_SKILL_DIR` before running the unchanged
+fallback below.
+
 ```bash
 CCOBS_SKILL_DIR=${CCOBS_SKILL_DIR:-${CLAUDE_PLUGIN_ROOT}/skills/ccobs}
 [ -f "$CCOBS_SKILL_DIR/scripts/ingest.ts" ] && bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
@@ -27,12 +31,12 @@ Operate in original `cwd`, not current directory.
 
 ## Read context (priority)
 
-1. `docs/advanced-plans/` match → resume via advanced-plan, exit this skill
+1. `docs/advanced-plans/` match → resume via advanced-plan when available, exit this skill
 2. `"$HANDOFF_DIR"/handoff-*.md`
 3. Transcript probes (user messages, assistant narrative, edited files, tail)
 4. git status/log/worktree — git wins over transcript
 
-Large transcript → sonnet subagent for probes; host reads tail + key files.
+Large transcript → host subagent for probes when available; host reads tail + key files.
 
 Cursor bodies: see ccobs [queries.md](../../ccobs/references/queries.md).
 

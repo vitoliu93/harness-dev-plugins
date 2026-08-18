@@ -144,7 +144,7 @@ function load_json(p: string): Record<string, any> {
 }
 
 function load_scope_policy(workspaceRoot: string): Record<string, any> {
-  const p = path.join(workspaceRoot, "skill_atlas", "policy.json");
+  const p = path.join(workspaceRoot, "skill-atlas", "policy.json");
   if (!fs.existsSync(p)) {
     return { present: false, path: safe_rel(workspaceRoot, p), rules: [] };
   }

@@ -7,6 +7,9 @@
 - Dynamic ledgers never live in the plugin repo.
 - Scripts under `${CLAUDE_SKILL_DIR}/scripts/`:
   - `schema.sql`, `ingest.ts`, `obs-enqueue.ts`, `install.sh`, `distill.ts`, `distill-prompt.md`
+- On other hosts, set `CCOBS_SKILL_DIR` to the directory containing
+  `ccobs/SKILL.md` and substitute it for the script directory. The existing
+  Claude Code variables and fallbacks remain valid.
 - `message_parts` may contain secrets — redact before sharing.
 
 ## Install and ingest

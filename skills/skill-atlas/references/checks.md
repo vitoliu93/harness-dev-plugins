@@ -62,7 +62,7 @@ done | sort -k2
 
 >90d untouched → flag refresh or archive via debrief.
 
-Portfolio checks can be disabled fleet-wide in `$PLUGIN/skills/skill_atlas/policy.json`
+Portfolio checks can be disabled fleet-wide in `$PLUGIN/skills/skill-atlas/policy.json`
 `disabled_checks` (e.g. `owner_review_gaps` on a single-maintainer fleet). Style
 findings cannot be disabled.
 

@@ -6,6 +6,10 @@
 
 ## Sync before query
 
+On hosts without Claude Code plugin variables, resolve the loaded `ccobs`
+skill path and export it as `CCOBS_SKILL_DIR` before running the unchanged
+fallback below.
+
 ```bash
 CCOBS_SKILL_DIR=${CCOBS_SKILL_DIR:-${CLAUDE_PLUGIN_ROOT}/skills/ccobs}
 [ -f "$CCOBS_SKILL_DIR/scripts/ingest.ts" ] && bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
