@@ -1,0 +1,5 @@
+interface:
+  display_name: LLM Call
+  short_description: Run one configured model request with structured output
+policy:
+  allow_implicit_invocation: false

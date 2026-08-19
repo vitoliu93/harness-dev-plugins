@@ -1,9 +1,13 @@
 # Skill forge workflow
 
 ```bash
-PLUGIN=${CLAUDE_PLUGIN_ROOT:?set CLAUDE_PLUGIN_ROOT}
-FORGE=${CLAUDE_SKILL_DIR}/scripts
+SKILL_FORGE_DIR="<absolute path of the directory containing the loaded skill-forge/SKILL.md>";
+SKILLS_ROOT="$SKILL_FORGE_DIR/..";
+FORGE="$SKILL_FORGE_DIR/scripts";
 ```
+
+Repeat these assignments in the same Bash call as each command below; shell
+state does not persist between tool calls.
 
 ## 0. Qualification — don't build
 
@@ -19,17 +23,17 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 ## 2. Invocation economics
 
 - model-invoked: 2-line description + eval negative_concepts for neighbors
-- user/hook only: `disable-model-invocation: true`, no evals
+- user/hook only: keep the description narrow; use `agents/openai.yaml` when Codex must block implicit invocation; no evals
 - Apply [style-contract.md](style-contract.md): routing interface, present-tense runtime docs, portable paths, gate-preserving progressive disclosure, fictional public examples
-- Run `bun $FORGE/skill_style.ts --workspace-root $PLUGIN/skills --fail-on-issues`
+- Run `bun "$FORGE/skill_style.ts" --workspace-root "$SKILLS_ROOT" --fail-on-issues`
 - Run `bun add -g openai@7`
-- Run `LLM_CALL_DIR=$PLUGIN/skills/llm-call bun $PLUGIN/skills/skill-style-review/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues`
+- Run `LLM_CALL_DIR="$SKILLS_ROOT/llm-call" bun "$SKILLS_ROOT/skill-style-review/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues`
 
 ## 3. Trigger-first (model-invoked)
 
 1. Add `evals/` (copy dispatch-vendors shape)
 2. `trigger_eval.ts` → P=R=1.0
-3. `build_skill_atlas.ts --workspace-root $PLUGIN/skills --fail-on-style` → style clean, no pair ≥0.42
+3. `build_skill_atlas.ts --workspace-root "$SKILLS_ROOT" --fail-on-style` → style clean, no pair ≥0.42
 4. Use `fallback_positive_concepts`, don't stuff description
 
 ## 4. Body placement
@@ -44,7 +48,7 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 - zero deterministic and semantic style findings
 - eval-delta on graduated candidates
 - plugin-dev:skill-reviewer
-- bump plugin.json + marketplace.json
+- bump `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and `.codex-plugin/plugin.json` to the same version
 - list exactly 3 next iterations
 
 ## Vendored tools

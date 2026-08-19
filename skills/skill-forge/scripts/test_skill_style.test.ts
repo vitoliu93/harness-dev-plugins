@@ -69,7 +69,7 @@ describe("skill style", () => {
     );
     const script = path.join(skillDir, "scripts", "run.sh");
     fs.mkdirSync(path.dirname(script));
-    fs.writeFileSync(script, 'python3 "${CLAUDE_SKILL_DIR}/../other-skill/scripts/run.py"\n', "utf-8");
+    fs.writeFileSync(script, 'python3 "${WALL_SKILL_DIR}/../other-skill/scripts/run.py"\n', "utf-8");
     const codes = _codes();
     expect(codes).toContain("prose-wall");
     expect(codes).toContain("local-path");
@@ -164,16 +164,28 @@ describe("skill style", () => {
     expect(audit_workspace(root)).toEqual([]);
   });
 
-  test("accepts configurable and standard tool paths", () => {
+  test("accepts configurable and host-neutral skill paths", () => {
     const skillDir = _skill("portable", ["Run a portable workflow.", "Use when portable execution is required."]);
     const reference = path.join(skillDir, "references", "paths.md");
     fs.mkdirSync(path.dirname(reference));
     fs.writeFileSync(
       reference,
-      "Use `${CLAUDE_PLUGIN_ROOT}/skills/portable/scripts/run.py`.\n" +
+      "Set `PORTABLE_SKILL_DIR=\"<absolute path of the directory containing this SKILL.md>\";`.\n" +
+        "Run `python3 \"$PORTABLE_SKILL_DIR/scripts/run.py\"`.\n" +
         "Set `CACHE=${CACHE_DIR:-$HOME/.cache/portable}`.\n",
       "utf-8",
     );
     expect(audit_workspace(root)).toEqual([]);
+  });
+
+  test("flags Claude-only skill path variables", () => {
+    const skillDir = _skill("claude-path", ["Run a portable workflow.", "Use when portability matters."]);
+    fs.writeFileSync(
+      path.join(skillDir, "run.sh"),
+      'bun "${CLAUDE_SKILL_DIR}/scripts/run.ts"\n' +
+        'bun "${CLAUDE_PLUGIN_ROOT}/skills/other/scripts/run.ts"\n',
+      "utf-8",
+    );
+    expect(_codes().filter((code) => code === "local-path")).toHaveLength(2);
   });
 });

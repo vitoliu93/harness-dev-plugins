@@ -1,8 +1,9 @@
 # dev-kit
 
-Vito's **atom library** for Claude Code, packaged as a plugin. The repo root is
-the plugin root — 20 skills under `skills/`, 3 subagents under `agents/`, hooks
-under `hooks/` are auto-discovered. Retired skills live under `archive/`.
+Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
+repo root is the plugin root — 20 shared skills live under `skills/`; Claude
+Code also loads 3 subagents under `agents/`; both hosts can discover hooks under
+`hooks/`. Retired skills live under `archive/`.
 North star: `docs/north-star.md`.
 
 **Design principle (v2.0)**: project-agnostic atoms for the *agent* (`metadata.kind`:
@@ -11,6 +12,8 @@ in the owning project plugin (`kox-agent-plugins`).
 
 ## Install
 
+### Claude Code
+
 From any machine with the repo checked out at `<checkout-path>`:
 
 ```
@@ -18,7 +21,18 @@ From any machine with the repo checked out at `<checkout-path>`:
 /plugin install dev-kit@vito-agents
 ```
 
-Restart the session. Skills load as `dev-kit:<skill>` (e.g. `/dev-kit:advanced-plan`).
+Restart the session. Skills load as `dev-kit:<skill>` (for example,
+`/dev-kit:advanced-plan`).
+
+### Codex
+
+```bash
+codex plugin marketplace add <checkout-path>
+codex plugin add dev-kit@vito-agents
+```
+
+Restart the session. Skills load as `dev-kit:<skill>` (for example,
+`$dev-kit:advanced-plan`).
 
 ## Skills
 
@@ -79,15 +93,21 @@ Restart after hook edits.
 
 ```
 .claude-plugin/   # plugin.json + marketplace.json
+.codex-plugin/    # Codex plugin.json
 skills/           # 20 active skills
-agents/           # 3 subagents
-hooks/            # hook registration + scripts
+agents/           # 3 Claude Code subagents
+hooks/            # shared hook registration + scripts
 archive/          # retired skills (not auto-discovered)
 ```
 
 ## Portability
 
-`advanced-plan` templates resolve via `${CLAUDE_PLUGIN_ROOT}`. Tool ledgers default
-under `$HOME/.claude/observability/` — override with `CCOBS_DIR`, `SKILL_ATLAS_DIR`.
+Bundled files use a named `*_SKILL_DIR` set to the absolute directory containing
+the loaded `SKILL.md`; keep the assignment and use in the same shell command.
+This works with both Claude Code's `Base directory for this skill` and the skill
+path exposed by Codex. Codex-only invocation settings live in
+`skills/*/agents/openai.yaml`; Claude Code safely ignores those files. Tool
+ledgers default under `$HOME/.claude/observability/` — override with `CCOBS_DIR`,
+`SKILL_ATLAS_DIR`.
 Handoff files use `HANDOFF_DIR` (default `${TMPDIR:-/tmp}`). External docs use
 `EXTERNAL_DOCS_DIR`.

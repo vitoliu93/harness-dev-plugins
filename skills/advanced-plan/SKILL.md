@@ -27,9 +27,10 @@ Seven files, lazy by tier — see [file-semantics.md](references/file-semantics.
 ## Templates
 
 ```bash
-ROOT=$(git rev-parse --show-toplevel)
-TPL="${CLAUDE_PLUGIN_ROOT}/skills/advanced-plan/assets/templates"
-DIR="$ROOT/docs/advanced-plans/$(date +%F)-<slug>"
+ROOT=$(git rev-parse --show-toplevel);
+ADVANCED_PLAN_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+TPL="$ADVANCED_PLAN_SKILL_DIR/assets/templates";
+DIR="$ROOT/docs/advanced-plans/$(date +%F)-<slug>";
 mkdir -p "$DIR" && cp "$TPL"/{goal,spec,todo}.md "$DIR"/
 ```
 

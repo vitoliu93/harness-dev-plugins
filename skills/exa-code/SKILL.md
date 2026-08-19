@@ -11,8 +11,9 @@ metadata:
 
 One script fronts every Exa surface. Needs `EXA_API_KEY`.
 
-```
-bun ${CLAUDE_SKILL_DIR}/scripts/exa.ts <path> '<json body>'
+```bash
+EXA_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+bun "$EXA_SKILL_DIR/scripts/exa.ts" <path> '<json body>'
 ```
 
 POSTs the body to `https://api.exa.ai/<path>`; omit the body for a GET. `agent` is

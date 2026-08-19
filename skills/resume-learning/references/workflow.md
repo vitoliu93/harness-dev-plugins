@@ -21,7 +21,8 @@ One file per project root `<项目根>/RESUME.md`:
 
 1. **Evidence first**: harvest sessions, git diff since last 存档 commit, recent files.
    ```bash
-   bun ${CLAUDE_SKILL_DIR}/scripts/harvest_sessions.ts <CWD> --since <date>
+   RESUME_SKILL_DIR="<absolute path of the directory containing the loaded resume-learning/SKILL.md>";
+   bun "$RESUME_SKILL_DIR/scripts/harvest_sessions.ts" <CWD> --since <date>
    ```
 2. **Active recall**: up to 4 questions, one at a time; "don't know" is valid.
 3. **L2 check**: drift, (推进|原地), silent 卡点 on false confidence.

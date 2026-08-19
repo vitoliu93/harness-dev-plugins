@@ -52,7 +52,8 @@ ledger row — run as one script; launch it with Bash `run_in_background: true`,
 since it blocks until the marker lands.
 
 ```bash
-bun ${CLAUDE_SKILL_DIR}/scripts/herdr_dispatch.ts --help   # --dry-run plans without launching
+DISPATCH_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+bun "$DISPATCH_SKILL_DIR/scripts/herdr_dispatch.ts" --help   # --dry-run plans without launching
 ```
 
 Its rules hold whether or not you use it: refuse a slot the manifest already
@@ -67,4 +68,7 @@ Advice is hypothesis until you Read cited code paths. Vendor does not commit —
 
 ## Media fallback
 
-Image-bearing briefs: vision-capable model or load `media-understanding`, set `MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}` from that skill, run `${MEDIA_SKILL_DIR}/scripts/gemini_media.ts`.
+Image-bearing briefs: use a vision-capable model or load `media-understanding`.
+Set `MEDIA_SKILL_DIR` to the absolute directory containing the loaded
+`media-understanding/SKILL.md`; run
+`bun "$MEDIA_SKILL_DIR/scripts/gemini_media.ts"` in the same shell command.

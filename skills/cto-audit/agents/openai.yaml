@@ -1,0 +1,5 @@
+interface:
+  display_name: CTO Audit
+  short_description: Audit architecture, domain models, and harness rules
+policy:
+  allow_implicit_invocation: false

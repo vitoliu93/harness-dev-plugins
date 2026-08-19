@@ -12,8 +12,9 @@ metadata:
 Full workflow: [workflow.md](references/workflow.md).
 
 ```bash
-PLUGIN=${CLAUDE_PLUGIN_ROOT:?set CLAUDE_PLUGIN_ROOT}
-FORGE=${CLAUDE_SKILL_DIR}/scripts
+SKILL_FORGE_DIR="<absolute path of the directory containing this SKILL.md>";
+SKILLS_ROOT="$SKILL_FORGE_DIR/..";
+FORGE="$SKILL_FORGE_DIR/scripts";
 ```
 
 ## Hard gates

@@ -2,12 +2,11 @@
 
 ## Sync ledger first
 
-On hosts without Claude Code plugin variables, resolve the loaded `ccobs`
-skill path and export it as `CCOBS_SKILL_DIR` before running the unchanged
-fallback below.
+Resolve the loaded `ccobs` skill path and set it as `CCOBS_SKILL_DIR` in the
+same shell command as the sync.
 
 ```bash
-CCOBS_SKILL_DIR=${CCOBS_SKILL_DIR:-${CLAUDE_PLUGIN_ROOT}/skills/ccobs}
+CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";
 [ -f "$CCOBS_SKILL_DIR/scripts/ingest.ts" ] && bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
 ```
 

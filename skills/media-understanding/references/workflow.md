@@ -12,7 +12,8 @@ You are understanding one video that has NO subtitles, to answer: "<USER QUESTIO
 Download its audio, then have Gemini understand it:
   yt-dlp "<URL>" -f ba -o "/tmp/m_<ID>.%(ext)s"          # YouTube
   # or: bili audio "<BVID>" --no-split -o /tmp/           # Bilibili
-  bun ${CLAUDE_PLUGIN_ROOT}/skills/media-understanding/scripts/gemini_media.ts \
+  MEDIA_SKILL_DIR="<absolute path of the directory containing the loaded media-understanding/SKILL.md>"; \
+  bun "$MEDIA_SKILL_DIR/scripts/gemini_media.ts" \
       /tmp/m_<ID>.<ext> --audio-only --question "<USER QUESTION>"
 
 Read the digest it prints. If comment sentiment is needed for the quality

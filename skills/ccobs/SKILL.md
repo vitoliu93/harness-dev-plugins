@@ -12,22 +12,20 @@ metadata:
 Raw tool logs → SQLite evidence layer → observations distill (claude-code only).
 DB is a rebuildable index at `${CCOBS_DIR:-$HOME/.claude/observability/}`.
 
-On hosts that do not provide Claude Code skill variables, set
-`CCOBS_SKILL_DIR` to the directory containing this `SKILL.md` and use it for
-bundled scripts. Keep the existing Claude Code path below unchanged.
+Set `CCOBS_SKILL_DIR` to the absolute directory containing this loaded
+`SKILL.md`. Keep the assignment and use in the same shell command because shell
+state does not persist between tool calls.
 
 ## Quick path
 
 ```bash
-# Host-neutral path (including Codex)
-bun ${CCOBS_SKILL_DIR}/scripts/ingest.ts
-
-# Existing Claude Code path
-bun ${CLAUDE_SKILL_DIR}/scripts/ingest.ts
+CCOBS_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
 sqlite3 -header ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db "SELECT * FROM v_tool_overview LIMIT 5"
 ```
 
-Before recall/take-over on a fresh session: `${CCOBS_SKILL_DIR:-${CLAUDE_PLUGIN_ROOT}/skills/ccobs}/scripts/ingest.ts` — skip if missing.
+Before recall/take-over on a fresh session, resolve the same `CCOBS_SKILL_DIR`
+and run `scripts/ingest.ts`; skip if missing.
 
 ## Read on demand
 

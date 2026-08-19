@@ -1,6 +1,8 @@
 # Exa surfaces — full parameters
 
-All calls: `bun ${CLAUDE_SKILL_DIR}/scripts/exa.ts <path> '<json>'`.
+All calls: set `EXA_SKILL_DIR` to the absolute directory containing the loaded
+`exa-code/SKILL.md`, then run
+`bun "$EXA_SKILL_DIR/scripts/exa.ts" <path> '<json>'` in the same shell command.
 Correction table for wrong shapes: `pitfalls.md`.
 
 ## search

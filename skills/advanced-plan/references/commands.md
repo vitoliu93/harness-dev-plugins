@@ -5,7 +5,10 @@
 1. Restate goal, pick tier and `<slug>`. Ambiguous scope → `grill-me` first.
 2. Enter worktree: `EnterWorktree name: "advanced-plan-<date>-<slug>"`. One plan = one branch = one worktree.
 3. Copy reference sources to `$ROOT/docs/refs/<slug>/`; read end to end (see [planning-discipline.md](planning-discipline.md)).
-4. Copy templates from `${CLAUDE_PLUGIN_ROOT}/skills/advanced-plan/assets/templates` into `$ROOT/docs/advanced-plans/<date>-<slug>/`.
+4. Set `ADVANCED_PLAN_SKILL_DIR` to the absolute directory containing the loaded
+   `advanced-plan/SKILL.md`; copy templates from
+   `$ADVANCED_PLAN_SKILL_DIR/assets/templates` into
+   `$ROOT/docs/advanced-plans/<date>-<slug>/` in the same shell command.
 5. Lock `goal.md`; fill `spec.md`.
 6. Full tier or UI change → `use-html` prototype mode; user approves `prototype.html`.
 7. Infra/deploy → fill and run `preflight.md` now.

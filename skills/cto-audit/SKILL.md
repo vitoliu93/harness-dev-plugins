@@ -3,7 +3,6 @@ name: cto-audit
 description: >-
   Audit project architecture, domain model, and harness rules from a CTO lens.
   Use when the user invokes /cto-audit or requests a structural governance audit.
-disable-model-invocation: true
 argument-hint: "[目标项目目录] [engineering|algorithm|delivery]"
 metadata:
   kind: meta

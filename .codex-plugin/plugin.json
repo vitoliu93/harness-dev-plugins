@@ -1,0 +1,33 @@
+{
+  "name": "dev-kit",
+  "version": "2.43.0",
+  "description": "Cross-client agent toolkit with 20 project-agnostic skills and quality guards.",
+  "author": {
+    "name": "vito",
+    "email": "santiagoliu333@gmail.com"
+  },
+  "keywords": [
+    "skills",
+    "research",
+    "planning",
+    "documentation",
+    "reflection",
+    "content-retrieval",
+    "productivity"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dev Kit",
+    "shortDescription": "Reusable skills and quality guards for coding agents",
+    "longDescription": "A cross-client collection of planning, research, review, media, observability, and skill-quality workflows for Claude Code and Codex.",
+    "developerName": "vito",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills",
+      "Hooks"
+    ],
+    "defaultPrompt": [
+      "Use Dev Kit to plan, investigate, review, or improve this task."
+    ]
+  }
+}

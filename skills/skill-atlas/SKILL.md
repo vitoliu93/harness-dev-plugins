@@ -13,8 +13,9 @@ metadata:
 Run checks, then report. Details: [checks.md](references/checks.md).
 
 ```bash
-PLUGIN=${CLAUDE_PLUGIN_ROOT:?set CLAUDE_PLUGIN_ROOT}
-ATLAS=${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas}
+ATLAS_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+SKILLS_ROOT="$ATLAS_SKILL_DIR/..";
+ATLAS=${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas};
 ```
 
 ## Report skeleton

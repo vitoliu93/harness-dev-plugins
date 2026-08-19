@@ -15,7 +15,8 @@ Local media file to transcription + structured digest.
 ## Script
 
 ```bash
-bun ${CLAUDE_SKILL_DIR}/scripts/gemini_media.ts <file> [--audio-only] [--question "Q"] [--chunk-minutes N]
+MEDIA_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+bun "$MEDIA_SKILL_DIR/scripts/gemini_media.ts" <file> [--audio-only] [--question "Q"] [--chunk-minutes N]
 ```
 
 Requires GEMINI_API_KEY; optional GEMINI_BASE_URL.
@@ -33,4 +34,5 @@ Requires GEMINI_API_KEY; optional GEMINI_BASE_URL.
 
 See workflow.md in references/.
 
-Run in general-skills-executor. MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR} for cross-skill calls.
+Run in general-skills-executor. For cross-skill calls, set `MEDIA_SKILL_DIR` to
+the absolute directory containing the loaded `media-understanding/SKILL.md`.

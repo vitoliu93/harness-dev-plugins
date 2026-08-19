@@ -82,8 +82,12 @@ const LOCAL_PATH_PATTERNS: Array<[RegExp, string]> = [
     "Use a named repository-root variable or a remote repository reference.",
   ],
   [
-    /\$\{?CLAUDE_SKILL_DIR\}?\/\.\.\//,
+    /\$\{?[A-Z][A-Z0-9_]*_SKILL_DIR\}?\/\.\.\//,
     "Do not assume a sibling skill path; resolve it from the plugin root or a named variable.",
+  ],
+  [
+    /\$\{?CLAUDE_(?:SKILL_DIR|PLUGIN_ROOT)\}?/,
+    "Use a host-neutral named skill directory populated from the loaded SKILL.md path.",
   ],
 ];
 const FIXED_RUNTIME_ID_PATTERNS: Array<[RegExp, string]> = [

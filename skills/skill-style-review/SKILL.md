@@ -3,7 +3,6 @@ name: skill-style-review
 description: >-
   Review skill runtime prose for semantic style violations and gate loss.
   Use when creating, improving, or auditing skill documentation.
-disable-model-invocation: true
 metadata:
   kind: atom
   requires:
@@ -16,9 +15,8 @@ metadata:
 Run the bundled Bun script directly; do not route through `dispatch-vendors` or a general executor.
 
 ```bash
-PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
-STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
-export LLM_CALL_DIR=$PLUGIN/skills/llm-call
+STYLE_REVIEW_DIR="<absolute path of the directory containing this SKILL.md>";
+export LLM_CALL_DIR="$STYLE_REVIEW_DIR/../llm-call";
 bun add -g openai@7
 bun "$STYLE_REVIEW_DIR/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues
 ```
@@ -26,9 +24,8 @@ bun "$STYLE_REVIEW_DIR/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issu
 Fleet audit:
 
 ```bash
-PLUGIN=${CLAUDE_PLUGIN_ROOT:?set plugin root}
-STYLE_REVIEW_DIR=${CLAUDE_SKILL_DIR:?set skill base directory}
-export LLM_CALL_DIR=$PLUGIN/skills/llm-call
+STYLE_REVIEW_DIR="<absolute path of the directory containing this SKILL.md>";
+export LLM_CALL_DIR="$STYLE_REVIEW_DIR/../llm-call";
 bun add -g openai@7
 bun "$STYLE_REVIEW_DIR/scripts/review.ts" \
   --workspace-root <skills-root> --output <report.json> --fail-on-issues

@@ -66,7 +66,7 @@ down from one refusal. Vision:
 **Image fallback (media-understanding)**: text-only carriers — brief must run script first:
 
 ```bash
-MEDIA_SKILL_DIR=${CLAUDE_SKILL_DIR}   # after loading media-understanding skill
+MEDIA_SKILL_DIR="<absolute path of the directory containing the loaded media-understanding/SKILL.md>";
 bun "$MEDIA_SKILL_DIR/scripts/gemini_media.ts" <file> [--audio-only] [--question "Q"]
 ```
 

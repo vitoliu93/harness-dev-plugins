@@ -3,7 +3,6 @@ name: context-audit
 description: >-
   Audit always-loaded context or project docs, then adopt placement rules.
   Use when the user says audit CLAUDE/prune memory, 整理文档, or docs adopt.
-disable-model-invocation: true
 argument-hint: "[context | docs audit | docs adopt]"
 metadata:
   kind: meta

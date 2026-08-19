@@ -114,8 +114,8 @@
 - **v2.6(invocation 经济学)✅ 2026-07-15**:观摩 grill-me-skills 上游的设计哲学后落地
   三条:① description = 每回合付费的 context load,全舰瘦身(身份一句+每分支一个锚词,
   负例迁 evals 的 negative_concepts)——常驻负担 1863→907 tokens(-51%),评测全绿未靠塞词;
-  ② 只被用户点名的技能 user-invoked 化(cto-audit 首个,"仅限用户召集"由
-  `disable-model-invocation` 机械化,其评测夹具按退役约定入 archive/);③ 教义写进
+  ② 只被用户点名的技能 user-invoked 化(cto-audit 首个,当时使用 Claude Code
+  单端字段控制,其评测夹具按退役约定入 archive/);③ 教义写进
   skill-forge(invocation 经济学一节 + "评测服务描述,不绑架描述")。
 - **v2.7–v2.20(漂移期补记,2026-08-05)**:orchestrate(三方纪律:host 持 spec /
   vendor 可弃置执行 / 外族模型评审)· campaign(模块级归口)· ccobs 长到 8 源 ·

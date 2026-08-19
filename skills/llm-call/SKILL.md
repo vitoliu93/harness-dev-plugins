@@ -3,7 +3,6 @@ name: llm-call
 description: >-
   Call a configured language model with maximum reasoning effort and structured output.
   Use when a skill needs direct model inference without vendor orchestration.
-disable-model-invocation: true
 metadata:
   kind: atom
   requires:
@@ -23,7 +22,8 @@ test -f "${CCOBS_DIR:-$HOME/.claude/observability}/llm.json" || test -n "$DEEPSE
 Send one JSON request through stdin:
 
 ```bash
-printf '%s' '<request-json>' | bun "${CLAUDE_SKILL_DIR:?set llm-call base directory}/scripts/call.ts"
+LLM_CALL_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+printf '%s' '<request-json>' | bun "$LLM_CALL_SKILL_DIR/scripts/call.ts"
 ```
 
 ## Hard gates
