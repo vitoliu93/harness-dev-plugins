@@ -41,11 +41,25 @@ the manifest floor, and pass it in that cell's `effort_syntax`.
 Dispatch's structural weakness is opacity: the work runs in someone else's
 process and surfaces only as a final receipt, so a stale brief burns a whole
 run before anyone notices. Inside Herdr (`HERDR_ENV=1`), give each vendor its
-own split — the run stays observable while it happens, and mid-flight
+own tab — the run stays observable while it happens, and mid-flight
 correction is cheap in a visible pane, expensive after a receipt. Headless
 launchers are the same dispatch minus the observability: use them only when
 nobody is there to watch (outside Herdr, unattended/cron). Per-cell herdr
 support (agent kind, launch quirks) is recorded in the manifest.
+
+The five steps — slot preflight, own tab, delivery confirm, artifact wait,
+ledger row — run as one script; launch it with Bash `run_in_background: true`,
+since it blocks until the marker lands.
+
+```bash
+bun ${CLAUDE_SKILL_DIR}/scripts/herdr_dispatch.ts --help   # --dry-run plans without launching
+```
+
+Its rules hold whether or not you use it: refuse a slot the manifest already
+marks non-`supported`; own tab, never a split of yours; resend a prompt the
+pane does not echo back; and take only the report artifact as done — `agent
+wait` and `agent_status` settle on any turn boundary, and pane output echoes
+the marker back before any work happens.
 
 ## Hard rule
 
