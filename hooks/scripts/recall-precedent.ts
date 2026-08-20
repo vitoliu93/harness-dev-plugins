@@ -24,7 +24,7 @@ const MARK_DIR = join(OBS_DIR, "recall-fired");
 const MARK_TTL_MS = 7 * 24 * 3600 * 1000;
 const MIN_PROMPT_CHARS = 20;
 const MAX_CANDIDATES = 60;
-const PI_TIMEOUT_MS = 12000; // measured 3.4–3.7s on a 60-row catalog; the cap is headroom, not the target
+const PI_TIMEOUT_MS = 12000; // measured 5.7s on a 60-row catalog; the cap is headroom, not the target
 
 function sweepMarkers(): void {
   const now = Date.now();
@@ -80,20 +80,20 @@ async function run(): Promise<void> {
   const lines = answer.split("\n").filter((l) => l.trim().startsWith("- "));
   if (!lines.length) return;
 
-  // JSON, not plain stdout: on UserPromptSubmit plain stdout does NOT reach the
-  // model (verified live — the hook ran, the text never landed). SessionStart is
-  // the opposite; see session-replay.ts.
+  const block = [
+    "<session-precedents>",
+    "Past sessions in this project that look related. These are distilled summaries, not facts — " +
+      "read the raw transcript by session_id before you rely on one.",
+    ...lines.slice(0, 3),
+    "</session-precedents>",
+  ].join("\n");
+
+  // JSON on both clients, verified live. Plain stdout does NOT reach the model on
+  // UserPromptSubmit — not on Claude Code, and Codex reads hookSpecificOutput here
+  // too, so no per-client branch is needed. SessionStart is the opposite case and
+  // must stay plain stdout; see session-replay.ts.
   console.log(JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: "UserPromptSubmit",
-      additionalContext: [
-        "<session-precedents>",
-        "Past sessions in this project that look related. These are distilled summaries, not facts — " +
-          "read the raw transcript by session_id before you rely on one.",
-        ...lines.slice(0, 3),
-        "</session-precedents>",
-      ].join("\n"),
-    },
+    hookSpecificOutput: { hookEventName: "UserPromptSubmit", additionalContext: block },
   }));
 }
 

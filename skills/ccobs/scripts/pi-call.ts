@@ -15,24 +15,46 @@
 // upstream provider inside one model, not the model. A second model would go
 // right here, before returning null.
 
+import { homedir } from "node:os";
+
 const HERMETIC = ["--no-tools", "--no-session", "--no-skills", "--no-extensions", "--no-context-files"];
 
-// ":low" on purpose. Default/":high" spends the time thinking and measured 4–12s
-// on the same retrieval prompt; ":low" is 3.4–3.7s with the same answer. ":none"
-// is not a valid effort here — it fails in half a second.
-export const DEFAULT_MODEL = "deepseek/deepseek-v4-flash:low";
+// A hook does not get the interactive shell's PATH, and two things break there:
+// a bare "pi" spawns ENOENT (which used to throw right past this module's
+// never-throws contract), and pi itself is a `#!/usr/bin/env node` script, so it
+// exits 127 unless node is reachable too. Hence both a resolved binary and a
+// widened PATH for the child. fnm's default alias is the stable node path — the
+// fnm_multishells entry on an interactive PATH belongs to one shell and dies with it.
+const FALLBACK_PATH = [
+  `${homedir()}/.bun/bin`,
+  `${homedir()}/.local/share/fnm/aliases/default/bin`,
+  "/opt/homebrew/bin",
+  "/usr/local/bin",
+].join(":");
+const PI_BIN = process.env.PI_BIN ?? Bun.which("pi") ?? Bun.which("pi", { PATH: FALLBACK_PATH }) ?? "pi";
+
+// ":low" on purpose — this is retrieval, not reasoning. On a 60-row catalog luna
+// low measured 5.7s and returned 3 relevant rows in the exact line format asked
+// for; deepseek-v4-flash:low was 4.4s but found only 2 of the 3. ":none" is not a
+// valid effort here — it fails in half a second.
+//
+// The "openrouter/" prefix is load-bearing: pi reads "openai/gpt-5.6-luna" as the
+// openai provider and dies with "No API key found for openai".
+export const DEFAULT_MODEL = "openrouter/openai/gpt-5.6-luna:low";
 
 export async function piCall(
   prompt: string,
   { model = DEFAULT_MODEL, timeoutMs = 8000 }: { model?: string; timeoutMs?: number } = {},
 ): Promise<string | null> {
-  const proc = Bun.spawn(["pi", "-p", "--mode", "json", "--model", model, ...HERMETIC, prompt], {
-    stdout: "pipe",
-    stderr: "ignore",
-    stdin: "ignore",
-  });
-  const killer = setTimeout(() => proc.kill(9), timeoutMs);
+  let killer: ReturnType<typeof setTimeout> | undefined;
   try {
+    const proc = Bun.spawn([PI_BIN, "-p", "--mode", "json", "--model", model, ...HERMETIC, prompt], {
+      stdout: "pipe",
+      stderr: "ignore",
+      stdin: "ignore",
+      env: { ...process.env, PATH: `${process.env.PATH ?? ""}:${FALLBACK_PATH}` },
+    });
+    killer = setTimeout(() => proc.kill(9), timeoutMs);
     const out = await new Response(proc.stdout).text();
     if ((await proc.exited) !== 0) return null;
     let last = "";
