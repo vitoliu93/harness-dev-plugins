@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.43.1",
+  "version": "2.44.0",
   "description": "Cross-client agent toolkit with 20 shared skills, 3 Claude Code subagents, direct DeepSeek inference, and skill quality guards.",
   "author": {
     "name": "vito",

@@ -7,7 +7,7 @@
     { "text": "debrief this session", "family": "explicit_en" },
     { "text": "任务做完了,沉淀一下经验", "family": "sediment" },
     { "text": "merge 完了,收个尾,把这次学到的存下来", "family": "post_merge" },
-    { "text": "issue 关了,把教训写进 memory 再归档计划目录", "family": "post_issue" },
+    { "text": "issue 关了,蒸馏一下本会话再归档计划目录", "family": "post_issue" },
     { "text": "settle this task and archive the plan", "family": "explicit_en" }
   ],
   "should_not_trigger": [

@@ -6,7 +6,7 @@
     },
     "sediment": {
       "weight": 0.35,
-      "phrases": ["沉淀", "经验", "教训", "写进 memory", "存下来", "归档计划", "archive the plan", "lessons", "archive plan", "distill", "lifecycle memory", "surface skill candidates"]
+      "phrases": ["沉淀", "经验", "教训", "蒸馏本会话", "纠正规则", "哪条规则错了", "存下来", "归档计划", "archive the plan", "lessons", "archive plan", "distill", "lifecycle memory", "surface skill candidates"]
     },
     "post_completion": {
       "weight": 0.2,

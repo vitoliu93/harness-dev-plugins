@@ -11,21 +11,50 @@ When `docs/advanced-plans/<date>-<slug>/` belongs to this task:
 
 No plan dir → skip silently.
 
-## Move 2 — Distill memory
+## Move 2 — Sediment into ccobs
 
-At most **one** memory per task in project auto-memory (`~/.claude/projects/<project>/memory/`).
+不写记忆 md。这个会话已经被 ccobs 观测下来了，收盘只做两件事。
 
-Litmus: would next-session-me err without this? Already in repo/code/plan → skip.
+### 2a 立刻蒸馏本会话
 
-Types: `feedback` | `decision` | `postmortem` | `reference`. Postmortem/decision need live `status:`.
+平时要等 launchd 那一轮（每小时，且 distill 至少滞后 30 分钟）。收盘时手动提前，
+这样今天的规则今晚就能用上：
 
-Search existing memories; prefer update over duplicate. Bump `MEMORY.md` index.
+```bash
+CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";
+bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
+bun "$CCOBS_SKILL_DIR/scripts/distill.ts" --session "<this session id>"
+bun "$CCOBS_SKILL_DIR/scripts/rollup.ts"
+```
+
+三条分开跑：前一条失败后面不会执行。任一条失败就说一句，不要重试到底。
+
+### 2b 纠正被打脸的规则
+
+开场注入的规则你带着干了一整天。回头只问一句：**有没有哪条照着做反而错了。**
+
+有就直接编辑 `${CCOBS_DIR:-$HOME/.claude/observability}/rules/<project-key>.md`：
+
+- 整条是错的 → 删掉那一行
+- 半对 → 就地改写成对的说法，**行尾的 `×N (最近 日期)` 要保留**，丢了就会被当成 ×1，沉到底再也注入不到
+
+`<project-key>` 是 cwd 里的 `/` 换成 `-`；worktree 折算到主项目。跨项目的规则在 `_global.md`。
+
+规矩：
+
+- 一次收盘最多改一条。没有就跳过，这是常态。
+- 只改 rollup 出的摘要文件。`observations` 是可重建的派生表，`sessions` 和原始 jsonl 是只读真源，都不动。
+- 那几条观测本身没记错——它们如实记下了当时确实这么以为。错的是聚出来的结论。
+- 删掉的行不会被灌回来：rollup 只处理水位线之后的新会话。除非新会话又提出同一条，那说明这事今天还在发生，该回来。
+- 规则「旧」不用管：rollup 按次数和最近日期排，没人再提的自己沉底。debrief 只管「错」。
+
+改错了可以回滚：`rules/.bak/` 留了最近 5 份带时间戳的备份。
 
 ## Move 3 — Promote
 
 ### 1. Recurrence
 
-Track in `<memory-dir>/SKILL-CANDIDATES.md`. Same-session repeats ≥2 count strongly.
+Track in `${CCOBS_DIR:-$HOME/.claude/observability}/SKILL-CANDIDATES.md`. Same-session repeats ≥2 count strongly.
 Cross-check ccobs `sop_candidate` when available:
 
 ```bash

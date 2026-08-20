@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # ccobs bootstrap — macOS (arm). Idempotent; run on any new machine to get the
-# observability pipeline running: bun + dirs + launchd daily ingest + first sweep.
+# observability pipeline running: bun + dirs + launchd hourly ingest→distill→rollup
+# + first sweep. rollup rides the same job on purpose: it calls a model, so it
+# cannot live on the Stop hook (obs-enqueue there gets 5 seconds).
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -36,7 +38,7 @@ cat > "$PLIST" <<EOF
   <array>
     <string>/bin/bash</string>
     <string>-c</string>
-    <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts"</string>
+    <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"</string>
   </array>
   <key>StartInterval</key><integer>3600</integer>
   <key>RunAtLoad</key><true/>

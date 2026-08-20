@@ -5,7 +5,8 @@
     { "text": "以前有没有会话查过这个问题", "family": "explicit_zh" },
     { "text": "查一下 ccobs 里关于 billing 的先例", "family": "ccobs" },
     { "text": "开工前看看 obs 里有没有类似调查", "family": "before_work" },
-    { "text": "有没有 past session 碰过这个 API 限流", "family": "mixed" }
+    { "text": "有没有 past session 碰过这个 API 限流", "family": "mixed" },
+    { "text": "这个项目沉淀过哪些规则,开工前看一眼", "family": "rules" }
   ],
   "should_not_trigger": [
     { "text": "search the web for Redis failover docs", "family": "web_search" },

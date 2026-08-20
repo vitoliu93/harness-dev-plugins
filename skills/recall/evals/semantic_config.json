@@ -2,11 +2,11 @@
   "positive_concepts": {
     "prior_search": {
       "weight": 0.55,
-      "phrases": ["precedent", "investigated before", "past session", "以前查过", "先例", "有没有会话", "查先例", "recall", "开工前", "类似调查", "obs 里"]
+      "phrases": ["precedent", "investigated before", "past session", "以前查过", "先例", "有没有会话", "查先例", "recall", "开工前", "有没有沉淀过", "过去的规则", "rolled-up rules", "类似调查", "obs 里"]
     },
     "ccobs_query": {
       "weight": 0.45,
-      "phrases": ["ccobs", "obs.db", "observations", "observability ledger", "观测账本", "查一下 ccobs"]
+      "phrases": ["ccobs", "obs.db", "observations", "observability ledger", "观测账本", "查一下 ccobs", "规则摘要"]
     }
   },
   "negative_concepts": {
