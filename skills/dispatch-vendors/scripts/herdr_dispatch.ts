@@ -9,6 +9,7 @@ import { homedir } from "node:os";
 
 const HELP = `bun herdr_dispatch.ts --cell <id> --model <slot> --cwd <repo> --brief <file> --report <file> [opts] -- <agent args...>
 
+  (--model prechecks the manifest slot; the agent args after the -- separator must select it too)
   --role executor|advisor   slot role to preflight (default: executor)
   --kind <herdr kind>       herdr agent kind (default: derived from the cell's cli)
   --label <text>            tab label (default: <cell>-<basename cwd>)
@@ -72,6 +73,11 @@ const slot = (cell.slots?.[role] || []).find((s: any) => s.model === opt.model);
 if (!slot) die(`model "${opt.model}" is not a ${role} slot of cell "${opt.cell}"`);
 // The wall is per model, and the manifest already knows about it — read it, don't rediscover it.
 if (slot.status !== "supported") die(`slot "${opt.model}" status=${slot.status}${slot.note ? ` — ${slot.note}` : ""}`);
+// --model only prechecks the manifest; the vendor CLI takes its own flag after `--`.
+// Leave it out and the CLI silently runs its default model (pi -> gemini flash -> 429).
+if (!agentArgs.some((a) => a.includes(opt.model))) {
+  die(`--model ${opt.model} is a manifest precheck only; the agent args after \`--\` must also select it (cell launch: ${cell.launch})`);
+}
 
 const cwd = resolve(opt.cwd);
 const brief = resolve(opt.brief);

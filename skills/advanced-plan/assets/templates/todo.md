@@ -7,6 +7,8 @@
 - **Branch**: <git branch>
 - **Last done**: <last completed concrete action, or "nothing yet">
 - **Next**: <the very next action>
+- **In flight**: <background task id / vendor pane + the model actually launched, or "none">
+- **Next command**: <the literal command to paste, or "n/a">  # survives compaction; do not re-derive it
 - **Blockers**: none
 
 ## Phases
