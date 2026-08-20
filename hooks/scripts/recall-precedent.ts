@@ -36,6 +36,23 @@ function sweepMarkers(): void {
   }
 }
 
+/**
+ * Pull precedent rows out of whatever the model actually said. Matching on a
+ * literal "- " prefix was too brittle: the same model that returns the exact
+ * asked-for format most of the time will occasionally drop the bullet, use a
+ * different one, or answer "没有。" in prose. Shape is the reliable signal —
+ * date, session id, summary — so key on that and re-render the line ourselves.
+ */
+export function parsePrecedents(answer: string): string[] {
+  const ROW = /(\d{4}-\d{2}-\d{2})\s+([0-9a-f]{8}-[0-9a-f-]+)\s*[—–-]+\s*(.+?)\s*$/;
+  const out: string[] = [];
+  for (const raw of answer.split("\n")) {
+    const m = raw.trim().match(ROW);
+    if (m) out.push(`- ${m[1]} ${m[2]} — ${m[3]}`);
+  }
+  return out;
+}
+
 async function run(): Promise<void> {
   const payload = JSON.parse(await Bun.stdin.text()) as Record<string, any>;
   const prompt = String(payload.prompt ?? "").trim();
@@ -77,7 +94,7 @@ async function run(): Promise<void> {
     { timeoutMs: PI_TIMEOUT_MS },
   );
   if (!answer) return;
-  const lines = answer.split("\n").filter((l) => l.trim().startsWith("- "));
+  const lines = parsePrecedents(answer);
   if (!lines.length) return;
 
   const block = [
@@ -97,9 +114,11 @@ async function run(): Promise<void> {
   }));
 }
 
-try {
-  await run();
-} catch {
-  // fail-open: never block the prompt
+if (import.meta.main) {
+  try {
+    await run();
+  } catch {
+    // fail-open: never block the prompt
+  }
+  process.exit(0);
 }
-process.exit(0);
