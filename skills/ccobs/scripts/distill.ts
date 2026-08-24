@@ -112,6 +112,14 @@ if (!model) {
   console.log(`ccobs distill: ${llmConfigHint()}`);
   process.exit(0);
 }
+// retention 清掉原始 JSONL 之后，这个会话永远蒸馏不出来了。留一条墓碑把它
+// 排除掉，否则每小时都要重新扫一遍，还占 LIMIT 的名额。summary 为空、
+// learn_candidates 为 "[]"，recall 和 rollup 的过滤条件本来就会跳过这两种。
+const tomb = db.prepare(
+  `INSERT OR REPLACE INTO observations
+   (session_id, distilled_at, distill_model, summary, learn_candidates)
+   VALUES (?,?,'skipped:no-raw-file','','[]')`,
+);
 const put = db.prepare(
   `INSERT OR REPLACE INTO observations
    (session_id, distilled_at, distill_model, task_type, outcome, corrections,
@@ -121,8 +129,13 @@ const put = db.prepare(
 
 let ok = 0;
 let failed = 0;
+let tombed = 0;
 for (const s of pending) {
-  if (!existsSync(s.file_path)) continue; // retention already ate the raw file
+  if (!existsSync(s.file_path)) {
+    tomb.run(s.session_id, new Date().toISOString());
+    tombed++;
+    continue;
+  }
   if (statSync(s.file_path).size > 128 * 1024 * 1024) { // readFileSync 巨文件是不可 catch 的原生崩溃,门口拦掉
     failed++;
     console.error(`  ${s.session_id}: skipped, file > 128MB (${s.file_path})`);
@@ -149,6 +162,8 @@ for (const s of pending) {
     console.error(`  ${s.session_id}: ${e}`);
   }
 }
-console.log(`ccobs distill: ${ok} ok, ${failed} failed, model=${model}`);
+console.log(
+  `ccobs distill: ${ok} ok, ${failed} failed${tombed ? `, ${tombed} 无原始文件已标记` : ""}, model=${model}`,
+);
 // 心跳:跑到这一行才算活着(2026-07-22 起 SIGTRAP 死两周无人知的学费);session-replay hook 检查此文件的年龄
 writeFileSync(join(OBS_DIR, "distill.heartbeat"), new Date().toISOString());
