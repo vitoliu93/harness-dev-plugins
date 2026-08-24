@@ -79,6 +79,6 @@ bun $STYLE_REVIEW/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
 
 The semantic review blocks origin stories, incident lore, tuition narratives,
 marketing language, meaning-level prose walls, and gate loss. Do not route this
-check through `dispatch-vendors`; the bundled runner is the execution boundary.
+check through another agent; the bundled runner is the execution boundary.
 
 Do not add a word blacklist to silence judgment. Fix the contract, or add a narrow documented exception when a literal is required by runtime behavior.

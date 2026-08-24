@@ -1,50 +1,44 @@
 ---
 name: orchestrate
 description: >-
-  Route coding work across host, subagent, and vendor with spec plus acceptance gates.
-  Use when 委派/编排/fan out、并行开发别让 worker 撞车, or deciding vendor vs subagent.
-argument-hint: "[task or batch to delegate]"
+  Compose independent agent roles and coordinate their work through completion.
+  Use when one task needs several roles such as advisor, researcher, programmer, or audit.
+argument-hint: "[task to split into roles]"
 metadata:
   kind: sop
 ---
 
 # orchestrate
 
-Delegation pays when spec + acceptance is cheaper than coding yourself.
+The host owns the goal, task graph, acceptance, and final decision. Agents own
+bounded role work.
 
-**Pipeline**: eligibility → route → spec pack → gates → transport → acceptance → ledger.
+## Build the team
 
-## Eligibility (all AND)
+Choose the fewest roles needed. Definitions: [roles.md](references/roles.md).
+Write one [role card](references/role-card.md) per role instance. Do not launch
+until outputs, write boundaries, dependencies, and completion checks are clear.
 
-- Machine-checkable acceptance exists; else host keeps it
-- Route by observable signals, not token forecasts
-- Cut by decision density into acceptance-testable units
-- verification-weak queues need stronger review or take-back
+## Launch through use-agents
 
-## Routing
+Load `use-agents` for local routes and carrier commands. In Herdr, create one
+tab per role instance and keep `{role, agent_name, tab_id, route_id}`. Use
+`--no-focus` so the user's tab stays in place.
 
-- **Vendor** (dispatch-vendors): self-contained, quota-heavy
-- **Subagent**: needs session context
-- **Host**: boundaries, spec, acceptance, arbitration, L3+ rescue
+Later `normal` routes are normal choices. Use `fallback` only when normal
+routes are unavailable. Read the route-specific quota file before launch.
 
-## Verification lanes
+## Coordinate
 
-Machine acceptance proves a change was built right; it cannot prove it
-*presents* right. Route by where truth is observable, not by stack layer.
-Fully machine-assertable outcomes (a contract, a row, a pipeline state) need
-no eyes, even in a frontend repo.
-When the truth only exists in a rendered page, mount the **visual role** on top
-of machine acceptance.
+- Start independent roles in parallel; serialize declared dependencies.
+- Agents do not coordinate with each other. The host passes outputs between them.
+- A programmer produces the change; audit checks it independently.
+- The host runs each completion check and the final integrated check.
+- Quota failure: keep the tab and partial output, then choose another available route.
 
-The visual role is an abstract slot: "an agent with eyes on a browser". This layer only
-declares the slot. Agent choice, certification scope, and browser driving
-belong to the SOP layer (`visual-evidence`, `opencli-browser`) and the
-project's own binding. The visual agent runs full acceptance by default; the
-human is the recheck and fallback channel.
+Full lifecycle: [lifecycle.md](references/lifecycle.md).
 
-Details: [spec-pack.md](references/spec-pack.md) · [gates.md](references/gates.md) · [recovery-ledger.md](references/recovery-ledger.md)
+## Close
 
-## Recovery
-
-L0 env → L1 self-fix → L2 other family → L3 upgrade/host → L4 human.
-Second failure: clean_reset, not resume. **6-way attribution** default `spec_gap`.
+After every role and the integrated check pass, close only the tabs recorded for
+this run. If the run is cancelled or blocked, leave them open and report their IDs.

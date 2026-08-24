@@ -17,7 +17,8 @@
     "gitee-issue-finalize": "kox-agent-plugins:gitee-issue-finalize",
     "kox-deploy-k8s": "kox-agent-plugins:kox-deploy-k8s",
     "debrief": "dev-kit:debrief",
-    "recall": "dev-kit:recall"
+    "recall": "dev-kit:recall",
+    "dispatch-vendors": "use-agents"
   },
   "namespace_folds": {
     "_comment": "vito-agent-plugins:* and dev-kit:* are equivalent prefixes",

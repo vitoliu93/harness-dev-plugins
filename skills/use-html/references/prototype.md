@@ -28,7 +28,7 @@ versions. The user should be able to scan for guesses instead of proofreading.
 2. Use `explainer.md` plus its referenced engines/layouts/template to render.
 3. After approval, execute uninterrupted. If understanding changes, update the
    prototype and say so; never drift silently.
-4. `goal.md` names the prototype as a source of truth; vendor briefs cite its
+4. `goal.md` names the prototype as a source of truth; agent role cards cite its
    path rather than retelling it; acceptance compares the result against it.
 
 The lifecycle is what differs from an explainer: this file is committed,

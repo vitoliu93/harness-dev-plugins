@@ -13,7 +13,7 @@ the user.
 
 Any artifact the work must match — prototype, design export, PRD section, sample
 payload — that lives outside the repo gets copied to `$ROOT/docs/refs/<slug>/`
-**first**. Worktrees, vendor subprocesses and post-compaction context can none of
+**first**. Worktrees, agent subprocesses and post-compaction context can none of
 them see host paths outside the repo (e.g. the Downloads folder via `${DOWNLOADS_DIR:-$HOME/Downloads}`), and a file outside git has no version to agree on.
 
 Then read each one **end to end**. "It's large, I'll grep the relevant part" is
@@ -37,8 +37,8 @@ state in the plan when superseding project acceptance rules.
 
 ① A deterministic script covers it (`sed` / `ast-grep` / codemod / short script)
 → run the script, no engine. ② A whole self-contained side-task (independent
-recon / tests / E2E / docs, or one that wants non-Anthropic eyes) → outsource via
-the `dispatch-vendors` skill. ③ Judgment-dense (design trade-offs, sequential
+recon / tests / E2E / docs, or one that wants independent eyes) → route through
+the `orchestrate` skill. ③ Judgment-dense (design trade-offs, sequential
 probing) → implement inline in the main context.
 
 Multi-agent `Workflow` fan-out is not a function of complexity — only for

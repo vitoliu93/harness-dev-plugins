@@ -1,110 +1,23 @@
 {
   "recommended_threshold": 0.28,
-  "negative_patterns": [
-    "explain",
-    "解释",
-    "自己来"
-  ],
+  "negative_patterns": ["不用 agent", "agent 配置在哪"],
   "should_trigger": [
-    {
-      "text": "这批 issue 怎么分给 vendor 和 subagent 做?",
-      "family": "routing"
-    },
-    {
-      "text": "把这个 feature 委派出去,spec 和验收命令你来定",
-      "family": "delegate"
-    },
-    {
-      "text": "编排一下这几个模块的并行开发,别让 worker 撞车",
-      "family": "parallel_orchestration"
-    },
-    {
-      "text": "这个重构任务适合委派吗,还是收回自己做?",
-      "family": "eligibility"
-    },
-    {
-      "text": "给 worker 写一份带验收命令的 spec pack",
-      "family": "spec_pack"
-    },
-    {
-      "text": "fan out these coding tasks to cheap workers without losing quality",
-      "family": "explicit_en"
-    },
-    {
-      "text": "host 窗口快烧穿了,把确定性的编码活派出去省 token",
-      "family": "quota_econ"
-    },
-    {
-      "text": "三个 worker 并行改代码,验收门怎么设才能防绿着错",
-      "family": "gates"
-    },
-    {
-      "text": "delegate this batch of bugfixes and set up acceptance gates",
-      "family": "explicit_en"
-    },
-    {
-      "text": "这单委派失败两次了,走哪级恢复,要不要升档?",
-      "family": "failure_recovery"
-    },
-    {
-      "text": "帮我判断哪些任务可以委派,哪些必须 host 自己做",
-      "family": "eligibility"
-    },
-    {
-      "text": "orchestrate the delegation of these three features to workers",
-      "family": "explicit_en"
-    },
-    {
-      "text": "用 cursor 做这三个任务,拆分、spec 和验收门你来管",
-      "family": "mixed_boundary"
-    }
+    {"text": "编排 advisor programmer audit 三个角色", "family": "roles"},
+    {"text": "orchestrate this feature with several roles", "family": "explicit_en"},
+    {"text": "把 API 和前端分给两个 programmer，最后让 audit 检查", "family": "parallel"},
+    {"text": "这个任务该安排哪些 agent 角色", "family": "roles"},
+    {"text": "三个 agent 并行干活但不要改到同一批文件", "family": "ownership"},
+    {"text": "researcher 查资料，advisor 给意见，再交给 programmer", "family": "dependencies"},
+    {"text": "所有 agent 完成后统一验收并关闭 herdr tabs", "family": "lifecycle"},
+    {"text": "fan out this work and coordinate the handoffs", "family": "fanout"}
   ],
   "should_not_trigger": [
-    {
-      "text": "解释一下什么是三方编排设计",
-      "family": "explain_only"
-    },
-    {
-      "text": "你自己来实现这个函数就行",
-      "family": "inline_work"
-    },
-    {
-      "text": "我们现在一起重构这个模块,边聊边改",
-      "family": "active_build"
-    },
-    {
-      "text": "这个模块正在开发中,别外包出去",
-      "family": "active_build"
-    }
+    {"text": "你自己改这个单个函数", "family": "inline"},
+    {"text": "不用 agent，直接完成", "family": "inline"}
   ],
   "near_neighbor": [
-    {
-      "text": "让 cursor-agent 后台跑一遍 E2E,回头给我结果",
-      "family": "dispatch_transport"
-    },
-    {
-      "text": "顺便让 kicode 复现一下这个 bug,不急",
-      "family": "dispatch_transport"
-    },
-    {
-      "text": "写个开发计划,立个项跟踪这个任务",
-      "family": "advanced_plan"
-    },
-    {
-      "text": "spawn 个 subagent 去搜一下代码库",
-      "family": "normal_subagent"
-    },
-    {
-      "text": "grill me,把这个方案的高风险决策盘问一遍",
-      "family": "grill_me"
-    },
-    {
-      "text": "用非 Claude 的模型独立 review 这份改动,找盲点",
-      "family": "diversity_dispatch"
-    },
-    {
-      "text": "spec 已经写好了,让 cursor 跑这个任务就行",
-      "family": "dispatch_transport"
-    }
+    {"text": "agent 配置在哪里", "family": "use_agents"},
+    {"text": "怎么用 cursor-agent 启动一个模型", "family": "use_agents_carrier"},
+    {"text": "quota reset 保存到哪个文件", "family": "use_agents_quota"}
   ]
 }

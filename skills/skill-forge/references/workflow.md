@@ -30,7 +30,7 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 
 ## 3. Trigger-first (model-invoked)
 
-1. Add `evals/` (copy dispatch-vendors shape)
+1. Add `evals/` (copy use-agents shape)
 2. `trigger_eval.ts` → P=R=1.0
 3. `build_skill_atlas.ts --workspace-root "$SKILLS_ROOT" --fail-on-style` → style clean, no pair ≥0.42
 4. Use `fallback_positive_concepts`, don't stuff description
@@ -63,4 +63,4 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 Stdlib-only; fix in place.
 
 Semantic style review is owned by the independent `skill-style-review` skill.
-It calls the shared `pi-call` layer; do not dispatch a vendor.
+It calls the shared `pi-call` layer; do not send the check to another agent.

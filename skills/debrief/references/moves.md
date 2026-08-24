@@ -67,7 +67,7 @@ At **seen ≥ 3** → propose `skill-forge` (ask user). Apply near-neighbor + bo
 ### 2. Harness drift
 
 Fix stale paths, wrong assumptions, missing hooks/templates in the harness repo when fresh.
-For `dispatch-vendors`: read `${CCOBS_DIR:-$HOME/.claude/observability}/dispatch/ledger.md`; split `why:obs` vs `why:econ`.
+For agent routes, inspect `${CCOBS_DIR:-$HOME/.claude/observability}/agents/quota.json` for stale reset records.
 
 For compaction: read `${CCOBS_DIR:-$HOME/.claude/observability}/compaction.jsonl` for this session.
 Repeated `dropped` anchors (参考真源, prototype.html, done criteria) → fix plan-anchor / goal.md anchors, not longer summaries.

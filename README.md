@@ -40,7 +40,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 |---|---|
 | advanced-plan | Write and track an acceptance-bearing dev plan as a mini-project. |
 | debrief | Archive plan artifacts, distill one memory, surface skill candidates. |
-| dispatch-vendors | Delegate self-contained tasks or advisory judgments to vendor CLIs. |
+| use-agents | Start an independent agent and find its local route or definition. |
 | grill-me | Escalate only high-risk decisions before substantive work. |
 | take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
 | exa-code | Search the web for code examples and API docs via Exa. |
@@ -52,7 +52,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | skill-style-review | Review skill prose for narrative, marketing language, prose walls, and gate loss. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | recall | Retrieve up to five past-session clues from ccobs. |
-| orchestrate | Route coding delegation with spec, acceptance, and parallel gates. |
+| orchestrate | Compose agent roles and coordinate their work through completion. |
 | skill-forge | Create or improve skills through deterministic and semantic style, budget, routing, and trigger gates. |
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 

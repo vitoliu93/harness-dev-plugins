@@ -1,0 +1,29 @@
+{
+  "positive_concepts": {
+    "launch": {
+      "weight": 0.65,
+      "phrases": ["independent AI agent", "启动 agent", "start an agent", "agent launch", "开一个 agent", "herdr", "独立 agent", "独立进程"]
+    },
+    "definition": {
+      "weight": 0.65,
+      "phrases": ["agent 定义", "agent 配置", "agents.json", "agent 在哪里", "agent definition"]
+    },
+    "carrier": {
+      "weight": 0.65,
+      "phrases": ["model route", "claude code", "pi-codex", "cursor-agent", "provider/model", "模型渠道", "quota reset"]
+    }
+  },
+  "negative_concepts": {
+    "orchestration": {
+      "weight": 0.7,
+      "exclusive": true,
+      "phrases": ["编排角色", "advisor programmer audit", "任务拆分", "并行开发", "orchestrate", "fan out"]
+    },
+    "inline": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": ["你自己改", "直接实现", "不用 agent"]
+    }
+  },
+  "fallback_positive_concepts": ["launch", "definition", "carrier"]
+}

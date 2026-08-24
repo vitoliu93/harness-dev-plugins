@@ -1,0 +1,23 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": ["你自己改", "不用 agent"],
+  "should_trigger": [
+    {"text": "用 herdr 开一个独立 agent", "family": "launch"},
+    {"text": "show me how to start an agent with pi-codex", "family": "launch_en"},
+    {"text": "我的 agent 配置放在哪里", "family": "definition"},
+    {"text": "查一下 fable 有哪些模型渠道", "family": "carrier"},
+    {"text": "cursor-agent 的模型名怎么传", "family": "carrier"},
+    {"text": "quota reset time 保存在哪里", "family": "quota"},
+    {"text": "agent definition 是哪个文件", "family": "definition_en"},
+    {"text": "在 herdr 里给这个模型建一个 tab", "family": "herdr"}
+  ],
+  "should_not_trigger": [
+    {"text": "你自己改这个函数", "family": "inline"},
+    {"text": "不用 agent，直接实现", "family": "inline"}
+  ],
+  "near_neighbor": [
+    {"text": "编排 advisor programmer audit 三个角色", "family": "orchestrate"},
+    {"text": "把三个模块并行开发，别互相撞车", "family": "orchestrate_parallel"},
+    {"text": "orchestrate this feature with several roles", "family": "orchestrate_en"}
+  ]
+}

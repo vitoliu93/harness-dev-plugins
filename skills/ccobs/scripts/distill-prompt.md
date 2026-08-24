@@ -16,7 +16,7 @@
   `abandoned`（用户放弃或转向）| `unknown`
 - `corrections`: 整数。用户**纠正**助手的次数——指出做错了、方向不对、要求返工、说"不是这个意思"。
   单纯的追问、补充需求不算纠正。
-- `dispatch_engine`: 如果会话把整块任务外派给了 vendor CLI（/dispatch-vendors 或直接调用），写 vendor 名（如 "deepseek"、"opencode"、"cursor"），否则 null。注意：spawn subagent（Agent 工具）不算 dispatch。
+- `dispatch_engine`: 旧字段名。如果会话通过 use-agents/orchestrate 启动独立 CLI agent，写渠道名（如 "deepseek"、"claude"、"cursor"），否则 null。内置 subagent 仍按现有适配器单独记录。
 - `dispatch_result`: dispatch 的结局：`ok` | `retried`（续连重派过）| `blocked`（挂起交还用户）| null（没用 dispatch）。
 - `summary`: 一句中文，≤40 字，说清"这个会话做了什么、结果如何"。写给一个月后翻账本的人看。
 - `learn_candidates`: 字符串数组。会话中出现的、值得沉淀为规则的教训——用户重复强调的偏好、

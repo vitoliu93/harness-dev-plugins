@@ -1,143 +1,29 @@
 {
   "positive_concepts": {
-    "delegate": {
-      "weight": 0.45,
-      "phrases": [
-        "委派",
-        "delegate",
-        "delegating",
-        "派出去",
-        "派活",
-        "委派出去",
-        "把活派",
-        "delegation"
-      ]
+    "roles": {
+      "weight": 0.65,
+      "phrases": ["advisor", "researcher", "programmer", "audit", "角色", "分工", "role card"]
     },
-    "routing": {
-      "weight": 0.62,
-      "phrases": [
-        "分给 vendor",
-        "vendor 和 subagent",
-        "vendor",
-        "subagent",
-        "适合委派",
-        "哪些任务可以委派",
-        "拆分",
-        "收回",
-        "host 自己做",
-        "路由",
-        "route",
-        "deciding who should execute"
-      ]
+    "orchestration": {
+      "weight": 0.65,
+      "phrases": ["coordinate their work", "编排", "orchestrate", "fan out", "协调 agents", "多个 agent", "并行", "任务拆分"]
     },
-    "spec_acceptance": {
-      "weight": 0.4,
-      "phrases": [
-        "spec",
-        "spec pack",
-        "验收命令",
-        "验收门",
-        "acceptance gates",
-        "acceptance",
-        "机器可判"
-      ]
-    },
-    "parallel_orchestration": {
-      "weight": 0.6,
-      "phrases": [
-        "编排",
-        "orchestrate",
-        "fan out",
-        "fanning out",
-        "并行开发",
-        "并行改代码",
-        "parallel workers",
-        "parallel",
-        "worker",
-        "撞车",
-        "cheap workers"
-      ]
-    },
-    "delegation_lifecycle": {
-      "weight": 0.4,
-      "phrases": [
-        "委派失败",
-        "哪级恢复",
-        "升档",
-        "省 token",
-        "窗口快烧穿",
-        "确定性的编码活",
-        "防绿着错",
-        "收回自己做",
-        "execute a batch"
-      ]
+    "lifecycle": {
+      "weight": 0.65,
+      "phrases": ["through completion", "依赖顺序", "验收", "完成后", "关闭 herdr", "不要撞车", "handoff"]
     }
   },
   "negative_concepts": {
-    "explain_only": {
-      "weight": 0.45,
+    "transport": {
+      "weight": 0.7,
       "exclusive": true,
-      "phrases": [
-        "解释",
-        "什么意思",
-        "是什么",
-        "解释一下"
-      ]
+      "phrases": ["agent 配置在哪", "怎么启动一个 agent", "模型渠道", "cursor-agent 命令", "pi-codex 参数", "quota reset 保存"]
     },
-    "inline_work": {
-      "weight": 0.35,
-      "exclusive": true,
-      "phrases": [
-        "你自己来",
-        "自己改",
-        "就行"
-      ]
-    },
-    "active_build": {
-      "weight": 0.3,
-      "exclusive": true,
-      "phrases": [
-        "正在开发",
-        "一起重构",
-        "边聊边改",
-        "别外包"
-      ]
-    },
-    "dispatch_transport": {
+    "inline": {
       "weight": 0.4,
       "exclusive": true,
-      "phrases": [
-        "让 cursor",
-        "让 kicode",
-        "让 dscode",
-        "让 arkcode",
-        "后台跑",
-        "顺便",
-        "不急",
-        "回头给我结果",
-        "非 Claude",
-        "找盲点",
-        "独立 review"
-      ]
-    },
-    "sibling_skills": {
-      "weight": 0.4,
-      "exclusive": true,
-      "phrases": [
-        "开发计划",
-        "立个项",
-        "subagent 去搜",
-        "搜一下代码库",
-        "grill me",
-        "盘问"
-      ]
+      "phrases": ["你自己改", "不用 agent", "单个函数"]
     }
   },
-  "fallback_positive_concepts": [
-    "delegate",
-    "routing",
-    "spec_acceptance",
-    "parallel_orchestration",
-    "delegation_lifecycle"
-  ]
+  "fallback_positive_concepts": ["roles", "orchestration", "lifecycle"]
 }

@@ -46,9 +46,9 @@
 ## 分层架构(组件映射)
 
 ```
-编排层   归项目插件所有(项目生命周期 SOP,贴着各自绑定的基建长)—— dev-kit 零编排绑定
-战术层   advanced-plan · dispatch-vendors(派活给独立 AI 进程:execution 整块任务 / advisory 第二意见)· grill-me · worktree(约定+安全)
-执行层   code-search · vendor CLI(dscode / arkcode / kicode / cursor-agent,sheets 见 dispatch-vendors 的 references/)
+编排层   orchestrate(拆角色、排依赖、验收、关闭 Herdr tabs) · 项目插件的生命周期 SOP
+战术层   advanced-plan · use-agents(启动独立 agent、读取渠道和配额) · grill-me · worktree(约定+安全)
+执行层   code-search · Claude Code / pi / cursor-agent · 项目自己的执行器
 项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
 学习层   resume-learning · study-coach 五模式(目标/急救/盘点/出题/垫脚石)

@@ -15,8 +15,8 @@
 | ccobs | meta | "观测报告/usage report" · debrief/skill-atlas 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
 | media-understanding | atom | 本地音视频/录屏(skill-guard→executor) | ③ |
-| dispatch-vendors | sop | execution:"派给 vendor/后台跑" · advisory:"第二意见/校审" · orchestrate 下游 | ①③ |
-| orchestrate | sop | "委派/编排/fan out" · 模型主动(准备 fan out 前) | ①③ |
+| use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
+| orchestrate | sop | "编排角色/fan out/advisor+programmer+audit" · 模型主动(准备多角色协作前) | ①③ |
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
@@ -33,8 +33,8 @@
 
 ## 待接线(⚠)
 
-- **orchestrate** — 纪律层;pre-red gate / run_receipt / job_ledger 建成后回填 scripts/
-- **dispatch-vendors** — 验证 `why:obs` 行是否产出 subagent 平替不了的独立判断
+- **orchestrate** — 观察角色卡、Herdr tab 收尾和 agent 交接是否稳定
+- **use-agents** — 观察个人渠道配置与配额记录是否足够简单
 - **recall** — 仅触发词;观察"以前查过吗"是否长成肌肉记忆
 - **use-html 原型模式** — 非 S 的 UI 任务走完计划却没有 prototype.html → 闸门位置错
 - **cto-audit** — debrief 提醒是否真触发

@@ -49,4 +49,4 @@ Full flows: [commands.md](references/commands.md). Planning discipline: [plannin
 
 ## Neighbours
 
-`grill-me` · `use-html` prototype · `dispatch-vendors` · `debrief` · `take-over`
+`grill-me` · `use-html` prototype · `orchestrate` · `debrief` · `take-over`
