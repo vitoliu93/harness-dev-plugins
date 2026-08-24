@@ -18,6 +18,7 @@
 import { join } from "node:path";
 import { readFileSync, existsSync, appendFileSync, statSync, openSync, readSync, closeSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
+import { randomBytes } from "node:crypto";
 
 import { extractJson, piCall, resolveModel } from "../../skills/ccobs/scripts/pi-call.ts";
 
@@ -84,15 +85,18 @@ const MAX_IMAGE_SCAN_LINES = 300; // backstop: never parse a whole long transcri
 // pi only takes images as @path positionals — there is no base64 channel — and
 // Claude Code keeps pasted images inside the transcript JSONL, not on disk. So
 // the base64 has to become a file somewhere.
+// These are the user's screenshots. mode 0600 and a random name, because the
+// system tmpdir is shared: a predictable 0644 path lets any other account on
+// the box read whatever was on screen.
 // ponytail: written to the system tmpdir and never unlinked; macOS reaps it.
 // If these ever pile up enough to matter, unlink in a finally.
-function imagesToFiles(images: { media_type: string; data: string }[], sid: string): string[] {
+function imagesToFiles(images: { media_type: string; data: string }[]): string[] {
   const paths: string[] = [];
   for (const [i, img] of images.entries()) {
     const ext = img.media_type.split("/")[1] || "png";
-    const path = join(tmpdir(), `forge-img.${sid || "nosid"}.${i}.${ext}`);
+    const path = join(tmpdir(), `forge-img.${randomBytes(8).toString("hex")}.${i}.${ext}`);
     try {
-      writeFileSync(path, Buffer.from(img.data, "base64"));
+      writeFileSync(path, Buffer.from(img.data, "base64"), { mode: 0o600 });
       paths.push(path);
     } catch { /* a broken image must not cost the whole classification */ }
   }
@@ -416,7 +420,7 @@ ${images.length ? `The image(s) below were shared earlier in this session and ar
 
 Return JSON: {"verdict": "pass"} if clear, or {"verdict": "rewrite", "enriched": "..."} if fuzzy.`;
 
-  const files = images.length ? imagesToFiles(images, sid) : [];
+  const files = images.length ? imagesToFiles(images) : [];
   // pi echoes each @file back as <file name="/abs/path">, and unsourcedPaths()
   // discards a rewrite that cites a path absent from the corpus. Put the temp
   // paths in the corpus so a good rewrite is never thrown away over them.
