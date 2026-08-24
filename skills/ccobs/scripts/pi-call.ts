@@ -27,7 +27,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const HERMETIC = ["--no-tools", "--no-session", "--no-skills", "--no-extensions", "--no-context-files"];
+const HERMETIC = ["--no-session", "--no-skills", "--no-extensions", "--no-context-files"];
+// Off by default. The one caller that turns tools on is distill, for session
+// files too big to read into our own process — see the `tools` option below.
+const NO_TOOLS = "--no-tools";
 
 // A hook does not get the interactive shell's PATH, and two things break there:
 // a bare "pi" spawns ENOENT (which used to throw right past this module's
@@ -91,8 +94,12 @@ export async function piCall(
     model = resolveModel(scenario) ?? undefined,
     system,
     files = [],
+    tools = false,
     timeoutMs = 8000,
-  }: { scenario?: string; model?: string; system?: string; files?: string[]; timeoutMs?: number } = {},
+  }: {
+    scenario?: string; model?: string; system?: string;
+    files?: string[]; tools?: boolean; timeoutMs?: number;
+  } = {},
 ): Promise<string | null> {
   if (!model) return null; // no llm.json, or no key for this scenario
   // ponytail: the prompt rides argv, and ARG_MAX is 1MB on this machine. Over
@@ -107,12 +114,16 @@ export async function piCall(
   }
   let killer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const argv = [PI_BIN, "-p", "--mode", "json", "--model", model, ...HERMETIC];
+    // With tools on, pi gets a live read/exec loop. Only worth it when the
+    // input is too big to hand over any other way; everything else stays sealed.
+    const argv = [PI_BIN, "-p", "--mode", "json", "--model", model, ...HERMETIC, ...(tools ? [] : [NO_TOOLS])];
     // Replaces pi's own ~400-token coding-assistant prompt rather than appending
     // to it, which is what lets a "only JSON, no prose" instruction go uncontested.
     if (system) argv.push("--system-prompt", system);
     // pi inlines an @file into the message body as <file name="…">…</file>, so
     // big payloads never touch argv (ARG_MAX is 1MB) and images arrive as pixels.
+    // Inlines, not streams: an 8.6MB file measured 4.6M tokens and got a hard
+    // 400 back. Anything that size has to go through `tools` instead.
     for (const f of files) argv.push(`@${f}`);
     argv.push(prompt);
 

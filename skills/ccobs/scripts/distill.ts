@@ -21,6 +21,12 @@ import { OBS_DIR } from "./rules-digest.ts";
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
 const DIGEST_CAP = 20_000; // chars; keep head+tail, endings decide `outcome`
+// Above this we stop reading the file ourselves and hand pi the path. readFileSync
+// on a huge file is a native crash, not a catchable throw — 2026-07-22 that killed
+// the whole pipeline for two weeks (a 2.8GB Cursor state.vscdb), which is why the
+// heartbeat file exists. 8MB is well under anything that has ever crashed us; the
+// point is to stop pulling tens of MB into a cron process at all.
+const BIG_FILE = 8 * 1024 * 1024;
 // --system-prompt REPLACES pi's own coding-assistant prompt, so this is the whole
 // instruction the model gets besides the task. pi has no response_format flag.
 const JSON_ONLY = "You return one JSON object and nothing else. No prose, no code fences.";
@@ -69,6 +75,19 @@ function buildDigest(filePath: string): string {
   const full = lines.join("\n");
   if (full.length <= DIGEST_CAP) return full;
   return full.slice(0, DIGEST_CAP * 0.6) + "\n...[中段截断]...\n" + full.slice(-DIGEST_CAP * 0.4);
+}
+
+// Big files never get inlined — pi's @path would blow the context window — so the
+// digest slot carries directions instead of content. This does mean pi sees the raw
+// JSONL, tool outputs included, where buildDigest would have stripped them.
+function readItYourself(filePath: string): string {
+  return [
+    "（这份记录太大，没有内联进来。请用你的文件工具自己读。）",
+    `路径：${filePath}`,
+    "格式是 JSONL，一行一条事件。文件很大，分段读，不要一次全读。",
+    "只看 type 为 user 和 assistant 的行；跳过 tool_result 的内容，它们又长又没用。",
+    "读够判断上面那些字段就停，不必读完。",
+  ].join("\n");
 }
 
 const db = new Database(DB_PATH);
@@ -130,21 +149,21 @@ const put = db.prepare(
 let ok = 0;
 let failed = 0;
 let tombed = 0;
+let bigged = 0;
 for (const s of pending) {
   if (!existsSync(s.file_path)) {
     tomb.run(s.session_id, new Date().toISOString());
     tombed++;
     continue;
   }
-  if (statSync(s.file_path).size > 128 * 1024 * 1024) { // readFileSync 巨文件是不可 catch 的原生崩溃,门口拦掉
-    failed++;
-    console.error(`  ${s.session_id}: skipped, file > 128MB (${s.file_path})`);
-    continue;
-  }
+  const big = statSync(s.file_path).size > BIG_FILE;
+  if (big) bigged++;
   try {
     const answer = await piCall(
-      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", buildDigest(s.file_path)),
-      { model, system: JSON_ONLY, timeoutMs: 300_000 },
+      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : buildDigest(s.file_path)),
+      // Tools only on the big branch, and a longer clock: pi has to page through
+      // the file itself, which costs several round trips instead of one.
+      { model, system: JSON_ONLY, tools: big, timeoutMs: big ? 900_000 : 300_000 },
     );
     if (!answer) throw new Error("pi returned nothing");
     const j = extractJson(answer);
@@ -163,7 +182,7 @@ for (const s of pending) {
   }
 }
 console.log(
-  `ccobs distill: ${ok} ok, ${failed} failed${tombed ? `, ${tombed} 无原始文件已标记` : ""}, model=${model}`,
+  `ccobs distill: ${ok} ok, ${failed} failed${tombed ? `, ${tombed} 无原始文件已标记` : ""}${bigged ? `, ${bigged} 交给 pi 自读` : ""}, model=${model}`,
 );
 // 心跳:跑到这一行才算活着(2026-07-22 起 SIGTRAP 死两周无人知的学费);session-replay hook 检查此文件的年龄
 writeFileSync(join(OBS_DIR, "distill.heartbeat"), new Date().toISOString());

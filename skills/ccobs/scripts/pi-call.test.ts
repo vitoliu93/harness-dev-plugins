@@ -52,3 +52,22 @@ test("resolveModel: no llm.json means null, never a built-in model", () => {
   unlinkSync(join(DIR, "llm.json"));
   expect(resolveModel("distill")).toBeNull();
 });
+
+test("piCall: tools stay off unless the caller asks", async () => {
+  // The hermetic flags are what keep a cron-run model from touching the box.
+  // Only distill's big-file branch opts out, so a regression here is silent
+  // privilege creep — assert on the argv pi would actually get.
+  const seen: string[][] = [];
+  const realSpawn = Bun.spawn;
+  // @ts-expect-error test double
+  Bun.spawn = (argv: string[]) => { seen.push(argv); throw new Error("no launch"); };
+  try {
+    await piCall("hi", { model: "prov/m" });
+    await piCall("hi", { model: "prov/m", tools: true });
+  } finally { Bun.spawn = realSpawn; }
+  expect(seen).toHaveLength(2);
+  expect(seen[0]).toContain("--no-tools");
+  expect(seen[1]).not.toContain("--no-tools");
+  // the rest of the seal holds either way
+  for (const argv of seen) expect(argv).toContain("--no-context-files");
+});
