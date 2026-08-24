@@ -478,12 +478,7 @@ function unsourcedPaths(enriched: string, corpus: string): string[] {
 }
 
 function formatAdditionalContext(enriched: string): string {
-  return (
-    "[prompt-forge] 你的原始输入经分析后已增强为以下指令，可作为执行依据。\n" +
-    "这是对你意图的一种展开；如与仓库实际不符，以仓库实际为准。\n\n" +
-    "## Enriched Prompt\n" +
-    enriched
-  );
+  return enriched;
 }
 
 // ---------------------------------------------------------------------------

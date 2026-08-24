@@ -212,9 +212,9 @@ test("prompt-forge-gate2", async () => {
   const result = JSON.parse(out);
   expect(result.hookSpecificOutput.hookEventName).toBe("UserPromptSubmit");
   const ctx = result.hookSpecificOutput.additionalContext;
-  expect(ctx).toContain("prompt-forge");
-  expect(ctx).toContain("Enriched Prompt");
-  expect(ctx).toContain("以仓库实际为准");
+  expect(ctx).toBe(
+    "Harden the authentication flow: enumerate its failure paths, fix each, and confirm the suite passes.",
+  );
 
   // Mock: rewrite citing a path found nowhere in prompt or transcript →
   // discarded, prompt passes through unchanged.
