@@ -23,7 +23,7 @@
 - 客户端单独设置放在各自文件中，不要拆分共用技能：Claude Code 使用 `.claude-plugin/plugin.json`，Codex 使用 `.codex-plugin/plugin.json` 和可选的 `skills/*/agents/openai.yaml`。
 - 根目录 `agents/` 只供 Claude Code 使用。可复用的做法必须放进 `skills/`。
 - 新建或修改技能时，必须检查 Claude Code 和 Codex 都能载入技能，并至少运行一个有脚本的技能来确认路径有效。
-- 两端取文件的地方不一样。Claude Code 的 marketplace source 是 `./`，`CLAUDE_PLUGIN_ROOT` 直接指向本仓库，所以这里没提交的改动在本机每个 Claude Code 会话里都是生效的；Codex 装到 `~/.codex/plugins/cache/`，改完要 `codex plugin add dev-kit@vito-agents` 才会更新。调试 hook 时先确认执行的是哪一份文件，别改了缓存里那份。
+- 两端取文件的地方不一样。Claude Code 的 marketplace source 是 `./`，`CLAUDE_PLUGIN_ROOT` 直接指向本仓库，所以这里没提交的改动在本机每个 Claude Code 会话里都是生效的；Codex 装到 `~/.codex/plugins/cache/`。不要在正在使用 dev-kit 的 Codex 会话里运行 `codex plugin add dev-kit@vito-agents`：更新会删掉该会话已载入的旧版本目录，余下 hook 会找不到脚本。先结束会话，再从另一个终端更新并开新会话。调试 hook 时先确认执行的是哪一份文件，别改缓存里的脚本。
 
 ## 检查
 

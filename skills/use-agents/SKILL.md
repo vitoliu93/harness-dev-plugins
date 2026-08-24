@@ -15,9 +15,9 @@ agents differ in transport, not in purpose.
 
 ## Read the local routes
 
-Read `${AGENTS_CONFIG:-$HOME/.config/agents/agents.json}`. Pick the requested
-alias, then a route whose quota record is clear. The file shape and route order
-are in [agent-config.md](references/agent-config.md).
+Read `${AGENTS_CONFIG:-${CCOBS_DIR:-$HOME/.claude/observability}/agents/agents.json}`.
+Pick the requested alias, then a route whose quota record is clear. The file
+shape and route order are in [agent-config.md](references/agent-config.md).
 
 ## Start through Herdr
 

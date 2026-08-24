@@ -2,8 +2,8 @@
 
 ## Location
 
-Read `${AGENTS_CONFIG:-$HOME/.config/agents/agents.json}`. This is personal
-machine state. Do not commit it and do not put API keys in it.
+Read `${AGENTS_CONFIG:-${CCOBS_DIR:-$HOME/.claude/observability}/agents/agents.json}`.
+This is personal machine state. Do not commit it and do not put API keys in it.
 
 ## Shape
 
