@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bash \"$PLUGIN_DIR/hooks/scripts/skill-guard.sh\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bash \"$PLUGIN_DIR/hooks/scripts/skill-guard.sh\"",
             "timeout": 10
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bash \"$PLUGIN_DIR/hooks/scripts/worktree-guard.sh\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bash \"$PLUGIN_DIR/hooks/scripts/worktree-guard.sh\"",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bash \"$PLUGIN_DIR/hooks/scripts/skill-atlas-guard.sh\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bash \"$PLUGIN_DIR/hooks/scripts/skill-atlas-guard.sh\"",
             "timeout": 10
           }
         ]
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bash \"$PLUGIN_DIR/hooks/scripts/skill-path-fallback.sh\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bash \"$PLUGIN_DIR/hooks/scripts/skill-path-fallback.sh\"",
             "timeout": 10
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/compact-audit.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/compact-audit.ts\"",
             "timeout": 10
           }
         ]
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/security-warning-relay.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/security-warning-relay.ts\"",
             "timeout": 10
           }
         ]
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/learn-capture.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/learn-capture.ts\"",
             "timeout": 20
           }
         ]
@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/standby-watchdog.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/standby-watchdog.ts\"",
             "timeout": 10
           }
         ]
@@ -89,7 +89,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/skills/ccobs/scripts/obs-enqueue.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/skills/ccobs/scripts/obs-enqueue.ts\"",
             "timeout": 5
           }
         ]
@@ -100,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/session-replay.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/session-replay.ts\"",
             "timeout": 10
           }
         ]
@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/plan-anchor.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/plan-anchor.ts\"",
             "timeout": 10
           }
         ]
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun run \"$PLUGIN_DIR/hooks/scripts/prompt-forge.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun run \"$PLUGIN_DIR/hooks/scripts/prompt-forge.ts\"",
             "statusMessage": "prompt-forge: 分析输入是否需要增强…",
             "timeout": 125
           }
@@ -130,7 +130,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; if [ -n \"$PLUGIN_DIR\" ] && [ ! -d \"$PLUGIN_DIR\" ]; then PLUGIN_DIR=\"$(ls -dt \"$(dirname \"$PLUGIN_DIR\")\"/* 2>/dev/null | head -n 1)\"; fi; bun \"$PLUGIN_DIR/hooks/scripts/recall-precedent.ts\"",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/recall-precedent.ts\"",
             "statusMessage": "recall: 查本项目相关先例…",
             "timeout": 20
           }
