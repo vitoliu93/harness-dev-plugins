@@ -4,22 +4,22 @@
  *
  * Two-gate pipeline:
  *   Gate 1 (zero-cost) — length ≤15 or confirmation word → pass through.
- *   Gate 2 (llm-call)   — classify: pass (clear) or rewrite (fuzzy).
+ *   Gate 2 (pi)         — classify: pass (clear) or rewrite (fuzzy).
  *                         On rewrite, inject an authoritative enriched prompt
  *                         via additionalContext.
  *
  * Enabled by default. Set PROMPT_FORGE=0 to disable.
- * Fail-open: any exception, timeout, or llm-call error → pass through.
+ * Fail-open: any exception, timeout, or model error → pass through.
  *
  * Observability: progress/result logs go to stderr (visible in the debug
  * log via `claude --debug` or `/log`). Stdout must stay pure hook JSON.
  */
 
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
-import { readFileSync, existsSync, appendFileSync, statSync, openSync, readSync, closeSync } from "node:fs";
-import { homedir } from "node:os";
+import { join } from "node:path";
+import { readFileSync, existsSync, appendFileSync, statSync, openSync, readSync, closeSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+
+import { extractJson, piCall, resolveModel } from "../../skills/ccobs/scripts/pi-call.ts";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -57,16 +57,16 @@ const IMAGE_REF_RE = /\[Image #\d+\]/;
 // reasoning_effort=max runs 4-70s with a long tail. A 90s cap costs no rewrite
 // seen in the ledger while cutting the pathological tail; tighter caps (45s,
 // 30s) start discarding useful rewrites for little wall-clock saved.
-const LLM_CALL_TIMEOUT_MS = 90_000;
+const LLM_TIMEOUT_MS = 90_000;
 // Worst-case budget vs the 125s hooks.json timeout:
 // 4×git(1s each) + bun boot(~0.5s) + 90s LLM ≈ 94.5s < 125s. Signals are
 // best-effort — a slow repo just loses the signal, never blocks the user.
 const GIT_TIMEOUT_MS = 1_000;
 
 // Transcript budget after pruning. Raw session JSONL reaches tens of MB
-// (tool results, base64 images) and overflows the deepseek-v4-flash
-// 1M-token window; keep the pruned tail well under it.
-const MAX_TRANSCRIPT_CHARS = 500_000;
+// (tool results, base64 images) and overflows any model's context window;
+// keep the pruned tail well under the smallest one you might configure.
+const MAX_TRANSCRIPT_CHARS = 250_000; // ×3 bytes for CJK = 750KB, under piCall's argv guard
 // tool_use inputs are kept as work trace but a single Write/Edit body can
 // crowd the tail out of the budget — cap each block's serialized input.
 const MAX_TOOL_USE_INPUT_CHARS = 2_000;
@@ -80,16 +80,24 @@ const IMAGE_LOOKBACK_USER_TURNS = 2;
 const MAX_IMAGES = 2;
 const MAX_IMAGE_CHARS = 4_000_000; // ~3MB of image, per image
 const MAX_IMAGE_SCAN_LINES = 300; // backstop: never parse a whole long transcript
-const VISION_MODEL = "openai/gpt-5.6-luna";
-const VISION_BASE_URL = "https://openrouter.ai/api/v1";
 
-// ---------------------------------------------------------------------------
-// Resolve paths relative to this script
-// ---------------------------------------------------------------------------
-
-const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const PLUGIN_ROOT = join(SCRIPT_DIR, "..", "..");
-const LLM_CALL_SCRIPT = join(PLUGIN_ROOT, "skills", "llm-call", "scripts", "call.ts");
+// pi only takes images as @path positionals — there is no base64 channel — and
+// Claude Code keeps pasted images inside the transcript JSONL, not on disk. So
+// the base64 has to become a file somewhere.
+// ponytail: written to the system tmpdir and never unlinked; macOS reaps it.
+// If these ever pile up enough to matter, unlink in a finally.
+function imagesToFiles(images: { media_type: string; data: string }[], sid: string): string[] {
+  const paths: string[] = [];
+  for (const [i, img] of images.entries()) {
+    const ext = img.media_type.split("/")[1] || "png";
+    const path = join(tmpdir(), `forge-img.${sid || "nosid"}.${i}.${ext}`);
+    try {
+      writeFileSync(path, Buffer.from(img.data, "base64"));
+      paths.push(path);
+    } catch { /* a broken image must not cost the whole classification */ }
+  }
+  return paths;
+}
 
 // ---------------------------------------------------------------------------
 // Logging (stderr only — stdout must stay pure hook JSON)
@@ -301,11 +309,14 @@ You have no evidence of what the user is referring to. Enrich the WORDING only:
 - Describe targets by their role ("the configuration item named voice_key and every reference to it"), and let the agent locate them.
 - Keep it to a single short paragraph.`;
 
+type LLMPayload = { system: string; user: string; files: string[]; model?: string };
+
 function buildLLMPayload(
   prompt: string,
   cwd: string,
   transcriptPath: string | undefined,
-): Record<string, unknown> {
+  sid: string,
+): LLMPayload {
   const history = transcriptContent(transcriptPath);
   transcriptChars = history.length;
   transcriptText = history;
@@ -387,10 +398,13 @@ When enriching, you MUST:
 ${history ? EVIDENCE_RULES : NO_EVIDENCE_RULES}`;
 
   // A screenshot from a recent turn is only useful to a model that can see it,
-  // and only worth the switch when the vision provider is actually configured.
-  const images = process.env.OPENROUTER_API_KEY ? recentImages(transcriptPath) : [];
+  // and only worth the switch when llm.json actually names a vision model.
+  // No fallback to `default`: a text-only model handed an image is worse
+  // than no vision at all, so this scenario needs its own key or nothing.
+  const visionModel = resolveModel("vision", false);
+  const images = visionModel ? recentImages(transcriptPath) : [];
   visionImages = images.length;
-  if (images.length) log(`vision: ${images.length} recent image(s) → ${VISION_MODEL}`);
+  if (images.length) log(`vision: ${images.length} recent image(s) → ${visionModel}`);
 
   const userPrompt = `Classify this user prompt:
 
@@ -402,33 +416,21 @@ ${images.length ? `The image(s) below were shared earlier in this session and ar
 
 Return JSON: {"verdict": "pass"} if clear, or {"verdict": "rewrite", "enriched": "..."} if fuzzy.`;
 
-  const userContent = images.length
-    ? [
-        { type: "text", text: userPrompt },
-        ...images.map((img) => ({
-          type: "image_url",
-          image_url: { url: `data:${img.media_type};base64,${img.data}` },
-        })),
-      ]
-    : userPrompt;
+  const files = images.length ? imagesToFiles(images, sid) : [];
+  // pi echoes each @file back as <file name="/abs/path">, and unsourcedPaths()
+  // discards a rewrite that cites a path absent from the corpus. Put the temp
+  // paths in the corpus so a good rewrite is never thrown away over them.
+  if (files.length) transcriptText += "\n" + files.join("\n");
 
   return {
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userContent },
-    ],
-    ...(images.length && {
-      model: VISION_MODEL,
-      base_url: VISION_BASE_URL,
-      api_key: process.env.OPENROUTER_API_KEY,
-    }),
-    max_tokens: 65_536, // llm-call cap; reasoning_effort=max burns most of it as CoT before content
-    temperature: 0,
-    response_format: "json_object",
+    system: systemPrompt,
+    user: userPrompt,
+    files,
+    ...(images.length && visionModel ? { model: visionModel } : {}),
   };
 }
 
-function callLLM(payload: Record<string, unknown>): Record<string, unknown> | null {
+async function callLLM(payload: LLMPayload): Promise<Record<string, unknown> | null> {
   // Test hook: skip real LLM call when mock response is provided
   const mock = process.env.PROMPT_FORGE_TEST_MOCK;
   if (mock) {
@@ -437,17 +439,15 @@ function callLLM(payload: Record<string, unknown>): Record<string, unknown> | nu
   }
 
   try {
-    const proc = spawnSync("bun", ["run", LLM_CALL_SCRIPT], {
-      input: JSON.stringify(payload),
-      timeout: LLM_CALL_TIMEOUT_MS,
-      encoding: "utf-8",
-      env: process.env,
+    const answer = await piCall(payload.user, {
+      scenario: "prompt-forge",
+      ...(payload.model ? { model: payload.model } : {}),
+      system: payload.system,
+      files: payload.files,
+      timeoutMs: LLM_TIMEOUT_MS,
     });
-    if (proc.status !== 0 || proc.error) return null;
-    const outer = JSON.parse((proc.stdout || "").trim());
-    const content = outer.content;
-    if (!content || typeof content !== "string") return null;
-    return JSON.parse(content) as Record<string, unknown>;
+    if (!answer) return null;
+    return extractJson(answer) as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -486,7 +486,7 @@ function formatAdditionalContext(enriched: string): string {
 // Main
 // ---------------------------------------------------------------------------
 
-function run(): void {
+async function run(): Promise<void> {
   if (process.env.PROMPT_FORGE === "0") {
     log("disabled (PROMPT_FORGE=0)");
     return;
@@ -522,11 +522,11 @@ function run(): void {
   // Gate 2: LLM classification
 
   const shown = [...prompt].slice(0, 60).join("");
-  log(`gate2: classifying ${JSON.stringify(shown)} (${[...prompt].length} chars) via llm-call`);
+  log(`gate2: classifying ${JSON.stringify(shown)} (${[...prompt].length} chars) via pi`);
 
-  const llmPayload = buildLLMPayload(prompt, cwd, transcriptPath);
+  const llmPayload = buildLLMPayload(prompt, cwd, transcriptPath, sid);
   const t0 = Date.now();
-  const result = callLLM(llmPayload);
+  const result = await callLLM(llmPayload);
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
 
   const g2 = {
@@ -536,14 +536,14 @@ function run(): void {
     prompt_chars: [...prompt].length,
     transcript_chars: transcriptChars,
     mode: transcriptChars ? "evidence" : "no-evidence",
-    ...(visionImages && { vision: VISION_MODEL, images: visionImages }),
+    ...(visionImages && { vision: llmPayload.model, images: visionImages }),
     cwd,
     // null = no transcript file at all; false = the file exists but this turn
     // is not in it yet, so a just-pasted image is unreachable.
     prompt_on_disk: promptOnDisk(transcriptPath, prompt),
   };
   if (!result) {
-    log(`gate2 llm-call failed in ${elapsed}s → fail-open, prompt unchanged`);
+    log(`gate2 pi call failed in ${elapsed}s → fail-open, prompt unchanged`);
     ledger({ ...g2, verdict: "fail-open" });
     return;
   }
@@ -576,7 +576,7 @@ function run(): void {
   }));
 }
 
-try { run(); } catch (e) {
+try { await run(); } catch (e) {
   log(`fatal: ${e instanceof Error ? e.message : String(e)} → fail-open`);
   ledger({ verdict: "fatal", reason: String(e instanceof Error ? e.message : e).slice(0, 200) });
 }

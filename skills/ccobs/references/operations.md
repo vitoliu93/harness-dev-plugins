@@ -3,7 +3,7 @@
 ## Layout
 
 - DB / queue / logs: `${CCOBS_DIR:-$HOME/.claude/observability/}` (override with `CCOBS_DIR`).
-- Shared API-direct LLM config: `${CCOBS_DIR}/llm.json` `{"base_url","model","api_key"}` — read first by `distill.ts` and the `llm-call` atom (so prompt-forge and skill-style-review inherit it); missing → env-key fallback; vendor CLIs use `vendor-manifest.json` instead.
+- Model routing: `${CCOBS_DIR}/llm.json`，平表 `{"<场景>": "<provider>/<model>[:思考档]"}`。`pi-call.ts` 是唯一的读取者，插件里不写死任何模型；缺文件就跳过。场景键：`default`、`distill`、`rollup`、`recall`、`prompt-forge`、`skill-style-review`、`vision`。认证归 pi，不归这里。vendor CLIs use `vendor-manifest.json` instead.
 - Dynamic ledgers never live in the plugin repo.
 - Scripts under `$CCOBS_SKILL_DIR/scripts/` after setting `CCOBS_SKILL_DIR` to
   the absolute directory containing the loaded `ccobs/SKILL.md`:

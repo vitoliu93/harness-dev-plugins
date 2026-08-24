@@ -286,7 +286,7 @@ test("prompt-forge-logging", async () => {
   expect(unsourced.stdout).toBe("");
 
   const bad = await runCase(longPrompt, "not json");
-  expect(bad.stderr).toContain("llm-call failed");
+  expect(bad.stderr).toContain("pi call failed");
   expect(bad.stderr).toContain("fail-open");
   expect(bad.stdout).toBe(""); // fail-open must not emit stdout
 
@@ -333,7 +333,9 @@ test("prompt-forge-path-provenance", async () => {
 
 test("prompt-forge-vision-routing", async () => {
   // An image from a recent turn is readable and routes the classifier to the
-  // vision provider; without a key, or with no image, it stays on the default.
+  // model under llm.json's "vision" key. No such key means no vision routing —
+  // this scenario deliberately does NOT fall back to "default", because a
+  // text-only model handed an image is worse than no vision at all.
   const d = tmp();
   try {
     const tp = join(d, "t.jsonl");
@@ -365,14 +367,20 @@ test("prompt-forge-vision-routing", async () => {
       ].join("\n"),
     );
     const payload = JSON.stringify({ prompt: "右边那块间距别扭，帮我调一下", transcript_path: tp });
-    const call = (env: Record<string, string>) =>
-      spawnHook(["bun", "run", join(HERE, "prompt-forge.ts")], payload, {
+    const call = (llmJson: Record<string, string>) => {
+      const cfgDir = join(d, `cfg-${Object.keys(llmJson).join("-") || "none"}`);
+      mkdirSync(cfgDir, { recursive: true });
+      writeFileSync(join(cfgDir, "llm.json"), JSON.stringify(llmJson));
+      return spawnHook(["bun", "run", join(HERE, "prompt-forge.ts")], payload, {
         PROMPT_FORGE_TEST_MOCK: '{"verdict":"pass"}',
-        ...env,
+        CCOBS_DIR: cfgDir,
       });
+    };
 
-    expect((await call({ OPENROUTER_API_KEY: "sk-test" })).stderr).toContain("vision: 1 recent image");
-    expect((await call({ OPENROUTER_API_KEY: "" })).stderr).not.toContain("vision:");
+    expect(
+      (await call({ default: "prov/text", vision: "prov/sees-images" })).stderr,
+    ).toContain("vision: 1 recent image");
+    expect((await call({ default: "prov/text" })).stderr).not.toContain("vision:");
   } finally {
     rmSync(d, { recursive: true, force: true });
   }

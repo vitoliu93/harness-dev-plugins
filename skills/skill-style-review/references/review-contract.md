@@ -37,34 +37,31 @@ lines; once grounded, the false-positive adjudicator cannot discard it.
 
 ## Configuration
 
-- `LLM_CALL_RUNNER` — path to `llm-call/scripts/call.ts`; otherwise set
-  `LLM_CALL_DIR` (the llm-call skill directory) or `CLAUDE_PLUGIN_ROOT`. The
-  runner is never resolved through a relative sibling path; missing all three
-  fails the run.
-- `DEEPSEEK_STYLE_MODEL` — optional; beats the shared config. Model resolution:
-  `DEEPSEEK_STYLE_MODEL` > `llm.json` `model` > `DEEPSEEK_MODEL` > `deepseek-v4-flash`.
+- Model comes from `${CCOBS_DIR:-$HOME/.claude/observability}/llm.json`, key
+  `skill-style-review`, falling back to `default`. Missing both fails the run.
+- `SKILL_STYLE_MODEL` — optional; beats the config file.
 - `SKILL_STYLE_MAX_CHARS` — optional maximum characters per request chunk;
   defaults to `30000`.
-- `SKILL_STYLE_MAX_TOKENS` and `SKILL_STYLE_ADJUDICATION_MAX_TOKENS` — optional;
-  both default to `32768`.
+- `SKILL_STYLE_TIMEOUT_MS` — optional wall-clock cap per call; defaults to
+  `300000`. pi has no `--timeout`, so the child is killed by the caller.
 
-The `llm-call` atom owns Bun/OpenAI installation and the shared LLM config
-(`${CCOBS_DIR:-$HOME/.claude/observability}/llm.json`, then `DEEPSEEK_*` env).
-This skill sends JSON through stdin; every call runs at maximum reasoning effort.
+The call goes out through the shared `pi-call` layer, which spawns `pi -p`
+headless; pi owns provider credentials. The system prompt replaces pi's own
+prompt, so the "return JSON only" instruction is uncontested — there is no
+`response_format` flag to set.
 
 ## CLI
 
 Review one skill:
 
 ```bash
-LLM_CALL_DIR=<llm-call-dir> \
-  bun scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
+bun scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
 ```
 
 Review every discovered skill:
 
 ```bash
-LLM_CALL_DIR=<llm-call-dir> bun scripts/review.ts \
+bun scripts/review.ts \
   --workspace-root <skills-root> \
   --output <report.json> \
   --fail-on-issues
@@ -76,8 +73,6 @@ After changing the review or adjudication prompt, run the fixed semantic
 regression:
 
 ```bash
-export LLM_CALL_DIR=<llm-call-dir>
-bun add -g openai@7
 bun scripts/review.ts --eval-cases evals/semantic_cases.json
 ```
 

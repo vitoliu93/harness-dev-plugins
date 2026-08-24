@@ -20,7 +20,6 @@
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
-| llm-call | atom | skill-style-review 推理调用 · direct DeepSeek JSON | ① |
 | skill-style-review | atom | skill-forge ship · skill-atlas semantic style | ① |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | study-coach | atom | 目标审计/迷茫/盘点/出题/垫脚石 | ③ |

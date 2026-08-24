@@ -91,7 +91,7 @@ async function run(): Promise<void> {
       `下面是这个项目过去 90 天的会话摘要，每行是「日期 | session_id | 类型/结果 | 摘要」：\n${catalog}\n\n` +
       `挑出最多 3 条和这个任务真正相关的先例。每条输出一行：\`- <日期> <session_id> — <摘要>\`。` +
       `一条都不相关就只输出 NONE，不要解释，不要凑数。`,
-    { timeoutMs: PI_TIMEOUT_MS },
+    { scenario: "recall", timeoutMs: PI_TIMEOUT_MS },
   );
   if (!answer) return;
   const lines = parsePrecedents(answer);

@@ -3,10 +3,8 @@
 // digests their raw JSONL (user text + assistant text + tool names, NO tool outputs),
 // asks a cheap OpenAI-compatible model to fill the observations table.
 //
-// Provider resolution (all OpenAI-compatible), first hit wins:
-//   1. ~/.claude/observability/llm.json {"base_url","model","api_key"} — explicit override
-//   2. env keys, in order: DEEPSEEK_API_KEY > GEMINI_API_KEY > OPENROUTER_API_KEY > LMSTUDIO_API_KEY
-//   3. neither → skip quietly
+// Model: whatever ${CCOBS_DIR}/llm.json maps the "distill" scenario to; the call
+// itself goes out through pi (see pi-call.ts). No llm.json → skip quietly.
 //
 // Usage:
 //   bun distill.ts                  # distill up to 50 pending sessions
@@ -16,30 +14,16 @@
 
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
+import { OBS_DIR } from "./rules-digest.ts";
 
-const OBS_DIR = process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability");
 const DB_PATH = join(OBS_DIR, "obs.db");
-const CONFIG = join(OBS_DIR, "llm.json");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
 const DIGEST_CAP = 20_000; // chars; keep head+tail, endings decide `outcome`
-
-const PROVIDERS = [
-  { env: "DEEPSEEK_API_KEY", base_url: "https://api.deepseek.com/v1", model: "deepseek-v4-flash" },
-  { env: "GEMINI_API_KEY", base_url: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-3.1-flash-lite" },
-  { env: "OPENROUTER_API_KEY", base_url: "https://openrouter.ai/api/v1", model: "openrouter/free" },
-  { env: "LMSTUDIO_API_KEY", base_url: "http://localhost:1234/v1", model: "local" },
-];
-
-function resolveCfg(): { base_url: string; model: string; api_key: string } | null {
-  if (existsSync(CONFIG)) return JSON.parse(readFileSync(CONFIG, "utf8"));
-  for (const p of PROVIDERS) {
-    const key = process.env[p.env];
-    if (key) return { base_url: p.base_url, model: p.model, api_key: key };
-  }
-  return null;
-}
+// --system-prompt REPLACES pi's own coding-assistant prompt, so this is the whole
+// instruction the model gets besides the task. pi has no response_format flag.
+const JSON_ONLY = "You return one JSON object and nothing else. No prose, no code fences.";
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(name);
@@ -87,13 +71,6 @@ function buildDigest(filePath: string): string {
   return full.slice(0, DIGEST_CAP * 0.6) + "\n...[中段截断]...\n" + full.slice(-DIGEST_CAP * 0.4);
 }
 
-function extractJson(text: string): any {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start === -1 || end <= start) throw new Error("no JSON object in response");
-  return JSON.parse(text.slice(start, end + 1));
-}
-
 const db = new Database(DB_PATH);
 try { db.exec("ALTER TABLE observations ADD COLUMN sop_candidate TEXT"); } catch {} // 存量库迁移;已有则跳过
 const sessionFilter = opt("--session");
@@ -109,7 +86,7 @@ const pending = db
                AND (SELECT COUNT(*) FROM turns t WHERE t.session_id = s.session_id) >= 3)
      ORDER BY s.ended_at DESC LIMIT ?2`,
   )
-  .all(sessionFilter, flag("--dry-run") ? 1 : Number(opt("--limit") ?? 50)) as
+  .all(sessionFilter, flag("--dry-run") ? 20 : Number(opt("--limit") ?? 50)) as
   { session_id: string; file_path: string; ended_at: string }[];
 
 if (pending.length === 0) {
@@ -119,16 +96,20 @@ if (pending.length === 0) {
 }
 
 if (flag("--dry-run")) {
-  const s = pending[0];
+  const s = pending.find((p) => existsSync(p.file_path)); // retention may have eaten the raw file
+  if (!s) {
+    console.log("ccobs distill: pending sessions have no raw JSONL left on disk");
+    process.exit(0);
+  }
   const digest = buildDigest(s.file_path);
   console.log(`# session ${s.session_id} (${s.ended_at})\n`);
   console.log(PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", digest));
   process.exit(0);
 }
 
-const cfg = resolveCfg();
-if (!cfg) {
-  console.log("ccobs distill: 无 llm.json 且四个 *_API_KEY 环境变量均未设置，跳过");
+const model = resolveModel("distill");
+if (!model) {
+  console.log(`ccobs distill: ${llmConfigHint()}`);
   process.exit(0);
 }
 const put = db.prepare(
@@ -148,25 +129,15 @@ for (const s of pending) {
     continue;
   }
   try {
-    const res = await fetch(`${cfg.base_url}/chat/completions`, {
-      method: "POST",
-      signal: AbortSignal.timeout(300_000),
-      headers: {
-        "Content-Type": "application/json",
-        ...(cfg.api_key ? { Authorization: `Bearer ${cfg.api_key}` } : {}),
-      },
-      body: JSON.stringify({
-        model: cfg.model,
-        temperature: 0,
-        messages: [{ role: "user", content: PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", buildDigest(s.file_path)) }],
-      }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const body: any = await res.json();
-    const j = extractJson(body.choices[0].message.content);
+    const answer = await piCall(
+      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", buildDigest(s.file_path)),
+      { model, system: JSON_ONLY, timeoutMs: 300_000 },
+    );
+    if (!answer) throw new Error("pi returned nothing");
+    const j = extractJson(answer);
     if (!j.task_type || !j.outcome || j.summary == null) throw new Error("missing required fields");
     put.run(
-      s.session_id, new Date().toISOString(), cfg.model,
+      s.session_id, new Date().toISOString(), model,
       j.task_type, j.outcome, Number(j.corrections ?? 0),
       j.dispatch_engine ?? null, j.dispatch_result ?? null,
       String(j.summary).slice(0, 200), JSON.stringify(j.learn_candidates ?? []),
@@ -178,6 +149,6 @@ for (const s of pending) {
     console.error(`  ${s.session_id}: ${e}`);
   }
 }
-console.log(`ccobs distill: ${ok} ok, ${failed} failed, model=${cfg.model}`);
+console.log(`ccobs distill: ${ok} ok, ${failed} failed, model=${model}`);
 // 心跳:跑到这一行才算活着(2026-07-22 起 SIGTRAP 死两周无人知的学费);session-replay hook 检查此文件的年龄
 writeFileSync(join(OBS_DIR, "distill.heartbeat"), new Date().toISOString());

@@ -19,14 +19,23 @@ BUN="$(command -v bun)"
 
 mkdir -p "$OBS_DIR" "$HOME/Library/LaunchAgents"
 
-# launchd doesn't inherit shell env — bake the provider keys present at install
-# time into the plist so the nightly distill can reach an LLM. Re-run install.sh
-# after rotating keys.
-ENV_ENTRIES=""
-for k in DEEPSEEK_API_KEY GEMINI_API_KEY OPENROUTER_API_KEY LMSTUDIO_API_KEY; do
-  v="${!k:-}"
-  [ -n "$v" ] && ENV_ENTRIES+="    <key>${k}</key><string>${v}</string>"$'\n'
-done
+# Every model call goes out through pi, and pi reads provider keys from the
+# environment. launchd hands the job an empty env, so the job runs under zsh
+# (below) — zsh sources ~/.zshenv for EVERY invocation, interactive or not,
+# which is where the keys and PATH live. Nothing is baked into the plist.
+LLM_JSON="$OBS_DIR/llm.json"
+if [ ! -f "$LLM_JSON" ]; then
+  echo "ccobs: 警告 — 没有 $LLM_JSON，distill 和 rollup 会跳过。写一份就能跑，值是 pi 的 provider/model[:思考档]："
+  echo '  {"default": "openrouter/openai/gpt-5.6-luna:low", "distill": "deepseek/deepseek-v4-flash", "rollup": "deepseek/deepseek-v4-flash:off"}'
+else
+  # Readiness is per provider and machine-local. Check the default one; a
+  # missing key is worth a warning, not a failed bootstrap.
+  DEFAULT_PROVIDER="$(sed -n 's/.*"default"[^"]*"\([^/]*\)\/.*/\1/p' "$LLM_JSON" | head -1)"
+  if [ -n "$DEFAULT_PROVIDER" ] && command -v pi >/dev/null 2>&1; then
+    pi auth check --provider "$DEFAULT_PROVIDER" --json 2>/dev/null | grep -q '"status":"ready"' \
+      || echo "ccobs: 警告 — pi 里 provider '$DEFAULT_PROVIDER' 没就绪，跑 'pi auth check --provider $DEFAULT_PROVIDER --json' 看详情"
+  fi
+fi
 
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -36,15 +45,12 @@ cat > "$PLIST" <<EOF
   <key>Label</key><string>${LABEL}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
+    <string>/bin/zsh</string>
     <string>-c</string>
     <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"</string>
   </array>
   <key>StartInterval</key><integer>3600</integer>
   <key>RunAtLoad</key><true/>
-  <key>EnvironmentVariables</key>
-  <dict>
-${ENV_ENTRIES}  </dict>
   <key>StandardOutPath</key><string>${OBS_DIR}/ingest.log</string>
   <key>StandardErrorPath</key><string>${OBS_DIR}/ingest.log</string>
 </dict>

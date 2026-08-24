@@ -8,7 +8,8 @@
 // classifies each NEW candidate as "same as existing rule #n" or "new"; the
 // counting, wording and ordering are done here in code.
 //
-// Provider: same resolution as distill.ts (llm.json override, else *_API_KEY env).
+// Model: whatever ${CCOBS_DIR}/llm.json maps the "rollup" scenario to; the call
+// itself goes out through pi (see pi-call.ts). No llm.json → skip quietly.
 //
 // Usage:
 //   bun rollup.ts                 # incremental, all scopes
@@ -20,33 +21,20 @@
 import { Database } from "bun:sqlite";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { GLOBAL_SCOPE as GLOBAL, OBS_DIR, RULES_DIR, digestPath, normalizeScope, parseRuleLine, renderRuleLine, type Rule } from "./rules-digest.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const BAK_DIR = join(RULES_DIR, ".bak");
-const CONFIG = join(OBS_DIR, "llm.json");
 const BATCH = 25; // candidates per model call
 const MAX_BATCHES = 10; // per scope per run; a cold build catches up over several runs (--max-batches to override)
 const EXISTING_CAP = 150; // rules shown to the model; the sunken tail is not worth matching against
 const MIN_COLD_CANDS = 5; // a brand-new scope with fewer signals than this isn't worth a file yet
 const KEEP_BAKS = 5;
 const EPOCH = "1970-01-01T00:00:00.000Z";
-
-const PROVIDERS = [
-  { env: "DEEPSEEK_API_KEY", base_url: "https://api.deepseek.com/v1", model: "deepseek-v4-flash" },
-  { env: "GEMINI_API_KEY", base_url: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-3.1-flash-lite" },
-  { env: "OPENROUTER_API_KEY", base_url: "https://openrouter.ai/api/v1", model: "openrouter/free" },
-  { env: "LMSTUDIO_API_KEY", base_url: "http://localhost:1234/v1", model: "local" },
-];
-
-function resolveCfg(): { base_url: string; model: string; api_key: string } | null {
-  if (existsSync(CONFIG)) return JSON.parse(readFileSync(CONFIG, "utf8"));
-  for (const p of PROVIDERS) {
-    const key = process.env[p.env];
-    if (key) return { base_url: p.base_url, model: p.model, api_key: key };
-  }
-  return null;
-}
+// --system-prompt REPLACES pi's own coding-assistant prompt; pi has no
+// response_format flag, so this is what keeps the answer parseable.
+const JSON_ONLY = "You return one JSON object and nothing else. No prose, no code fences.";
 
 const args = process.argv.slice(2);
 const flag = (n: string) => args.includes(n);
@@ -107,42 +95,28 @@ const MERGE_PROMPT = `你在维护一份规则清单。下面是已有规则（�
 新候选：
 {{NEW}}`;
 
-function extractJson(text: string): any {
-  const s = text.indexOf("{");
-  const e = text.lastIndexOf("}");
-  if (s === -1 || e <= s) throw new Error("no JSON object in response");
-  return JSON.parse(text.slice(s, e + 1));
-}
-
 function letter(i: number): string {
   // A..Z, then AA, AB, ... enough for BATCH=60
   return i < 26 ? String.fromCharCode(65 + i) : String.fromCharCode(65 + Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26));
 }
 
 async function mergeBatch(
-  cfg: { base_url: string; model: string; api_key: string },
+  model: string,
   rules: Rule[],
   batch: { text: string; day: string }[],
 ): Promise<void> {
   const visible = [...rules].sort((a, b) => b.count - a.count || b.last.localeCompare(a.last)).slice(0, EXISTING_CAP);
   const existing = visible.length ? visible.map((r, i) => `${i + 1}. ${r.text}`).join("\n") : "（暂无）";
   const news = batch.map((c, i) => `${letter(i)}. ${c.text}`).join("\n");
-  const res = await fetch(`${cfg.base_url}/chat/completions`, {
-    method: "POST",
-    signal: AbortSignal.timeout(90_000),
-    headers: { "Content-Type": "application/json", ...(cfg.api_key ? { Authorization: `Bearer ${cfg.api_key}` } : {}) },
-    body: JSON.stringify({
-      model: cfg.model,
-      temperature: 0,
-      // 这是分类活,不是推理活。放开思考的话 deepseek-v4-flash 会把预算全烧在
-      // reasoning 上、content 返回空串,请求就那么挂着(实测 90s 不返回)。
-      reasoning_effort: "none",
-      max_tokens: 8000,
-      messages: [{ role: "user", content: MERGE_PROMPT.replace("{{EXISTING}}", existing).replace("{{NEW}}", news) }],
-    }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const j = extractJson((await res.json() as any).choices[0].message.content);
+  // 这是分类活,不是推理活。放开思考的话 deepseek-v4-flash 会把预算全烧在
+  // reasoning 上、content 返回空串,请求就那么挂着(实测 90s 不返回)。所以
+  // llm.json 里这一档要带 ":off" 后缀 —— 档位现在归配置管,不归代码管。
+  const answer = await piCall(
+    MERGE_PROMPT.replace("{{EXISTING}}", existing).replace("{{NEW}}", news),
+    { model, system: JSON_ONLY, timeoutMs: 90_000 },
+  );
+  if (!answer) throw new Error("pi returned nothing");
+  const j = extractJson(answer);
   const entries = (Array.isArray(j.map) ? j.map : [])
     .map((e: any) => ({ e, idx: batch.findIndex((_, i) => letter(i) === String(e.c)) }))
     .filter((x: any) => x.idx !== -1)
@@ -235,9 +209,9 @@ for (const r of rows) {
 const only = opt("--scope");
 const scopes = only ? [only] : [...buckets.keys()];
 
-const cfg = flag("--dry-run") ? null : resolveCfg();
-if (!flag("--dry-run") && !cfg) {
-  console.log("ccobs rollup: 无 llm.json 且四个 *_API_KEY 环境变量均未设置，跳过");
+const model = flag("--dry-run") ? null : resolveModel("rollup");
+if (!flag("--dry-run") && !model) {
+  console.log(`ccobs rollup: ${llmConfigHint()}`);
   process.exit(0);
 }
 mkdirSync(RULES_DIR, { recursive: true });
@@ -264,7 +238,7 @@ for (const scope of scopes) {
   for (let i = 0; i < cands.length && batches < maxBatches; i += BATCH, batches++) {
     const batch = cands.slice(i, i + BATCH);
     try {
-      await mergeBatch(cfg!, rules, batch);
+      await mergeBatch(model!, rules, batch);
     } catch (e) {
       // advance past it anyway: a batch that fails deterministically (truncated
       // JSON, say) would otherwise stall this scope forever

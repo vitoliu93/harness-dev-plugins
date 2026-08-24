@@ -11,7 +11,7 @@
 ```
 用户输入 → Gate 1 (零成本) → 放行? → 原样进 agent
                 ↓ 不放行
-           Gate 2 (llm-call) → pass? → 原样进 agent
+           Gate 2 (pi)       → pass? → 原样进 agent
                 ↓ rewrite
            additionalContext 注入权威 rewrite → agent
 ```
@@ -43,7 +43,7 @@ emoji: 👍, ✅, 👌, 🚀, 💯
 
 #### Gate 2: LLM 判定与改写
 
-调 `skills/llm-call`（deepseek-v4-flash, reasoning_effort=max）做两件事：
+经 `skills/ccobs/scripts/pi-call.ts` 调 pi（模型由 `llm.json` 的 `prompt-forge` 键决定）做两件事：
 
 1. **判定**：输入是否"模糊"——缺文件路径、缺具体动作、依赖指代不明的上下文
 2. **改写**：如果模糊，生成 enriched prompt，包含：
@@ -119,12 +119,12 @@ prompt 自带 `[Image #N]` 的仍在 Gate 1 放行：用户指的是刚贴的那
 
 ### 超时与 fail-open
 
-- llm-call 内部超时：300s（call.ts 的 SDK timeout）
-- Hook 层兜底超时：90s（`spawnSync` timeout，`LLM_CALL_TIMEOUT_MS`）——reasoning_effort=max 单次 4-70s 且长尾明显；90s 不损失台账里任何一次 rewrite，更紧的档（45s/30s）开始丢有效改写
+- 模型无内部超时：pi 没有 `--timeout`，只有下面这一层
+- Hook 层兜底超时：90s（`LLM_TIMEOUT_MS`，pi-call 自己 kill 子进程）——高思考档单次 4-70s 且长尾明显；90s 不损失台账里任何一次 rewrite，更紧的档（45s/30s）开始丢有效改写
 - git 信号每次 1s（`GIT_TIMEOUT_MS`）——信号是 best-effort，慢仓库丢信号不阻塞用户
 - hooks.json 注册 timeout：125s —— 最坏预算：4×1s(git) + ~0.5s(bun 启动) + 90s(LLM) ≈ 94.5s < 125s ✅
-- `max_tokens: 65536`（llm-call 上限）——max 档思维链单次可烧 6K+ tokens，4096 会 `finish_reason=length` 空正文
-- 超时/异常/llm-call exit≠0 → **静默放行**，原 prompt 不变（stdout 无输出）
+- 输出长度不再设上限：pi 没有 `max_tokens` 开关，由模型自身的 max-out 决定
+- 超时/异常/pi 返回空 → **静默放行**，原 prompt 不变（stdout 无输出）
 - Hook 自身 `process.exit(0)` 永远是最后一行——任何异常都被吞掉（stderr 留一行日志）
 
 ### 可观测性：结果台账
@@ -143,12 +143,12 @@ prompt 自带 `[Image #N]` 的仍在 Gate 1 放行：用户指的是刚贴的那
 |---|---|
 | 禁用 | `[prompt-forge] disabled (PROMPT_FORGE=0)` |
 | Gate 1 放行 | `[prompt-forge] gate1 pass: short input (11 ≤ 15)` / `confirmation word` / `image attached` |
-| Gate 2 开始 | `[prompt-forge] gate2: classifying "fix the bug" (11 chars) via llm-call` |
+| Gate 2 开始 | `[prompt-forge] gate2: classifying "fix the bug" (11 chars) via pi` |
 | 上下文装配 | `[prompt-forge] context: pruned transcript 8123 chars, git signals [branch, recent_commits]` |
 | verdict=pass | `[prompt-forge] gate2 verdict=pass in 3.2s → prompt unchanged` |
 | verdict=rewrite | `[prompt-forge] gate2 verdict=rewrite in 4.1s (enriched=312 chars) → injecting additionalContext` |
 | 出处校验作废 | `[prompt-forge] gate2 rewrite cites unsourced paths [src/login.ts] → discarded, prompt unchanged` |
-| LLM 失败/超时 | `[prompt-forge] gate2 llm-call failed in 61.0s → fail-open, prompt unchanged` |
+| LLM 失败/超时 | `[prompt-forge] gate2 pi call failed in 61.0s → fail-open, prompt unchanged` |
 | 任何异常 | `[prompt-forge] fatal: <msg> → fail-open` |
 
 **为什么不用 additionalContext 注入进度**：注入文本会出现在对话上下文中且可能被 agent 复述，污染上下文；且 pass 路径没有注入点。进度是给人的调试信息，不是给模型的指令。
@@ -253,7 +253,7 @@ prompt 自带 `[Image #N]` 的仍在 Gate 1 放行：用户指的是刚贴的那
 |---|---|---|
 | Gate 1 阈值 | ≤15 codepoints | 覆盖绝大多数确认/短指令；中文 15 字可表达完整指令但长度上仍是短输入 |
 | 确认词表语言 | en + zh + emoji | 覆盖中英双语工作环境 |
-| LLM 模型 | deepseek-v4-flash | 与 llm-call 默认一致，成本低，判定任务不需要最强模型 |
+| LLM 模型 | `llm.json` 的 `prompt-forge` 键 | 换模型改配置即可，不改代码；判定任务不需要最强模型 |
 | 超时 | 120s | max 档 reasoning 在长会话 payload 上单次 30-70s，60s 会频繁误杀 |
 | 上下文预算 | 剪枝 transcript ≤500K chars + git 信号 | 留 text/thinking/tool_use（入参截 2K），去 tool_result/图片，尾部截断，适配 flash 1M 窗口 |
 | 脚本语言 | TypeScript (bun) | 用户指定；test_hooks.py 通过 subprocess 调 bun run |

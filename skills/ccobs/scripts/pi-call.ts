@@ -1,10 +1,18 @@
 #!/usr/bin/env bun
-// One hermetic pi headless call, for hooks that need a cheap model on the
-// critical path. Never throws: every failure returns null so the caller can
-// stay silent — a hook must not block the user from talking.
+// The plugin's single model access layer. Every LLM call in this repo goes
+// through here and out to `pi -p` headless; pi owns provider auth, we own
+// nothing but the scenario name.
 //
-// Four failure modes are all treated the same, and an exit code alone catches
-// only the first:
+// Which model serves which scenario lives on the user side, in
+// ${CCOBS_DIR}/llm.json — a flat map, no model string is baked in here:
+//   {"default": "openrouter/openai/gpt-5.6-luna:low",
+//    "distill": "deepseek/deepseek-v4-flash",
+//    "rollup":  "deepseek/deepseek-v4-flash:off"}
+// Thinking effort rides pi's own ":level" suffix (off|minimal|low|…|max).
+//
+// Never throws: every failure returns null so a hook can stay silent. Four
+// failure modes are all treated the same, and an exit code alone catches only
+// the first:
 //   1. non-zero exit
 //   2. the event stream finished with no non-empty text (the FIRST agent_end
 //      can carry an empty content array; the answer is in the last one)
@@ -15,7 +23,9 @@
 // upstream provider inside one model, not the model. A second model would go
 // right here, before returning null.
 
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { join } from "node:path";
 
 const HERMETIC = ["--no-tools", "--no-session", "--no-skills", "--no-extensions", "--no-context-files"];
 
@@ -33,24 +43,82 @@ const FALLBACK_PATH = [
 ].join(":");
 const PI_BIN = process.env.PI_BIN ?? Bun.which("pi") ?? Bun.which("pi", { PATH: FALLBACK_PATH }) ?? "pi";
 
-// ":low" on purpose — this is retrieval, not reasoning. On a 60-row catalog luna
-// low measured 5.7s and returned 3 relevant rows in the exact line format asked
-// for; deepseek-v4-flash:low was 4.4s but found only 2 of the 3. ":none" is not a
-// valid effort here — it fails in half a second.
-//
-// The "openrouter/" prefix is load-bearing: pi reads "openai/gpt-5.6-luna" as the
-// openai provider and dies with "No API key found for openai".
-export const DEFAULT_MODEL = "openrouter/openai/gpt-5.6-luna:low";
+/** Resolved per call, not at import: CCOBS_DIR is what tests move around. */
+export function llmConfigPath(): string {
+  return join(process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability"), "llm.json");
+}
+
+export function llmConfigHint(): string {
+  return (
+    `缺 ${llmConfigPath()}，跳过。写一份就能跑，值是 pi 的 provider/model[:思考档]：\n` +
+    `  {"default": "openrouter/openai/gpt-5.6-luna:low", "distill": "deepseek/deepseek-v4-flash"}`
+  );
+}
+
+/**
+ * Which model serves this scenario. No config file → null, and the caller skips
+ * quietly; that is deliberate. Falling back to a built-in model would mean a
+ * user who never wrote llm.json silently gets billed for a model they did not pick.
+ *
+ * `allowDefault: false` is for scenarios where the wrong model is worse than no
+ * call — sending an image to a text-only model, say. Those need an explicit key.
+ */
+export function resolveModel(scenario: string, allowDefault = true): string | null {
+  const path = llmConfigPath();
+  if (!existsSync(path)) return null;
+  const map = JSON.parse(readFileSync(path, "utf8")) as Record<string, string>;
+  const model = allowDefault ? map[scenario] ?? map.default : map[scenario];
+  return typeof model === "string" && model.trim() ? model.trim() : null;
+}
+
+/**
+ * The JSON object out of whatever the model actually said. pi has no
+ * response_format flag, so every JSON-shaped scenario leans on this plus a
+ * system prompt that says "only JSON". Fenced output survives by accident:
+ * the fence sits outside the outermost braces.
+ */
+export function extractJson(text: string): any {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end <= start) throw new Error("no JSON object in response");
+  return JSON.parse(text.slice(start, end + 1));
+}
 
 export async function piCall(
   prompt: string,
-  { model = DEFAULT_MODEL, timeoutMs = 8000 }: { model?: string; timeoutMs?: number } = {},
+  {
+    scenario = "default",
+    model = resolveModel(scenario) ?? undefined,
+    system,
+    files = [],
+    timeoutMs = 8000,
+  }: { scenario?: string; model?: string; system?: string; files?: string[]; timeoutMs?: number } = {},
 ): Promise<string | null> {
+  if (!model) return null; // no llm.json, or no key for this scenario
+  // ponytail: the prompt rides argv, and ARG_MAX is 1MB on this machine. Over
+  // the line Bun.spawn throws E2BIG, the catch below eats it, and the caller
+  // fails open with nothing in stderr — so refuse loudly instead. Files are
+  // exempt: pi reads an @path itself, the bytes never reach argv. If a real
+  // caller ever needs a prompt this big, write it to a file and pass it in files.
+  const bytes = Buffer.byteLength(prompt);
+  if (bytes > 900_000) {
+    console.error(`[pi-call] prompt ${bytes} bytes exceeds the argv cap, skipping`);
+    return null;
+  }
   let killer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const proc = Bun.spawn([PI_BIN, "-p", "--mode", "json", "--model", model, ...HERMETIC, prompt], {
+    const argv = [PI_BIN, "-p", "--mode", "json", "--model", model, ...HERMETIC];
+    // Replaces pi's own ~400-token coding-assistant prompt rather than appending
+    // to it, which is what lets a "only JSON, no prose" instruction go uncontested.
+    if (system) argv.push("--system-prompt", system);
+    // pi inlines an @file into the message body as <file name="…">…</file>, so
+    // big payloads never touch argv (ARG_MAX is 1MB) and images arrive as pixels.
+    for (const f of files) argv.push(`@${f}`);
+    argv.push(prompt);
+
+    const proc = Bun.spawn(argv, {
       stdout: "pipe",
-      stderr: "ignore",
+      stderr: "inherit", // pi's own errors (429, auth, bad model) are the only diagnostic we get
       stdin: "ignore",
       env: { ...process.env, PATH: `${process.env.PATH ?? ""}:${FALLBACK_PATH}` },
     });
@@ -84,9 +152,10 @@ export async function piCall(
 
 if (import.meta.main) {
   const t0 = Date.now();
+  const scenario = process.argv[3] ?? "default";
   const answer = await piCall(process.argv[2] ?? "只回复 PONG", {
-    model: process.argv[3] ?? DEFAULT_MODEL,
+    scenario,
     timeoutMs: Number(process.argv[4] ?? 8000),
   });
-  console.log(`[${Date.now() - t0}ms] ${answer ?? "(null)"}`);
+  console.log(`[${Date.now() - t0}ms] [${scenario}=${resolveModel(scenario) ?? "未配置"}] ${answer ?? "(null)"}`);
 }

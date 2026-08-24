@@ -34,19 +34,17 @@ ATLAS_SKILL_DIR="<absolute path of the directory containing the loaded skill-atl
 SKILLS_ROOT="$ATLAS_SKILL_DIR/..";
 ATLAS=${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas};
 STYLE_REVIEW="$SKILLS_ROOT/skill-style-review";
-LLM_CALL="$SKILLS_ROOT/llm-call";
-bun add -g openai@7
-LLM_CALL_DIR="$LLM_CALL" bun "$STYLE_REVIEW/scripts/review.ts" \
+bun "$STYLE_REVIEW/scripts/review.ts" \
   --workspace-root "$SKILLS_ROOT" \
   --output $ATLAS/atlas/semantic_style_issues.json \
   --fail-on-issues
 ```
 
 Gate: zero origin-story, incident-lore, tuition-narrative,
-marketing-language, meaning-level prose-wall, or gate-loss findings. Missing
-`DEEPSEEK_API_KEY` means the audit is incomplete, not clean. The reviewer calls the `llm-call` atom at maximum reasoning effort, then
-adjudicates candidates; the commit hook remains deterministic and does not make
-remote API calls.
+marketing-language, meaning-level prose-wall, or gate-loss findings. A missing
+`skill-style-review` key in `llm.json` means the audit is incomplete, not clean.
+The reviewer calls the shared `pi-call` layer, then adjudicates candidates; the
+commit hook remains deterministic and does not make remote API calls.
 
 ## 3. Route overlap
 

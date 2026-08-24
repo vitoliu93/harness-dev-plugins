@@ -49,8 +49,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
 | no-ai-slop | Human-voice editing, AI-slop detection, CEO-style task reports. |
 | skill-atlas | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
-| llm-call | Call DeepSeek through Bun and the global OpenAI SDK at maximum reasoning effort. |
-| skill-style-review | Review skill prose through llm-call for narrative, marketing language, prose walls, and gate loss. |
+| skill-style-review | Review skill prose for narrative, marketing language, prose walls, and gate loss. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | recall | Retrieve up to five past-session clues from ccobs. |
 | orchestrate | Route coding delegation with spec, acceptance, and parallel gates. |

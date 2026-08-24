@@ -1,4 +1,4 @@
-# ccobs 蒸馏 prompt v1（跑在便宜模型上：deepseek-flash / openrouter 免费档 / lmstudio gemma）
+# ccobs 蒸馏 prompt v1（跑在便宜模型上，具体哪个由 ${CCOBS_DIR}/llm.json 决定）
 
 每次输入一个 session 的压缩视图（用户消息全文 + 助手文本回复 + 工具调用名单，不含工具输出），
 输出一行严格 JSON，写入 observations 表。效果验收：抽 10 个 session 人工核对，不合格换模型或改本 prompt。

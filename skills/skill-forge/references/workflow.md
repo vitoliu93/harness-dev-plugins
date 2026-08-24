@@ -26,8 +26,7 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 - user/hook only: keep the description narrow; use `agents/openai.yaml` when Codex must block implicit invocation; no evals
 - Apply [style-contract.md](style-contract.md): routing interface, present-tense runtime docs, portable paths, gate-preserving progressive disclosure, fictional public examples
 - Run `bun "$FORGE/skill_style.ts" --workspace-root "$SKILLS_ROOT" --fail-on-issues`
-- Run `bun add -g openai@7`
-- Run `LLM_CALL_DIR="$SKILLS_ROOT/llm-call" bun "$SKILLS_ROOT/skill-style-review/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues`
+- Run `bun "$SKILLS_ROOT/skill-style-review/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues`
 
 ## 3. Trigger-first (model-invoked)
 
@@ -64,4 +63,4 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 Stdlib-only; fix in place.
 
 Semantic style review is owned by the independent `skill-style-review` skill.
-It calls the `llm-call` atom; do not dispatch a vendor.
+It calls the shared `pi-call` layer; do not dispatch a vendor.

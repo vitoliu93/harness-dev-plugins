@@ -69,15 +69,12 @@ When runtime must retain a flagged literal, add a same-line, reasoned exception:
 
 Use the narrow issue code; do not add file-wide exemptions.
 
-Then run `skill-style-review` directly through Bun and the DeepSeek
-OpenAI-compatible API:
+Then run `skill-style-review` directly through Bun; the model call goes out
+through `pi`:
 
 ```bash
 STYLE_REVIEW=$PLUGIN/skills/skill-style-review
-LLM_CALL=$PLUGIN/skills/llm-call
-bun add -g openai@7
-LLM_CALL_DIR=$LLM_CALL bun $STYLE_REVIEW/scripts/review.ts \
-  --skill-dir <skill-dir> --fail-on-issues
+bun $STYLE_REVIEW/scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
 ```
 
 The semantic review blocks origin stories, incident lore, tuition narratives,
