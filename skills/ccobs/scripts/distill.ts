@@ -15,7 +15,7 @@
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
+import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
@@ -77,6 +77,17 @@ function buildDigest(filePath: string): string {
   return full.slice(0, DIGEST_CAP * 0.6) + "\n...[中段截断]...\n" + full.slice(-DIGEST_CAP * 0.4);
 }
 
+// 摘要是删过的:工具输出全没了,超过 DIGEST_CAP 还会砍掉中段。判不准的时候
+// 让模型自己去翻原始文件,比逼它在 unknown 上瞎猜强。
+function digestWithSource(filePath: string): string {
+  return [
+    buildDigest(filePath),
+    "",
+    `（以上是删减过的摘要:不含工具输出,过长时中段已截断。原始记录在 ${filePath}，`,
+    "JSONL 格式一行一条。摘要不够判断某个字段时，用文件工具自己去查那一段；够了就别读。）",
+  ].join("\n");
+}
+
 // Big files never get inlined — pi's @path would blow the context window — so the
 // digest slot carries directions instead of content. This does mean pi sees the raw
 // JSONL, tool outputs included, where buildDigest would have stripped them.
@@ -102,7 +113,14 @@ const pending = db
        AND (?1 IS NOT NULL AND s.session_id = ?1
             OR ?1 IS NULL AND o.session_id IS NULL
                AND s.ended_at < strftime('%Y-%m-%dT%H:%M:%S', 'now', '-30 minutes')
-               AND (SELECT COUNT(*) FROM turns t WHERE t.session_id = s.session_id) >= 3)
+               AND (SELECT COUNT(*) FROM turns t WHERE t.session_id = s.session_id) >= 3
+               -- 输出 token 比轮数能说明这次会话有没有干活;轮数分不出来(3 轮和 4 轮的
+               -- 空规则率是 93% 对 96%)。实测 2592 条已蒸馏会话,产出候选共 1373 条:
+               -- <500 token 的会话有 671 条(26%),只贡献 44 条候选(3.2%);2K 以上贡献 1244 条。
+               -- 代价是明确的:那 671 条里确实有出过候选的,这道门会连它们一起挡掉,而且不留
+               -- 墓碑 —— 想要哪一条,用 --session 手动重跑,上面那条分支不受这里限制。
+               -- claude-code 这个源的 output_tokens 无空值(122586/122586),门槛不会误伤没记账的。
+               AND (SELECT COALESCE(SUM(t.output_tokens), 0) FROM turns t WHERE t.session_id = s.session_id) >= 500)
      ORDER BY s.ended_at DESC LIMIT ?2`,
   )
   .all(sessionFilter, flag("--dry-run") ? 20 : Number(opt("--limit") ?? 50)) as
@@ -160,10 +178,10 @@ for (const s of pending) {
   if (big) bigged++;
   try {
     const answer = await piCall(
-      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : buildDigest(s.file_path)),
-      // Tools only on the big branch, and a longer clock: pi has to page through
-      // the file itself, which costs several round trips instead of one.
-      { model, system: JSON_ONLY, tools: big, timeoutMs: big ? 900_000 : 300_000 },
+      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : digestWithSource(s.file_path)),
+      // 两条分支都开工具:大文件是没别的办法,小文件是让它能补摘要删掉的那部分。
+      // 大文件给更长的钟,它得整个文件自己翻一遍,来回好几趟。
+      { model, system: JSON_ONLY, tools: READ_ONLY_TOOLS, timeoutMs: big ? 900_000 : 300_000 },
     );
     if (!answer) throw new Error("pi returned nothing");
     const j = extractJson(answer);

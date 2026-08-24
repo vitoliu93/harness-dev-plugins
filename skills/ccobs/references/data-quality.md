@@ -9,6 +9,8 @@
 - Duplicate claude main sessions: dedupe by `(project, started_at)` before counting.
 - Synthetic warmup sessions (identical first prompt, <20s, zero tool_calls): filter before recall/stats.
 - `turns.stop_reason` NULL on old rows until DB rebuild.
+- `observations` 不覆盖全部会话：distill 只收 `turns >= 3` 且输出 token `>= 500` 的 claude-code main 会话。按 observations 算占比会偏高，分母要从 `sessions` 取。
+- `distill_model = 'skipped:no-raw-file'` 是墓碑行，summary 为空、learn_candidates 为 `[]`，统计时排掉。
 
 ## Add a source
 

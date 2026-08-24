@@ -55,19 +55,20 @@ test("resolveModel: no llm.json means null, never a built-in model", () => {
 
 test("piCall: tools stay off unless the caller asks", async () => {
   // The hermetic flags are what keep a cron-run model from touching the box.
-  // Only distill's big-file branch opts out, so a regression here is silent
-  // privilege creep — assert on the argv pi would actually get.
+  // 只有 distill 会开,而且只开只读那四个。这里退化了是悄悄的提权,
+  // 所以断言直接打在 pi 真正收到的 argv 上。
   const seen: string[][] = [];
   const realSpawn = Bun.spawn;
   // @ts-expect-error test double
   Bun.spawn = (argv: string[]) => { seen.push(argv); throw new Error("no launch"); };
   try {
     await piCall("hi", { model: "prov/m" });
-    await piCall("hi", { model: "prov/m", tools: true });
+    await piCall("hi", { model: "prov/m", tools: ["read", "grep"] });
   } finally { Bun.spawn = realSpawn; }
   expect(seen).toHaveLength(2);
   expect(seen[0]).toContain("--no-tools");
   expect(seen[1]).not.toContain("--no-tools");
+  expect(seen[1][seen[1].indexOf("--tools") + 1]).toBe("read,grep");
   // the rest of the seal holds either way
   for (const argv of seen) expect(argv).toContain("--no-context-files");
 });

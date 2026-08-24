@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.45.0"
+    "version": "2.46.0"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
       "description": "Cross-client agent toolkit with 21 shared skills, 3 Claude Code subagents, pi as the single model access layer, and skill quality guards.",
-      "version": "2.45.0",
+      "version": "2.46.0",
       "author": {
         "name": "vito"
       }
