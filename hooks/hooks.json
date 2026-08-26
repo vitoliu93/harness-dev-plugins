@@ -80,15 +80,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/standby-watchdog.ts\"",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/skills/ccobs/scripts/obs-enqueue.ts\"",
             "timeout": 5
           }
@@ -133,6 +124,20 @@
             "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/recall-precedent.ts\"",
             "statusMessage": "recall: 查本项目相关先例…",
             "timeout": 20
+          }
+        ]
+      }
+    ]
+  },
+  "_disabled": {
+    "_note": "standby-watchdog (Stop) 移出生效配置，观察期 2026-08-26 ~ 2026-09-09：期间无后台任务悬空误漏则保持移除，出现则恢复到 hooks.Stop 里。",
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PLUGIN_DIR=\"${PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}\"; bun \"$PLUGIN_DIR/hooks/scripts/standby-watchdog.ts\"",
+            "timeout": 10
           }
         ]
       }
