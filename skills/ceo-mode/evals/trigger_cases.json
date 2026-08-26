@@ -1,0 +1,24 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": ["不用 agent", "agent 配置在哪"],
+  "should_trigger": [
+    {"text": "你是 CEO，这件事全权自主", "family": "mandate"},
+    {"text": "我是董事长，你自己拿主意", "family": "mandate"},
+    {"text": "you are the CEO here, run it end to end", "family": "mandate_en"},
+    {"text": "你只负责调度，不要亲自干", "family": "hands_off"},
+    {"text": "别自己写代码，全部交给 agent", "family": "hands_off"},
+    {"text": "delegate everything and don't do it yourself", "family": "hands_off_en"},
+    {"text": "只做分配和汇报，只给我结论", "family": "report_up"},
+    {"text": "别报过程，汇报结果就行", "family": "report_up"}
+  ],
+  "should_not_trigger": [
+    {"text": "你自己改这个函数", "family": "inline"},
+    {"text": "不用 agent，直接实现", "family": "inline"}
+  ],
+  "near_neighbor": [
+    {"text": "编排 advisor programmer audit 三个角色", "family": "orchestrate"},
+    {"text": "把三个模块并行开发，别互相撞车", "family": "orchestrate_parallel"},
+    {"text": "agent 配置在哪里", "family": "use_agents"},
+    {"text": "quota reset 保存到哪个文件", "family": "use_agents_quota"}
+  ]
+}

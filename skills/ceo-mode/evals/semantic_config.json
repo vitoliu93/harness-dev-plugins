@@ -1,0 +1,34 @@
+{
+  "positive_concepts": {
+    "mandate": {
+      "weight": 0.65,
+      "phrases": ["你是 CEO", "我是董事长", "you are the CEO", "全权自主", "全权负责", "你自己拿主意", "act as the CEO", "老板模式"]
+    },
+    "hands_off": {
+      "phrases": ["不要亲自干", "你只负责调度", "别自己写代码", "don't do it yourself", "delegate everything", "全部交给 agent", "只做分配和汇报"],
+      "weight": 0.65
+    },
+    "report_up": {
+      "weight": 0.6,
+      "phrases": ["只给我结论", "汇报结果就行", "别报过程", "report only the outcome", "不要问我执行细节"]
+    }
+  },
+  "negative_concepts": {
+    "role_design": {
+      "weight": 0.7,
+      "exclusive": true,
+      "phrases": ["编排 advisor programmer audit", "角色卡怎么写", "任务拆分顺序", "fan out this work", "并行开发别撞车"]
+    },
+    "transport": {
+      "weight": 0.7,
+      "exclusive": true,
+      "phrases": ["agent 配置在哪", "模型渠道", "cursor-agent 命令", "quota reset 保存"]
+    },
+    "inline": {
+      "weight": 0.4,
+      "exclusive": true,
+      "phrases": ["你自己改这个函数", "不用 agent"]
+    }
+  },
+  "fallback_positive_concepts": ["mandate", "hands_off", "report_up"]
+}

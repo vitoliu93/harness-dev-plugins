@@ -28,6 +28,7 @@
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | doc-claim-verify | sop | "核验/实证文档声明·文档还准不准" · cto-audit/debrief 文档取证 | ③ |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
+| ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
 
 新增/改名原子 → 本表补一行。填不出 call site → 别 ship 或显式豁免低频按需。
 
@@ -38,6 +39,7 @@
 - **recall** — 仅触发词;观察"以前查过吗"是否长成肌肉记忆
 - **use-html 原型模式** — 非 S 的 UI 任务走完计划却没有 prototype.html → 闸门位置错
 - **cto-audit** — debrief 提醒是否真触发
+- **ceo-mode** — 仅触发词;观察全权授权后是否真的零自己动手、汇报是否稳定收敛到三段
 - **doc-claim-verify** — 仅触发词;观察 cto-audit / debrief 是否该固定接一段文档取证
 - **resume-learning vs take-over/advanced-plan** — 裸"继续"争路由;收紧到"读档"
 
