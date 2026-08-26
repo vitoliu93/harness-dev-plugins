@@ -18,3 +18,10 @@ Each line: condition → required action → observable evidence.
   names the file and the required state.
 - Curiosity pulls you into reading source or drafting a document → route it to a
   researcher or a programmer → your own edits stay at zero.
+- A turn is about to end mid-task → do not send a progress one-liner, commit
+  hash, or agent name → the chairman only receives a three-part conclusion
+  when the task is actually done, nothing in between.
+- A resumed operator agent gets woken again for the next write batch → it
+  rereads its entire history each time and token cost balloons on long
+  sessions → batch related operations into one delegation, or start a fresh
+  agent once resume count passes 3.
