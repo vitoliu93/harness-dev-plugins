@@ -1,7 +1,7 @@
 ---
 name: debrief
 description: >-
-  Archive plan artifacts, distill this session into ccobs, correct a rule that proved wrong, surface skill candidates.
+  Archive plan artifacts, distill this session into ccobs, correct a rule that proved wrong, then improve, merge, or retire existing skills before registering any new candidate.
   Use when a task/issue wraps up, after merge/deploy, or the user says 收盘/复盘/debrief.
 argument-hint: "[optional: task slug or一句话说明收的是哪个盘]"
 metadata:
@@ -28,7 +28,7 @@ orchestration/tooling optimizations.
 
 1. **Archive** plan dir → `_archive/` ([moves.md](references/moves.md) §1)
 2. **Sediment** 立刻蒸馏本会话 + 至多纠正一条被打脸的规则 ([moves.md](references/moves.md) §2)
-3. **Promote** skill candidates + harness drift + cto-audit signal ([moves.md](references/moves.md) §3)
+3. **Promote** improve / merge / retire existing skills first, new candidate last + harness drift + cto-audit signal ([moves.md](references/moves.md) §3)
 
 ## Output
 
@@ -36,5 +36,5 @@ orchestration/tooling optimizations.
 收盘 · <slug>
 归档: <path | skipped>
 沉淀: <蒸馏 ok | failed> · <改了哪条规则 | 无需纠正>
-技能: <candidate/drift | no deltas>
+技能: <优化 X | 合并 X+Y | 拟移除 Z | 新候选 | no deltas>
 ```

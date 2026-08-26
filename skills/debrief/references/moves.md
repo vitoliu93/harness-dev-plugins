@@ -52,19 +52,49 @@ bun "$CCOBS_SKILL_DIR/scripts/rollup.ts"
 
 ## Move 3 — Promote
 
-### 1. Recurrence
+The skill library is maintained, not only grown. After reviewing the session, walk
+(a)→(d) in order and stop at the first that holds.
 
-Track in `${CCOBS_DIR:-$HOME/.claude/observability}/SKILL-CANDIDATES.md`. Same-session repeats ≥2 count strongly.
-Cross-check ccobs `sop_candidate` when available:
+### (a) Improve an existing skill
+
+Test: the pattern falls inside some existing skill's `description` trigger range →
+edit that skill, register nothing.
+
+### (b) Merge skills or candidates
+
+Test: two skills (or a skill and a candidate) share half or more of their trigger
+words or steps → merge them into one.
+
+### (c) Propose removal
+
+Test: no ccobs usage in the last 30 days, or another skill covers it completely →
+propose removal; only act after the user agrees.
+
+```bash
+sqlite3 ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
+  "SELECT COUNT(*) c, MAX(ts) last_used FROM tool_calls
+   WHERE tool IN ('Skill','SlashCommand') AND skill LIKE '%<skill-name>'
+     AND ts >= datetime('now','-30 days')"
+```
+
+`skill` is stored namespaced (`dev-kit:debrief`), so match with `LIKE '%<name>'`.
+`c=0` → removal candidate.
+
+### (d) Register a new candidate
+
+Only when (a)(b)(c) all fail. Track in
+`${CCOBS_DIR:-$HOME/.claude/observability}/SKILL-CANDIDATES.md`.
+Same-session repeats ≥2 count strongly. Cross-check ccobs `sop_candidate` when available:
 
 ```bash
 sqlite3 ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
   "SELECT sop_candidate, COUNT(*) c FROM observations WHERE sop_candidate IS NOT NULL GROUP BY sop_candidate HAVING c>=2"
 ```
 
-At **seen ≥ 3** → propose `skill-forge` (ask user). Apply near-neighbor + boundary tests before proposing.
+A candidate at **seen ≥ 3** → run (a) and (b) against it once more; still nothing →
+propose `skill-forge` (ask user). Apply near-neighbor + boundary tests before proposing.
 
-### 2. Harness drift
+### Harness drift
 
 Fix stale paths, wrong assumptions, missing hooks/templates in the harness repo when fresh.
 For agent routes, inspect `${CCOBS_DIR:-$HOME/.claude/observability}/agents/quota.json` for stale reset records.
@@ -72,7 +102,7 @@ For agent routes, inspect `${CCOBS_DIR:-$HOME/.claude/observability}/agents/quot
 For compaction: read `${CCOBS_DIR:-$HOME/.claude/observability}/compaction.jsonl` for this session.
 Repeated `dropped` anchors (参考真源, prototype.html, done criteria) → fix plan-anchor / goal.md anchors, not longer summaries.
 
-### 3. Audit signal
+### Audit signal
 
 Append「建议召集 cto-audit:<原因>」when either hits:
 - Same structural theme ≥3× in LEARNED.md / SKILL-CANDIDATES.md

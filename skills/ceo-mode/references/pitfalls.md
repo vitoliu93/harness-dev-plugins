@@ -21,6 +21,10 @@ Each line: condition → required action → observable evidence.
 - A turn is about to end mid-task → do not send a progress one-liner, commit
   hash, or agent name → the chairman only receives a three-part conclusion
   when the task is actually done, nothing in between.
+- One Bash call mixes task-card content with a publish/install/commit instruction →
+  the auto-mode classifier denies the whole call → write the card with Write, keep
+  each sensitive step in its own call, and run the blocked action yourself or ask
+  the user to confirm it.
 - A resumed operator agent gets woken again for the next write batch → it
   rereads its entire history each time and token cost balloons on long
   sessions → batch related operations into one delegation, or start a fresh
