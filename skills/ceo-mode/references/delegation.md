@@ -18,20 +18,20 @@ write lists before launch.
 
 ## Order of the run
 
-1. Load `orchestrate` for the task graph, `use-agents` for routes and launch commands.
-2. Send the researcher first; decide the approach from what it returns.
-3. Open the work item and record its issue id before any programmer starts.
-4. Write each task card to a file, then launch the agent pointing at that file.
-5. Watch for each result file through a background sentinel.
-6. Send the programmer output plus the original goal to an independent audit.
-7. On PASS, have the programmer repair anything the audit flagged, commit with
-   the issue id, and push.
-8. Have the operator open the change request and close the work item.
-9. Delete the temporary branch, refresh the local install, and close only the
-   tabs this run created.
+`orchestrate`'s [lifecycle](../../orchestrate/references/lifecycle.md) owns tab
+creation, handoffs, and closing. These constraints are yours:
 
-When a merge is refused by a remote gate, merge locally and push. Do not return
-the question to the user.
+- Send the researcher first; decide the approach from what it returns.
+- Open the work item and record its issue id before any programmer starts.
+- Write each task card to a file, then launch the agent pointing at that file.
+- Watch for each result file through a background sentinel.
+- Send the programmer output plus the original goal to an independent audit.
+- On PASS, have the programmer repair what the audit flagged, commit with the
+  issue id, and push; then have the operator open the change request and close
+  the work item.
+
+When a remote gate refuses a merge, merge locally and push. Do not return the
+question to the user.
 
 ## Task card for a vendor agent
 
