@@ -24,9 +24,36 @@ Start the selected kind in the returned pane:
 ```bash
 herdr agent start <name> --kind <kind> --pane <pane-id> -- <native-agent-args>
 herdr agent prompt <name> '<prompt>'
+herdr agent send-keys <name> Enter
 ```
 
+`<native-agent-args>` are flags only (`--model x --trust`). Herdr prepends the
+binary itself; writing `-- cursor-agent --model x` makes the extra word the
+agent's first prompt and it answers that instead of your task.
+
+`agent prompt` types into the input box but does not submit; the `send-keys
+Enter` line is required. `agent start` may report a startup timeout while the
+process is already up: read the pane, and if the agent is there, send the
+prompt with `herdr pane send-text <pane-id> '<prompt>'` + `herdr pane send-keys
+<pane-id> Enter`.
+
 Return `{agent_name, tab_id, pane_id, route_id}` to the caller.
+
+Launch is three steps; skip one and the agent is not launched:
+
+1. `agent start`, then `pane read` — trust the screen, not the start exit code.
+2. `agent prompt` + `send-keys Enter`, then `pane read` again: it must be
+   reading the task card, not sitting at `→ <your prompt>`.
+3. Only now attach the sentinel and tell the user it is running.
+
+Claude kind: start with `--permission-mode auto` so it never stops at a
+`Do you want to proceed?` box (user decision 2026-08-27).
+
+Sentinel: always `run_in_background`; a foreground poll blocks the user's next
+message. It must recognise three stuck states besides "no result file":
+prompt left unsubmitted in the input box, a permission box, and
+`agent_status: blocked`. Text sent through `pane send-text` is shell-parsed
+again — quote lines containing `=`.
 
 ## Inspect and take over
 
