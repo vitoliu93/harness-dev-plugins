@@ -19,8 +19,9 @@ cursor-agent -p '<prompt>' --output-format stream-json \
   --model <model> --trust
 ```
 
-Add `--force` only when edits are allowed. Use `--mode plan` or `--mode ask`
-for read-only work.
+Add `--force` only when edits are allowed. Do not pass `--mode`; the default
+mode is the only one that does not stop at a confirmation prompt. Read-only roles
+are bounded by the role card, not by a mode flag.
 
 ## Warnings
 

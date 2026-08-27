@@ -29,3 +29,16 @@ Each line: condition → required action → observable evidence.
   rereads its entire history each time and token cost balloons on long
   sessions → batch related operations into one delegation, or start a fresh
   agent once resume count passes 3.
+- The first message to a freshly spawned agent is a fragment, such as a bare
+  "read the Gitee issue" with no id → the agent answers with a capability menu
+  and does no work → every first prompt carries the full task: what to read, what
+  to produce, where to write it. Never split the brief across two sends.
+- An agent is launched with a non-default mode such as `--mode plan` → it stops
+  at a confirmation prompt and the result file never appears → launch with the
+  carrier's default mode, no `--mode`. The sentinel watches two things: the
+  result file's DONE marker, and the screen tail from `herdr agent read <name>
+  --lines 8` for a bare prompt, "Interrupted", or a yes/no question. A Claude
+  Code pane always shows an empty `❯` input box, so a bare prompt counts as idle
+  only when the tail has no "Generating", "Thinking", or "esc to interrupt". Tail
+  idle with no result → re-prompt the agent with "continue, write the result file";
+  still idle after one re-prompt → treat whatever it saved as the deliverable.

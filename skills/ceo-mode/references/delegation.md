@@ -9,12 +9,16 @@ receives.
 | Role | Agent class | Non-negotiable |
 |---|---|---|
 | researcher | code-search or repo-reading subagent | Returns paths and quoted facts; changes nothing |
-| programmer | vendor CLI with a full harness, one tab and one task-card file per instance | Stops before `commit`; writes a result file |
+| programmer | vendor CLI, one tab and one task-card file per instance | Stops before `commit`; writes a result file |
 | audit | strong read-only model, separate context | Reruns the checks itself; a self-report is not evidence |
 | operator | agent that owns the external system (issue tracker, code host) | Touches only that system |
 
 Split one role into instances when write paths would collide. Intersect the
 write lists before launch.
+
+Pick an agent by the user's preference list and the task type: development work
+goes to grok-4.6, review and audit go to opus5 high. If the first pick fails,
+take the next name on the list.
 
 ## Order of the run
 
