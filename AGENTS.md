@@ -48,6 +48,7 @@ uv run --with pyyaml python "$HOME/.codex/skills/.system/plugin-creator/scripts/
 
 ## 发布
 
+- 代码改完、`## 检查` 里的命令全部通过后，直接 commit 并 push 到 origin/main，不用等用户再单独说一次。
 - 每次发布都把 `.claude-plugin/plugin.json`、`.claude-plugin/marketplace.json` 和 `.codex-plugin/plugin.json` 改成同一版本，再提交和推送。否则客户端可能无法发现更新。
 - `skills/` 只通过插件分发，不要在 `~/.agents/skills` 创建软链接。
 - `vito-agents` marketplace 只托管 `dev-kit`。`study-kit` 已在 2026-07-28 合入本仓库，不需要跨仓库同步。
