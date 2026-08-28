@@ -37,6 +37,22 @@ sheet:
 Agent definition locations: [agent-definitions.md](references/agent-definitions.md).
 Quota state: [quota.md](references/quota.md).
 
+## Wait for the result
+
+Wait through the official status: `herdr agent prompt --wait` or `herdr agent
+wait`, always with `--timeout`. `--wait` does not track turns, and `unknown` is
+not a finished run. On `blocked`, read `herdr agent get` / `herdr agent read`
+before deciding what to send next.
+
+Agree on a result file at launch: the agent writes its conclusion to a markdown
+file in a temp dir and replies with the path only. Read the file, not the screen
+(a full-screen agent's alternate screen never shows the whole answer).
+
+Herdr has no push notification. `notification` is a local popup; `integration`
+is the agent reporting to Herdr. To be woken up, run your own background watch
+over the result file, the status, and a timeout floor - and make it actually
+wake the main task.
+
 ## Boundary
 
 Do not split work, invent roles, choose task order, judge completion, or close a
