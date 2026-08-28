@@ -14,14 +14,6 @@ input=$(cat)
 # Subagent context — allow everything
 [ -n "$(jq -r '.agent_id // empty' <<<"$input")" ] && exit 0
 
-# On a custom provider nothing is cheaper to delegate to — the whole session
-# already runs a coding-plan model, so the isolation is not worth the spawn.
-# Guard only genuine Anthropic sessions; elsewhere let the skill run inline.
-case "${ANTHROPIC_BASE_URL:-}" in
-  ""|*anthropic.com*) ;;
-  *) exit 0 ;;
-esac
-
 tool_name=$(jq -r '.tool_name // empty' <<<"$input")
 
 # Delegation table — the single source of truth. To delegate a new noisy skill,
