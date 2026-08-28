@@ -3,12 +3,15 @@
 ## Preflight
 
 ```bash
-test "${HERDR_ENV:-}" = 1
-herdr agent
+command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
+herdr status server | grep '^status: running$' >/dev/null || {
+  echo 'Herdr is not running or unreachable' >&2; exit 1;
+}
 ```
 
-Stop when the environment check fails. Use the carrier's headless command
-instead.
+`HERDR_ENV=1` means the caller is already inside Herdr; it is not required.
+Outside Herdr, connect to the running local Herdr. Stop with the command error
+when Herdr is missing or unreachable; do not switch transports.
 
 ## One agent, one tab
 
@@ -17,7 +20,8 @@ herdr tab create --cwd "$PWD" --label '<label>' --no-focus
 ```
 
 Read `.result.tab.tab_id` and `.result.root_pane.pane_id` from the JSON. Do not
-guess IDs.
+guess IDs. Operate only this returned tab and pane; do not inspect, focus, or
+change existing tabs.
 
 Start the selected kind in the returned pane:
 

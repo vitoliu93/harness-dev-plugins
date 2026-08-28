@@ -21,11 +21,14 @@ shape and route order are in [agent-config.md](references/agent-config.md).
 
 ## Start through Herdr
 
-When `HERDR_ENV=1`, use Herdr by default. Give the agent its own tab so the user
-can inspect and take over its context. Follow [herdr.md](references/herdr.md)
-and return the agent name plus tab ID. Leave the tab open for the caller.
+Use Herdr by default, including when the caller is outside Herdr. Give the agent
+its own new tab so the user can inspect and take over its context. Follow
+[herdr.md](references/herdr.md) and return the agent name plus tab ID. Leave the
+tab open for the caller. If Herdr is unavailable, stop with the error; do not
+silently switch transports.
 
-Outside Herdr, use the selected carrier sheet:
+Only when the user chooses a non-Herdr transport, use the selected carrier
+sheet:
 
 - [Claude Code](references/claude-code.md)
 - [pi](references/pi.md)
