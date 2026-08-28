@@ -34,5 +34,5 @@ Requires GEMINI_API_KEY; optional GEMINI_BASE_URL.
 
 See workflow.md in references/.
 
-Run in general-skills-executor. For cross-skill calls, set `MEDIA_SKILL_DIR` to
+Run in a separate agent, not the main context. For cross-skill calls, set `MEDIA_SKILL_DIR` to
 the absolute directory containing the loaded `media-understanding/SKILL.md`.
