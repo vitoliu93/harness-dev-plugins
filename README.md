@@ -1,9 +1,8 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 20 shared skills live under `skills/`; Claude
-Code also loads 3 subagents under `agents/`; both hosts can discover hooks under
-`hooks/`. Retired skills live under `archive/`.
+repo root is the plugin root — 20 shared skills live under `skills/`; both hosts
+can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
 **Design principle (v2.0)**: project-agnostic atoms for the *agent* (`metadata.kind`:
@@ -69,16 +68,10 @@ Moved out (v2.0): `ship` → `kox-agent-plugins`.
 
 ## Subagents
 
-| Agent | Model | Role |
-|---|---|---|
-| general-skills-executor | sonnet (opus if complex) | Noisy delegated skills (`exa-code`, `use-html`, `lark-*`) — distilled result only. |
-| code-search | sonnet | Token-efficient codebase explorer. |
-| investigator | sonnet (opus for hard incidents) | Debug agent — root cause + evidence chain per incident. |
-
-Skills not delegated: live-session work (take-over), interactive audits (context-audit),
-methodologies the host must drive (advanced-plan).
-
-Nested subagent spawning requires Claude Code ≥ 2.1.172.
+No subagents ship since v2.49.0. The former three (`general-skills-executor`,
+`code-search`, `investigator`) are kept under `archive/agents/` and can be
+restored by moving a file back to `agents/`. Delegation now goes through the
+`use-agents` skill (external CLI agents or the host's built-in agents).
 
 ## Hooks
 
@@ -94,9 +87,8 @@ Restart after hook edits.
 .claude-plugin/   # plugin.json + marketplace.json
 .codex-plugin/    # Codex plugin.json
 skills/           # 20 active skills
-agents/           # 3 Claude Code subagents
 hooks/            # shared hook registration + scripts
-archive/          # retired skills (not auto-discovered)
+archive/          # retired skills + subagents (not auto-discovered)
 ```
 
 ## Portability

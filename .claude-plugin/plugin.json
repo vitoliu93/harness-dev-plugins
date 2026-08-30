@@ -1,7 +1,7 @@
 {
   "name": "dev-kit",
-  "version": "2.48.9",
-  "description": "Cross-client agent toolkit with 20 shared skills, 3 Claude Code subagents, local model routes, and skill quality guards.",
+  "version": "2.49.0",
+  "description": "Cross-client agent toolkit with 20 shared skills, local model routes, and skill quality guards.",
   "author": {
     "name": "vito",
     "email": "santiagoliu333@gmail.com"
