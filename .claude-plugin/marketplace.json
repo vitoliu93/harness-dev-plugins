@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.49.0"
+    "version": "2.49.1"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
-      "description": "Cross-client agent toolkit with 20 shared skills, local model routes, and skill quality guards.",
-      "version": "2.49.0",
+      "description": "Cross-client agent toolkit with 22 shared skills, local model routes, and skill quality guards.",
+      "version": "2.49.1",
       "author": {
         "name": "vito"
       }

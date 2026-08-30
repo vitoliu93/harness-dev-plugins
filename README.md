@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 20 shared skills live under `skills/`; both hosts
+repo root is the plugin root — 22 shared skills live under `skills/`; both hosts
 can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -54,6 +54,9 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | orchestrate | Compose agent roles and coordinate their work through completion. |
 | skill-forge | Create or improve skills through deterministic and semantic style, budget, routing, and trigger gates. |
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
+| ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
+| doc-claim-verify | Verify every document claim against code, commands, and git. |
+| visual-evidence | DOM-fact evidence pack for UI / canvas behavior (PASS/FAIL). |
 
 ### Learning
 
@@ -68,16 +71,16 @@ Moved out (v2.0): `ship` → `kox-agent-plugins`.
 
 ## Subagents
 
-No subagents ship since v2.49.0. The former three (`general-skills-executor`,
-`code-search`, `investigator`) are kept under `archive/agents/` and can be
-restored by moving a file back to `agents/`. Delegation now goes through the
+No subagents ship since v2.49.0. Former agents are kept under `archive/agents/`
+and can be restored by moving a file back to `agents/`（已归档: `general-skills-executor` / `code-search` / `investigator`）.
+Delegation now goes through the
 `use-agents` skill (external CLI agents or the host's built-in agents).
 
 ## Hooks
 
 `hooks/hooks.json` registers:
 - PreToolUse: `skill-guard.sh`, `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
-- Session/Stop/PostToolUse/PostCompact: `learn-capture.ts`, `session-replay.ts`, `plan-anchor.ts`, `standby-watchdog.ts`, `security-warning-relay.ts`, `compact-audit.ts`, and ccobs `obs-enqueue.ts`
+- Session/Stop/PostToolUse/PostCompact: `learn-capture.ts`, `session-replay.ts`, `plan-anchor.ts`, `security-warning-relay.ts`, `compact-audit.ts`, and ccobs `obs-enqueue.ts`
 
 Restart after hook edits.
 
@@ -86,7 +89,7 @@ Restart after hook edits.
 ```
 .claude-plugin/   # plugin.json + marketplace.json
 .codex-plugin/    # Codex plugin.json
-skills/           # 20 active skills
+skills/           # 22 active skills
 hooks/            # shared hook registration + scripts
 archive/          # retired skills + subagents (not auto-discovered)
 ```

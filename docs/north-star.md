@@ -48,8 +48,8 @@
 ```
 编排层   orchestrate(拆角色、排依赖、验收、关闭 Herdr tabs) · 项目插件的生命周期 SOP
 战术层   advanced-plan · use-agents(启动独立 agent、读取渠道和配额) · grill-me · worktree(约定+安全)
-执行层   code-search · Claude Code / pi / cursor-agent · 项目自己的执行器
-项目层   kox 插件的 gitee-operator / kox-frontend-tester / k8s-deployer / gitee-issue-finalize
+执行层   Explore · Claude Code / pi / cursor-agent · 项目自己的执行器
+项目层   kox 插件的 gitee-ent MCP / kox-browser-test / kox-deploy-k8s / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
 学习层   resume-learning · study-coach 五模式(目标/急救/盘点/出题/垫脚石)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
@@ -68,7 +68,7 @@
 2. **收盘 = 三个正交动作**(Trellis):归档(archive)、蒸馏(distill → memory)、
    固化(promote → skill)。各自幂等、可跳过,合成一个 debrief 技能。
 3. **全局×项目粘连的正确形状是"具名扩展点"**,不是硬编码。ship Stage 1a 已经隐式依赖
-   kox 的 gitee-operator(未声明,出了 kox 环境即静默断裂)——需求真实存在,只差显式化:
+   kox 的 gitee-operator（已归档）(未声明,出了 kox 环境即静默断裂)——需求真实存在,只差显式化:
    ship 定义 issue-context / verify / deploy / finalize 四个扩展点,按角色关键词解析到
    项目级 agent,缺省回退内置行为。
    (v2.0 更新:ship 迁居 kox 插件后,粘连问题被彻底消解而非桥接——编排层直接持有项目

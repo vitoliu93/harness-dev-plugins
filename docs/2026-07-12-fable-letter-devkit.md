@@ -110,7 +110,7 @@ turns 表。"0 行"是记账缺口,不是使用缺口。这改写了故事的重
    批量机械改),从梯子底部试出便宜档的真实天花板。一直从 tier3 起跳,梯子就永远只是文档。
 
 顺手修的还有一个已知的"狼来了":v_agent_spawns 的 missing_model 把"frontmatter 带模型的
-裸调用"(如 k8s-deployer 55/55)也算违规——join 一下 agent 注册表算 effective model,
+裸调用"(如 k8s-deployer（已归档） 55/55)也算违规——join 一下 agent 注册表算 effective model,
 这个视图才值得信。
 
 最后一个诚实的注脚:指标二的分母大头不在 subagent,在**主会话本身**——opus 主会话

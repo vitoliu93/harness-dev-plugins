@@ -255,7 +255,7 @@ ledger:    零模型自动记账（双货币）→ 画像/熔断/governor 回流
 
 - **north-star**：本设计是"廉价算力占比"指标的主战场；账本同时喂"知识沉淀率"
   （逃逸归因 → spec 模板/context pack 改进）。
-- **dispatch-vendors**（现名 **use-agents**）：当时的派单技能，是本设计的 worker 层前身；adapter 契约与账本
+- **dispatch-vendors**（已归档，现名 **use-agents**）：当时的派单技能，是本设计的 worker 层前身；adapter 契约与账本
   字段向其兼容迁移。
 - **vendor-eval-bench**：bench 真题 = shadow replay 黄金集来源，画像冷启动加速器。
 - **advanced-plan**：plan_slug 是账本归因锚；spec_host_tokens 在打 plan 时顺手记账。

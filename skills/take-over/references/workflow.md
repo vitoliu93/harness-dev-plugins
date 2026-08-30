@@ -24,7 +24,7 @@ sqlite3 -header ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
 
 - **session id** → query above; fallback `~/.claude/projects/*/<id>*.jsonl`
 - **task description** → observations.summary + recent sessions by project/title
-- **Gitee issue** → gitee-operator for title/body, then keyword search
+- **Gitee issue** → 用 gitee-ent MCP 或委派独立 agent for title/body, then keyword search
 
 Operate in original `cwd`, not current directory.
 
