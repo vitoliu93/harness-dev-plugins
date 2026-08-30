@@ -17,7 +17,7 @@
 输出中文。
 ```
 
-## 2. 代码结构勘察（dev-kit:code-search，bare 模型）
+## 2. 代码结构勘察（Explore，bare 模型）
 
 ```
 目标：为 CTO 级审计绘制 <路径> 的架构全貌。返回结构化中文 digest（引用 file:line，不贴大段代码）：
@@ -101,7 +101,7 @@ grep -rl 'sys.path' <目录> --include='*.py' | wc -l
 ! rg -l 'from infra' src/domain/ || { echo '违宪: domain→infra'; exit 1; }
 ```
 
-## Phase 4 算法层追加（复用 dev-kit:code-search 或主上下文精读）
+## Phase 4 算法层追加（复用 Explore 或主上下文精读）
 
 优先找项目自带的算法清单文档（如 `docs/*algorithm*inventory*.md`）。逐域核对：
 

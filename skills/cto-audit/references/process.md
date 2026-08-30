@@ -40,7 +40,7 @@ Read all workspace `docs/audit/`; verify guards alive. recall/auto-memory for cr
 
 ## Phase 1 — parallel evidence
 
-Templates: [subagent-prompts.md](subagent-prompts.md). Issue cluster · dev-kit:code-search · git history · blind domain model (opus, docs only).
+Templates: [subagent-prompts.md](subagent-prompts.md). Issue cluster · Explore · git history · blind domain model (opus, docs only).
 
 ## Phase 1.5 — host reads
 
