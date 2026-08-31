@@ -56,6 +56,16 @@ function run(): void {
   const learned = path.join(cwd, ".claude", "LEARNED.md");
 
   print(`<learn-convention>${CONVENTION}</learn-convention>`);
+  // Herdr sets these for every pane it launches; agents spawned via use-agents
+  // must land in this same workspace, so hand the IDs to the model up front.
+  const ws = process.env.HERDR_WORKSPACE_ID;
+  if (ws) {
+    print(
+      `<herdr-context>workspace_id=${ws} tab_id=${process.env.HERDR_TAB_ID ?? ""} ` +
+      `pane_id=${process.env.HERDR_PANE_ID ?? ""}. When use-agents spawns agents through ` +
+      "Herdr, create their tabs with `--workspace <workspace_id>` so they stay in this workspace.</herdr-context>",
+    );
+  }
   try {
     const { project, global } = topRules(cwd, MAX_PROJECT_RULES);
     if (project.length || global.length) {

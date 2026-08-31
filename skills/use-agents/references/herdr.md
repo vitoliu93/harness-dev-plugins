@@ -16,8 +16,13 @@ when Herdr is missing or unreachable; do not switch transports.
 ## One agent, one tab
 
 ```bash
-herdr tab create --cwd "$PWD" --label '<label>' --no-focus
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" --label '<label>' --no-focus
 ```
+
+The agent must live in the caller's workspace. `HERDR_WORKSPACE_ID` (also injected
+at session start as `<herdr-context>`) names it; never create or pick another
+workspace. Only when the caller is outside Herdr (variable unset) drop
+`--workspace` and let Herdr use its default.
 
 Read `.result.tab.tab_id` and `.result.root_pane.pane_id` from the JSON. Do not
 guess IDs. Operate only this returned tab and pane; do not inspect, focus, or
