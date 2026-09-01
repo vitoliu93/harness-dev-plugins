@@ -2,7 +2,7 @@
 name: orchestrate
 description: >-
   Compose independent agent roles and coordinate their work through completion.
-  Use when one task needs several roles such as advisor, researcher, programmer, or audit.
+  Use when one task needs several roles such as advisor, researcher, programmer, tester, or audit.
 argument-hint: "[task to split into roles]"
 metadata:
   kind: sop
@@ -32,7 +32,8 @@ routes are unavailable. Read the route-specific quota file before launch.
 
 - Start independent roles in parallel; serialize declared dependencies.
 - Agents do not coordinate with each other. The host passes outputs between them.
-- A programmer produces the change; audit checks it independently.
+- A programmer produces the change; a tester runs tests from the requirement
+  and diff alone; audit is the final read-only acceptance and reruns the checks.
 - The host runs each completion check and the final integrated check.
 - Quota failure: keep the tab and partial output, then choose another available route.
 

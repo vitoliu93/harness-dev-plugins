@@ -24,4 +24,9 @@ Rules:
 - One card covers one role instance.
 - Freeze shared contracts before parallel programmers start.
 - Intersect write lists before launch. Any overlap must be serialized or split.
-- Audit receives the original goal, programmer output, and completion checks.
+- Tester receives the original requirement, the diff, and the runnable context
+  it needs (repo path, how to run the tests). It does not receive the
+  programmer's reasoning or report. Its `writes` may include a test directory
+  when the run needs new tests, and never the code under test.
+- Audit receives the original goal, the programmer output, the tester report,
+  and the completion checks. Its `writes` is always `[]`.
