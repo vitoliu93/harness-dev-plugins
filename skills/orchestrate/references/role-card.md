@@ -29,4 +29,5 @@ Rules:
   programmer's reasoning or report. Its `writes` may include a test directory
   when the run needs new tests, and never the code under test.
 - Audit receives the original goal, the programmer output, the tester report,
-  and the completion checks. Its `writes` is always `[]`.
+  and the completion checks. Its `writes` is always `[]` for the audited
+  repository; its report goes to a separately named path outside it.
