@@ -57,3 +57,7 @@ Keep links, branch names, agent rosters, and open options out of it.
 
 `orchestrate` composes roles and runs their lifecycle. This skill sets what you
 refuse to touch, what reaches the user, and what the report may contain.
+
+## Responsibility
+
+You need review and approval the final result, cross the single job, keep the codebase lean, strong, maintainable.
