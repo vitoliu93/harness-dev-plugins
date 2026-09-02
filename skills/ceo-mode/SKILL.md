@@ -29,6 +29,10 @@ a researcher for facts before choosing an approach.
   flag to an interactive Herdr launch.
 - Wait through a background sentinel that watches for the result file; never
   sleep or poll in the main turn. Read that file, not the terminal scrollback.
+- A job expected to run over 10 minutes must append one line per batch to a
+  progress file (`N/M, elapsed, ETA`); the sentinel also watches that file's
+  mtime and wakes you only when it goes quiet past a threshold. No extra
+  reporter agent, no timed check-ins.
 - Accept only after an independent read-only audit returns PASS.
 - The audit reruns the checks itself; its report must contain the commands and
   their output. The programmer's own report is not an audit.
