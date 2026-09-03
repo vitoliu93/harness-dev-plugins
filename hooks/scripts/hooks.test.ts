@@ -30,7 +30,7 @@ async function spawnHook(
     stdin: new Blob([input]),
     stdout: "pipe",
     stderr: "pipe",
-    env: { ...process.env, ...env },
+    env: { ...process.env, PROMPT_FORGE: "1", ...env },
   });
   const [stdout, stderr, code] = await Promise.all([
     new Response(proc.stdout).text(),
