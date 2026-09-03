@@ -19,7 +19,9 @@ List `${CCOBS_DIR:-$HOME/.claude/observability}/teams/*.md`. Each file's
 frontmatter `use:` says which tasks it fits. Pick the one matching the task's
 scene and read only that file. If the directory is missing, copy
 [delivery-team.md](references/delivery-team.md) to `teams/delivery.md` and tell
-the user where it is.
+the user where it is. If no team fits the task, write a new team file for that
+scene from the task itself, with roles and default agents filled in, and let the
+user correct it in one line.
 
 Choose the fewest roles from that team. Write one
 [role card](references/role-card.md) per role instance. Do not launch until
