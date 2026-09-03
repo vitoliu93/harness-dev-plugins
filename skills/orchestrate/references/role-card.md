@@ -27,18 +27,15 @@ Rules:
 - A programmer's `writes` never includes a production database or environment.
   Migrations are written to the repo only; the host runs them, test first.
   Write this exclusion into the card even when the task mentions no DDL.
-- Write every downstream card (tester, operator, audit) while the first
+- Write every downstream card (reviewer, assistant) while the first
   programmer is still running; do not wait for its result to start them.
-- Tester receives the original requirement, the diff, and the runnable context
-  it needs (repo path, how to run the tests). It does not receive the
-  programmer's reasoning or report. Its `writes` may include a test directory
-  when the run needs new tests, and never the code under test.
-- Audit receives the original goal, the programmer output, the tester report,
-  and the completion checks. Its `writes` is always `[]` for the audited
-  repository; its report goes to a separately named path outside it.
+- The reviewer receives the original requirement, the diff, and the completion
+  checks; it never takes the maker's report as evidence. Its `writes` cover
+  only the tests or acceptance list it wrote before the change started, never
+  the files it reviews; its report goes to a path outside that repository.
 - A card that writes to a shared live service (a CLI login, a database, an
   API) states the account it must run as, forbids switching it, and orders a
-  `dry-run → small batch → audit → full run` gate. The small batch is a fixed
+  `dry-run → small batch → review → full run` gate. The small batch is a fixed
   gold set chosen to cover the edge cases (each named entity, none, silent or
   empty items, short items); the full run starts only after that set passes.
 - A card whose job runs past ten minutes names a progress file and requires

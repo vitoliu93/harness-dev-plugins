@@ -2,12 +2,12 @@
   "recommended_threshold": 0.28,
   "negative_patterns": ["不用 agent", "agent 配置在哪"],
   "should_trigger": [
-    {"text": "编排 advisor programmer audit 三个角色", "family": "roles"},
+    {"text": "编排 researcher programmer reviewer 三个角色", "family": "roles"},
     {"text": "orchestrate this feature with several roles", "family": "explicit_en"},
-    {"text": "把 API 和前端分给两个 programmer，最后让 audit 检查", "family": "parallel"},
+    {"text": "把 API 和前端分给两个 programmer，最后让 reviewer 检查", "family": "parallel"},
     {"text": "这个任务该安排哪些 agent 角色", "family": "roles"},
     {"text": "三个 agent 并行干活但不要改到同一批文件", "family": "ownership"},
-    {"text": "researcher 查资料，advisor 给意见，再交给 programmer", "family": "dependencies"},
+    {"text": "researcher 查资料，reviewer 定验收，再交给 programmer", "family": "dependencies"},
     {"text": "所有 agent 完成后统一验收并关闭 herdr tabs", "family": "lifecycle"},
     {"text": "fan out this work and coordinate the handoffs", "family": "fanout"}
   ],

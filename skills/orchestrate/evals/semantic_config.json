@@ -2,7 +2,7 @@
   "positive_concepts": {
     "roles": {
       "weight": 0.65,
-      "phrases": ["advisor", "researcher", "programmer", "audit", "角色", "分工", "role card"]
+      "phrases": ["researcher", "programmer", "reviewer", "assistant", "角色", "分工", "role card"]
     },
     "orchestration": {
       "weight": 0.65,

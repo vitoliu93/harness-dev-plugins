@@ -1,8 +1,8 @@
 ---
 name: orchestrate
 description: >-
-  Compose independent agent roles and coordinate their work through completion.
-  Use when one task needs several roles such as advisor, researcher, programmer, tester, or audit.
+  Pick the scene team from the user's teams directory, compose its roles, and coordinate their work through completion.
+  Use when one task needs several roles.
 argument-hint: "[task to split into roles]"
 metadata:
   kind: sop
@@ -13,11 +13,17 @@ metadata:
 The host owns the goal, task graph, acceptance, and final decision. Agents own
 bounded role work.
 
-## Build the team
+## Pick the team
 
-Choose the fewest roles needed. Definitions: [roles.md](references/roles.md).
-Write one [role card](references/role-card.md) per role instance. Do not launch
-until outputs, write boundaries, dependencies, and completion checks are clear.
+List `${CCOBS_DIR:-$HOME/.claude/observability}/teams/*.md`. Each file's
+frontmatter `use:` says which tasks it fits. Pick the one matching the task's
+scene and read only that file. If the directory is missing, copy
+[delivery-team.md](references/delivery-team.md) to `teams/delivery.md` and tell
+the user where it is.
+
+Choose the fewest roles from that team. Write one
+[role card](references/role-card.md) per role instance. Do not launch until
+outputs, write boundaries, dependencies, and completion checks are clear.
 
 ## Launch through use-agents
 
@@ -32,8 +38,8 @@ routes are unavailable. Read the route-specific quota file before launch.
 
 - Start independent roles in parallel; serialize declared dependencies.
 - Agents do not coordinate with each other. The host passes outputs between them.
-- A programmer produces the change; a tester runs tests from the requirement
-  and diff alone; audit is the final read-only acceptance and reruns the checks.
+- Whoever made a change does not check it. The checking role reruns the checks
+  itself and does not accept the maker's report as evidence.
 - The host runs each completion check and the final integrated check.
 - Quota failure: keep the tab and partial output, then choose another available route.
 
