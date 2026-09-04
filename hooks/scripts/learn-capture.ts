@@ -84,6 +84,9 @@ function run(): void {
   if (typeof payload.transcript_path !== "string") return;
   const transcript = payload.transcript_path;
   const cwd = String(payload.cwd || ".");
+  // parallel sessions share one inbox; the tag lets a reader discount entries
+  // that came from an unrelated task running next door
+  const sid = String(payload.session_id || "").slice(0, 8);
   if (!isFile(transcript)) return;
 
   const found: Array<[string, string]> = [];
@@ -104,7 +107,8 @@ function run(): void {
   mkdirSync(path.dirname(target), { recursive: true });
   let out = existing ? "" : HEADER;
   const today = localToday();
-  for (const [t, r] of fresh) out += `- ${today} [${t.toLowerCase()}] ${r}\n`;
+  const tag = sid ? ` (s:${sid})` : "";
+  for (const [t, r] of fresh) out += `- ${today} [${t.toLowerCase()}] ${r}${tag}\n`;
   appendFileSync(target, out);
 }
 

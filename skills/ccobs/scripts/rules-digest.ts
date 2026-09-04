@@ -89,9 +89,18 @@ export function sweepLearnedInbox(learnedPath: string, watermarkDay: string): nu
   return removed;
 }
 
+/** How many project rules the SessionStart replay injects; below this line a rule is "sunken". */
+export const MAX_PROJECT_RULES = 12;
+
+const byWeight = (a: Rule, b: Rule) => b.count - a.count || b.last.localeCompare(a.last);
+
+/** Rules ranked below the session-start injection cap — the pool task-relevant recall picks from. */
+export function sunkenRules(cwd: string, skip = MAX_PROJECT_RULES): Rule[] {
+  return readRules(projectKey(cwd)).sort(byWeight).slice(skip);
+}
+
 /** Project rules first, then global rules not already covered, by count desc. */
 export function topRules(cwd: string, limit: number): { project: Rule[]; global: Rule[] } {
-  const byWeight = (a: Rule, b: Rule) => b.count - a.count || b.last.localeCompare(a.last);
   const project = readRules(projectKey(cwd)).sort(byWeight).slice(0, limit);
   const seen = new Set(project.map((r) => r.text));
   const global = readRules(GLOBAL_SCOPE)

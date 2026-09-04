@@ -15,10 +15,9 @@ import { readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import * as path from "node:path";
 
-import { topRules } from "../../skills/ccobs/scripts/rules-digest.ts";
+import { MAX_PROJECT_RULES, topRules } from "../../skills/ccobs/scripts/rules-digest.ts";
 
 const MAX_ENTRIES = 5;
-const MAX_PROJECT_RULES = 12;
 const MAX_GLOBAL_RULES = 6;
 const HEARTBEAT = path.join(homedir(), ".claude", "observability", "distill.heartbeat");
 const HEARTBEAT_MAX_AGE_H = 48; // distill 每小时跑;超 48h 未跳 = 管线死了(07-22 静默死两周的学费)
@@ -99,7 +98,11 @@ function run(): void {
       .filter((l) => l.startsWith("- "));
     if (entries.length) {
       print("<learned-rules>");
-      print("Recent project rules captured from past sessions (raw inbox, may be ungroomed):");
+      print(
+        "Recent project rules captured from past sessions (raw inbox, may be ungroomed; " +
+        "(s:xxxxxxxx) is the source session — parallel sessions share this inbox, so an " +
+        "entry may come from an unrelated task; weigh relevance yourself):",
+      );
       for (const line of entries.slice(-MAX_ENTRIES)) print(line);
       print("</learned-rules>");
     }

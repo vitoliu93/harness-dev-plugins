@@ -3,8 +3,9 @@
  * UserPromptSubmit hook: once per session, look up past sessions in this project
  * that already dealt with the task the user just described, and inject them.
  *
- * Complements the SessionStart replay, which injects RULES with no model call.
- * This one injects PRECEDENTS, which need the task text to be worth anything.
+ * Complements the SessionStart replay, which injects TOP RULES with no model
+ * call. This one injects PRECEDENTS plus SUNKEN RULES (ranked below the replay
+ * cap), both of which need the task text to be worth anything.
  *
  * The gate is deliberately not prompt-forge's. Forge lets through inputs that
  * carry a file/code anchor because those need no rewriting — but for recall,
@@ -18,12 +19,14 @@ import { join } from "node:path";
 import { Database } from "bun:sqlite";
 
 import { piCall } from "../../skills/ccobs/scripts/pi-call.ts";
-import { OBS_DIR, projectKey } from "../../skills/ccobs/scripts/rules-digest.ts";
+import { OBS_DIR, projectKey, renderRuleLine, sunkenRules } from "../../skills/ccobs/scripts/rules-digest.ts";
 
 const MARK_DIR = join(OBS_DIR, "recall-fired");
 const MARK_TTL_MS = 7 * 24 * 3600 * 1000;
 const MIN_PROMPT_CHARS = 20;
 const MAX_CANDIDATES = 60;
+const MAX_SUNKEN = 40; // sunken rules shown to the model; deeper than that is noise
+const MAX_PICKED_RULES = 3;
 const PI_TIMEOUT_MS = 12000; // measured 5.7s on a 60-row catalog; the cap is headroom, not the target
 
 function sweepMarkers(): void {
@@ -51,6 +54,20 @@ export function parsePrecedents(answer: string): string[] {
     if (m) out.push(`- ${m[1]} ${m[2]} — ${m[3]}`);
   }
   return out;
+}
+
+/**
+ * Same trust split as rollup: the model only points at rule NUMBERS; the line
+ * that gets injected is re-rendered from the digest itself, so a hand-curated
+ * rule is never reworded by the picker.
+ */
+export function parseRuleRefs(answer: string, max: number): number[] {
+  const out: number[] = [];
+  for (const raw of answer.split("\n")) {
+    const m = raw.trim().match(/^[-*]?\s*R\s*[:：]\s*(\d+)\s*$/i); // ： = 全角冒号
+    if (m) out.push(Number(m[1]));
+  }
+  return [...new Set(out)].slice(0, max);
 }
 
 async function run(): Promise<void> {
@@ -81,29 +98,59 @@ async function run(): Promise<void> {
     )
     .all(projectKey(cwd), MAX_CANDIDATES) as
     { session_id: string; summary: string; task_type: string; outcome: string; day: string }[];
-  if (rows.length < 3) return;
+  // rules ranked below the SessionStart injection cap: relevant-but-rare ones
+  // get a second chance here, where the task text is finally known
+  const sunken = sunkenRules(cwd).slice(0, MAX_SUNKEN);
+  const precedentRows = rows.length >= 3 ? rows : [];
+  if (!precedentRows.length && !sunken.length) return;
 
-  const catalog = rows
-    .map((r) => `${r.day} | ${r.session_id} | ${r.task_type}/${r.outcome} | ${r.summary}`)
-    .join("\n");
-  const answer = await piCall(
-    `用户刚提出的任务：${prompt.slice(0, 500)}\n\n` +
+  const parts = [`用户刚提出的任务：${prompt.slice(0, 500)}`];
+  if (precedentRows.length) {
+    const catalog = precedentRows
+      .map((r) => `${r.day} | ${r.session_id} | ${r.task_type}/${r.outcome} | ${r.summary}`)
+      .join("\n");
+    parts.push(
       `下面是这个项目过去 90 天的会话摘要，每行是「日期 | session_id | 类型/结果 | 摘要」：\n${catalog}\n\n` +
-      `挑出最多 3 条和这个任务真正相关的先例。每条输出一行：\`- <日期> <session_id> — <摘要>\`。` +
-      `一条都不相关就只输出 NONE，不要解释，不要凑数。`,
-    { scenario: "recall", timeoutMs: PI_TIMEOUT_MS },
-  );
-  if (!answer) return;
-  const lines = parsePrecedents(answer);
-  if (!lines.length) return;
+        `挑出最多 3 条和这个任务真正相关的先例。每条输出一行：\`- <日期> <session_id> — <摘要>\`。`,
+    );
+  }
+  if (sunken.length) {
+    const ruleCatalog = sunken.map((r, i) => `${i + 1}. ${r.text} ×${r.count} (${r.last})`).join("\n");
+    parts.push(
+      `下面是这个项目沉底的历史规则（次数不够、开场没注入的），每行「编号. 规则 ×次数 (日期)」：\n${ruleCatalog}\n\n` +
+        `从中挑出最多 ${MAX_PICKED_RULES} 条对这个任务真正有用的，每条输出一行：\`R:<编号>\`。`,
+    );
+  }
+  parts.push("都不相关就只输出 NONE，不要解释，不要凑数。");
 
-  const block = [
-    "<session-precedents>",
-    "Past sessions in this project that look related. These are distilled summaries, not facts — " +
-      "read the raw transcript by session_id before you rely on one.",
-    ...lines.slice(0, 3),
-    "</session-precedents>",
-  ].join("\n");
+  const answer = await piCall(parts.join("\n\n"), { scenario: "recall", timeoutMs: PI_TIMEOUT_MS });
+  if (!answer) return;
+  const lines = precedentRows.length ? parsePrecedents(answer) : [];
+  const picked = parseRuleRefs(answer, MAX_PICKED_RULES)
+    .filter((n) => n >= 1 && n <= sunken.length)
+    .map((n) => sunken[n - 1]);
+  if (!lines.length && !picked.length) return;
+
+  const blocks: string[] = [];
+  if (lines.length) {
+    blocks.push([
+      "<session-precedents>",
+      "Past sessions in this project that look related. These are distilled summaries, not facts — " +
+        "read the raw transcript by session_id before you rely on one.",
+      ...lines.slice(0, 3),
+      "</session-precedents>",
+    ].join("\n"));
+  }
+  if (picked.length) {
+    blocks.push([
+      "<recalled-rules>",
+      "Digest rules of this project that sank below the session-start injection cap but look " +
+        "relevant to this task. Same caveat as all rules: ×N is recurrence, not proof.",
+      ...picked.map(renderRuleLine),
+      "</recalled-rules>",
+    ].join("\n"));
+  }
+  const block = blocks.join("\n");
 
   // JSON on both clients, verified live. Plain stdout does NOT reach the model on
   // UserPromptSubmit — not on Claude Code, and Codex reads hookSpecificOutput here
