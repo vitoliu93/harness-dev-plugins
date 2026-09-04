@@ -1,6 +1,6 @@
 {
   "name": "dev-kit",
-  "version": "2.51.1",
+  "version": "2.51.2",
   "description": "Cross-client agent toolkit with 22 shared skills, local model routes, and skill quality guards.",
   "author": {
     "name": "vito",

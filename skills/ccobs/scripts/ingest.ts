@@ -918,28 +918,42 @@ function ingestCursorAgentSession(path: string, stmts: Stmts): number {
   const sid = basename(dir) // session uuid = directory name
   let metaJson: any = {}
   try { metaJson = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8")) } catch {}
-  const updated = metaJson.updatedAtMs ?? 0
+  // Subagent sessions have no meta.json; fall back to the store.db mtime as the watermark
+  const updated = metaJson.updatedAtMs ?? statSync(path).mtimeMs
   // Version the state key so upgrading an existing facts-only DB performs one full content backfill.
   const statePath = `${path}#${CURSOR_CONTENT_STATE_VERSION}`
   const row = stmts.getState.get(statePath) as { offset: number } | null
   if (updated && updated <= (row?.offset ?? 0)) return 0
 
-  let db: Database
-  // a fraction of store.dbs are unopenable (SQLITE_CANTOPEN) — skip, retry next sweep
-  try {
-    db = new Database(path, { readonly: true })
-  } catch { return 0 }
+  // WAL dbs without a -shm sidecar fail a readonly open (SQLITE_CANTOPEN); immutable=1 reads the main
+  // file directly and ignores -wal, which is absent in exactly that case. bun opens lazily, so the
+  // probe query is what actually surfaces the error.
+  let db: Database | null = null
+  for (const make of [
+    () => new Database(path, { readonly: true }),
+    () => new Database(`file:${path}?immutable=1`, { readonly: true }),
+  ]) {
+    try { const d = make(); d.prepare("SELECT count(*) FROM blobs").get(); db = d; break } catch {}
+  }
+  if (!db) return 0
 
   let n = 0
   let model: string | null = null
   let cwd: string | null = null
+  let createdAt: number | null = null
+  let parentId: string | null = null
+  let subagentType: string | null = null
   try {
-    // meta table: single row, value is (hex-encoded) JSON with lastUsedModel
+    // meta table: single row, value is (hex-encoded) JSON with lastUsedModel / createdAt / subagentInfo
     try {
       const m = db.prepare("SELECT value FROM meta LIMIT 1").get() as any
       const s = typeof m?.value === "string" ? m.value : Buffer.from(m?.value ?? "").toString("utf8")
       const decoded = s.startsWith("{") ? s : Buffer.from(s, "hex").toString("utf8")
-      model = JSON.parse(decoded).lastUsedModel ?? null
+      const meta = JSON.parse(decoded)
+      model = meta.lastUsedModel ?? null
+      createdAt = meta.createdAt ?? null
+      parentId = meta.subagentInfo?.parentAgentId ?? null
+      subagentType = meta.subagentInfo?.typeName ?? null
     } catch {}
 
     let blobs: any[]
@@ -1024,11 +1038,11 @@ function ingestCursorAgentSession(path: string, stmts: Stmts): number {
     db.close()
   }
 
-  const startedAt = isoTimestamp(metaJson.createdAtMs)
+  const startedAt = isoTimestamp(metaJson.createdAtMs ?? createdAt)
   const endedAt = isoTimestamp(updated)
-  stmts.session.run(sid, "main", null, null, encodeProject(cwd), cwd, null, null,
+  stmts.session.run(sid, parentId ? "subagent" : "main", parentId, subagentType, encodeProject(cwd), cwd, null, null,
     startedAt, endedAt, path, "cursor-agent")
-  if (updated) stmts.putState.run(statePath, updated)
+  stmts.putState.run(statePath, updated)
   return n
 }
 
