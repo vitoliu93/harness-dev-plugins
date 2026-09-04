@@ -40,7 +40,7 @@
     "skill_fleet": {
       "weight": 0.35,
       "exclusive": true,
-      "phrases": ["skill-atlas", "route overlap", "trigger eval", "舰队体检"]
+      "phrases": ["skill-review", "route overlap", "trigger eval", "舰队体检"]
     },
     "explain_only": {
       "weight": 0.65,

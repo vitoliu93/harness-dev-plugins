@@ -26,7 +26,7 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 - user/hook only: keep the description narrow; use `agents/openai.yaml` when Codex must block implicit invocation; no evals
 - Apply [style-contract.md](style-contract.md): routing interface, present-tense runtime docs, portable paths, gate-preserving progressive disclosure, fictional public examples
 - Run `bun "$FORGE/skill_style.ts" --workspace-root "$SKILLS_ROOT" --fail-on-issues`
-- Run `bun "$SKILLS_ROOT/skill-style-review/scripts/review.ts" --skill-dir <skill-dir> --fail-on-issues`
+- Run `bun "$FORGE/style_review.ts" --skill-dir <skill-dir> --fail-on-issues`
 
 ## 3. Trigger-first (model-invoked)
 
@@ -59,8 +59,9 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 | skill_style.ts | Skill & Doc Style gate |
 | build_skill_atlas.ts | overlap matrix |
 | skill_usage.ts | obs.db usage with aliases |
+| style_review.ts | semantic style judge (pi) |
 
 Stdlib-only; fix in place.
 
-Semantic style review is owned by the independent `skill-style-review` skill.
-It calls the shared `pi-call` layer; do not send the check to another agent.
+`style_review.ts` calls the shared `pi-call` layer; do not send the semantic check to another agent.
+Run its fixed eval after changing either prompt under `references/style-review-*.md`.

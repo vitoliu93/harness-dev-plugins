@@ -9,7 +9,7 @@
    暴露了什么缺陷。"我想到一个好功能"不是触发事件,按单主线红线处理:先过目标审计。
 3. **伴随学习行为**:没有学习会话发生的日子不动工具。工具建设是最高级的拖延。
 4. **插件装机制,项目装目标**:任何具体学习目标/材料/路线不得写进插件;发现硬编码即为缺陷。
-5. **原子技能优先复用**:能连用 grill-me(含盲区扫描) / skill-atlas 的不重造,
+5. **原子技能优先复用**:能连用 grill-me(含盲区扫描) / skill-review 的不重造,
    但一律软依赖 + 内置降级路径,保证插件独立可用。
 
 ## 变更流程
@@ -21,7 +21,7 @@
 
 ## 体检与红队
 
-- **改 description 后**:跑 `/skill-atlas`(route-overlap + trigger eval),
+- **改 description 后**:跑 `/skill-review`(route-overlap + trigger eval),
   重点盯 resume-learning 的"继续/存档"类触发词与 handoff("continue/接手")的路由边界。
 - **红队(机会主义,不设计数器——没人会去数存档次数,数字节律是死条款)**:
   每次 minor 版本发布前必跑一轮;平时想起来就跑。用 ask-ai(clean context,

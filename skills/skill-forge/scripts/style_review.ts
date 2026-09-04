@@ -66,7 +66,7 @@ type CliOptions = {
 };
 
 function fail(message: string): never {
-  console.error(`skill-style-review: ${message}`);
+  console.error(`style-review: ${message}`);
   process.exit(2);
 }
 
@@ -697,9 +697,9 @@ async function main(): Promise<void> {
   // Which model reviews style lives in llm.json, keyed by scenario; pi owns auth.
   const model = process.env.SKILL_STYLE_MODEL ?? resolveModel("skill-style-review");
   if (!model) fail(`config required: ${llmConfigPath()} needs a "skill-style-review" or "default" key`);
-  const prompt = readFileSync(resolve(import.meta.dir, "../references/review-prompt.md"), "utf8");
+  const prompt = readFileSync(resolve(import.meta.dir, "../references/style-review-prompt.md"), "utf8");
   const adjudicationPrompt = readFileSync(
-    resolve(import.meta.dir, "../references/adjudication-prompt.md"),
+    resolve(import.meta.dir, "../references/style-review-adjudication-prompt.md"),
     "utf8",
   );
 

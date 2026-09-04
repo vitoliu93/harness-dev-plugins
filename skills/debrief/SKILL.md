@@ -27,7 +27,7 @@ orchestration/tooling optimizations.
 ## Moves
 
 1. **Archive** plan dir → `_archive/` ([moves.md](references/moves.md) §1)
-2. **Sediment** 立刻蒸馏本会话 + 至多纠正一条被打脸的规则 ([moves.md](references/moves.md) §2)
+2. **Sediment** 立刻蒸馏本会话、补齐结论、标记先例用没用、读一眼本周摩擦、至多纠正一条被打脸的规则 ([moves.md](references/moves.md) §2)
 3. **Promote** improve / merge / retire existing skills first, new candidate last + harness drift + cto-audit signal ([moves.md](references/moves.md) §3)
 
 ## Output
@@ -35,6 +35,8 @@ orchestration/tooling optimizations.
 ```
 收盘 · <slug>
 归档: <path | skipped>
-沉淀: <蒸馏 ok | failed> · <改了哪条规则 | 无需纠正>
+沉淀: <蒸馏 ok | failed> · <结论已补 | 蒸馏自带> · <改了哪条规则 | 无需纠正>
+先例: <用了 N/M | 本会话无注入>
+摩擦: <本周 x/场 vs 上周 y/场 ↑↓→>
 技能: <优化 X | 合并 X+Y | 拟移除 Z | 新候选 | no deltas>
 ```

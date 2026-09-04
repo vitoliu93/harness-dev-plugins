@@ -12,7 +12,7 @@ metadata:
 
 管**怎么取证、怎么判定**。怎么开浏览器、怎么点选元素 → `opencli-browser`（opencli 随包分发的外部 skill，不在本仓）。
 账号、环境、URL、探针存放位置 → 项目侧 skill。
-不适用于文档声明核验（→ doc-claim-verify）、后端接口断言、派发编排（→ orchestrate）。
+不适用于文档声明核验、后端接口断言、派发编排（→ orchestrate）。
 
 证据阶梯与画布反例：[evidence-ladder.md](references/evidence-ladder.md)。
 探针与派发契约：[probe-contract.md](references/probe-contract.md)。

@@ -1,5 +1,0 @@
-interface:
-  display_name: Skill Style Review
-  short_description: Review skill text for style problems and lost gates
-policy:
-  allow_implicit_invocation: false

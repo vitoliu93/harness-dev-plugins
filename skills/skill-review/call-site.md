@@ -10,9 +10,9 @@
 | advanced-plan | sop | ship(kox) 计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | grill-me 盲区扫描 · 搜索需求(skill-guard→executor) | ①③ |
-| skill-atlas | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检" | ②③ |
+| skill-review | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ②③ |
 | take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
-| ccobs | meta | "观测报告/usage report" · debrief/skill-atlas 取使用率 | ③ |
+| ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
 | media-understanding | atom | 本地音视频/录屏(skill-guard→executor) | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
@@ -20,13 +20,11 @@
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
-| skill-style-review | atom | skill-forge ship · skill-atlas semantic style | ① |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | study-coach | atom | 目标审计/迷茫/盘点/出题/垫脚石 | ③ |
 | use-html | atom | 可视化(skill-guard→executor) · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
 | no-ai-slop | atom | 收尾汇报 · "汇报/说人话/去 AI 味" | ②③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
-| doc-claim-verify | sop | "核验/实证文档声明·文档还准不准" · cto-audit/debrief 文档取证 | ③ |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
 
@@ -40,9 +38,11 @@
 - **use-html 原型模式** — 非 S 的 UI 任务走完计划却没有 prototype.html → 闸门位置错
 - **cto-audit** — debrief 提醒是否真触发
 - **ceo-mode** — 仅触发词;观察全权授权后是否真的零自己动手、汇报是否稳定收敛到三段
-- **doc-claim-verify** — 仅触发词;观察 cto-audit / debrief 是否该固定接一段文档取证
 - **resume-learning vs take-over/advanced-plan** — 裸"继续"争路由;收紧到"读档"
 
 ## 已归档
+
+- **doc-claim-verify** — 两个月零调用;文档核验交给独立评审的任务卡
+- **skill-style-review** — 并入 skill-forge,脚本在 `skill-forge/scripts/style_review.ts`
 
 - **worktree** — 约定内联 advanced-plan;`worktree-guard` hook 仍在

@@ -7,7 +7,7 @@ import { Database } from "bun:sqlite";
 import { parseCli, pyHome, pyJsonDumps, pyJsonParse, pyResolve, pyStr, readTextStrict, type CliSpec } from "./pycompat.ts";
 
 const DEFAULT_DB = path.join(pyHome(), ".claude", "observability", "obs.db");
-const DEFAULT_ALIASES = path.join(pyResolve(path.join(import.meta.dir, "..", "..")), "skill-atlas", "aliases.json");
+const DEFAULT_ALIASES = path.join(pyResolve(path.join(import.meta.dir, "..", "..")), "skill-review", "aliases.json");
 
 export function load_identity_map(p: string): [Record<string, string>, Record<string, string>] {
   const data = pyJsonParse(readTextStrict(p));

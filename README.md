@@ -47,15 +47,13 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | media-understanding | Transcribe and understand local audio/video. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
 | no-ai-slop | Human-voice editing, AI-slop detection, CEO-style task reports. |
-| skill-atlas | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
-| skill-style-review | Review skill prose for narrative, marketing language, prose walls, and gate loss. |
+| skill-review | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | recall | Retrieve up to five past-session clues from ccobs. |
 | orchestrate | Compose agent roles and coordinate their work through completion. |
-| skill-forge | Create or improve skills through deterministic and semantic style, budget, routing, and trigger gates. |
+| skill-forge | Create or improve skills through deterministic and semantic style (`style_review.ts`), budget, routing, and trigger gates. |
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
-| doc-claim-verify | Verify every document claim against code, commands, and git. |
 | visual-evidence | DOM-fact evidence pack for UI / canvas behavior (PASS/FAIL). |
 
 ### Learning

@@ -21,5 +21,5 @@
 ## Wiring
 
 - Stop hook → `obs-enqueue.ts`
-- skill-atlas usage section reads `v_skill_usage` / change-since-edit signals
+- skill-review usage section reads `v_skill_usage` / change-since-edit signals
 - debrief may read this session's turn stats at close

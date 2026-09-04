@@ -9,7 +9,7 @@
   ],
   "should_not_trigger": [
     { "text": "recall 以前有没有查过 billing", "family": "recall" },
-    { "text": "跑 skill-atlas 路由重叠体检", "family": "skill_atlas" },
+    { "text": "跑 skill-review 路由重叠体检", "family": "skill_atlas" },
     { "text": "用 Exa 搜 API 文档", "family": "exa" },
     { "text": "解释 ccobs 三层架构", "family": "explain" }
   ],

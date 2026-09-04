@@ -17,7 +17,7 @@
   "near_neighbor": [
     { "text": "灌一下 ccobs ingest", "family": "ccobs_ingest" },
     { "text": "用 Exa 找代码示例", "family": "exa_code" },
-    { "text": "跑 skill-atlas 体检", "family": "skill_atlas" },
+    { "text": "跑 skill-review 体检", "family": "skill_atlas" },
     { "text": "查一下之前有没有 handoff 文档", "family": "takeover_neighbor" }
   ]
 }

@@ -55,13 +55,13 @@ prompt, so the "return JSON only" instruction is uncontested — there is no
 Review one skill:
 
 ```bash
-bun scripts/review.ts --skill-dir <skill-dir> --fail-on-issues
+bun "$FORGE/style_review.ts" --skill-dir <skill-dir> --fail-on-issues
 ```
 
 Review every discovered skill:
 
 ```bash
-bun scripts/review.ts \
+bun "$FORGE/style_review.ts" \
   --workspace-root <skills-root> \
   --output <report.json> \
   --fail-on-issues
@@ -73,7 +73,7 @@ After changing the review or adjudication prompt, run the fixed semantic
 regression:
 
 ```bash
-bun scripts/review.ts --eval-cases evals/semantic_cases.json
+bun "$FORGE/style_review.ts" --eval-cases "$SKILL_FORGE_DIR/evals/style_review_cases.json"
 ```
 
 Exit codes:
@@ -85,7 +85,7 @@ Exit codes:
 ## Tests
 
 ```bash
-bun test <skill-dir>/scripts/review.test.ts
+bun test skills/skill-forge/scripts/style_review.test.ts
 ```
 
 This skill carries no `package.json`, `node_modules`, or lockfile; the runner

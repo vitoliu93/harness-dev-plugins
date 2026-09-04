@@ -1,5 +1,5 @@
 ---
-name: skill-atlas
+name: skill-review
 description: >-
   Run fleet health checks on deterministic and semantic runtime style, overlap, staleness, trigger evals, budget, and usage.
   Use when auditing the skill collection or before shipping skill runtime-surface changes.
@@ -8,20 +8,20 @@ metadata:
   kind: meta
 ---
 
-# skill-atlas
+# skill-review
 
 Run checks, then report. Details: [checks.md](references/checks.md).
 
 ```bash
-ATLAS_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
-SKILLS_ROOT="$ATLAS_SKILL_DIR/..";
+REVIEW_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
+SKILLS_ROOT="$REVIEW_SKILL_DIR/..";
 ATLAS=${SKILL_ATLAS_DIR:-$HOME/.claude/observability/skill-atlas};
 ```
 
 ## Report skeleton
 
 ```
-skill-atlas · <date>
+skill-review · <date>
 style  : <violations by skill | clean>
 semantic: <violations by skill | clean | not run>
 overlap : N pairs, M collisions

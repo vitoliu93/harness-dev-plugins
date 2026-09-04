@@ -29,6 +29,45 @@ bun "$CCOBS_SKILL_DIR/scripts/rollup.ts"
 
 三条分开跑：前一条失败后面不会执行。任一条失败就说一句，不要重试到底。
 
+### 2a′ 补齐结论
+
+蒸馏出的 `conclusion` 是给下次接着做同一件事的人看的，必须有「为什么」：最后判断是什么、
+放弃了哪条路、为什么放弃、留下了什么。你在场，你比蒸馏模型清楚。读回来看一眼：
+
+```bash
+sqlite3 ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
+  "SELECT conclusion, files FROM observations WHERE session_id='<this session id>'"
+```
+
+空的、或只是把 summary 换个说法的，直接写上去（≤200 字，一句话也行）：
+
+```bash
+sqlite3 ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
+  "UPDATE observations SET conclusion='<结论：…；放弃了…因为…>' WHERE session_id='<this session id>'"
+```
+
+这是 recall 先例里「结论」那一行的唯一来源；写得像 summary，两周后 recall 就还是没用。
+
+### 2c 先例用没用
+
+开场 recall 注进来的先例，这场到底翻没翻。跑一下，它把结果记回台账：
+
+```bash
+CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";
+bun "$CCOBS_SKILL_DIR/scripts/recall-mark.ts" "<this session id>" "<transcript path>"
+```
+
+输出照抄进收盘的「先例」行。没注入就写「本会话无注入」，不用解释。
+
+### 2d 本周摩擦
+
+```bash
+CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";
+bun "$CCOBS_SKILL_DIR/scripts/weekly-friction.ts"
+```
+
+输出照抄进「摩擦」行。比上周高，加一句你觉得是哪类事在涨；不高就只放数字。
+
 ### 2b 纠正被打脸的规则
 
 开场注入的规则你带着干了一整天。回头只问一句：**有没有哪条照着做反而错了。**

@@ -8,7 +8,7 @@ import {
   discoverSkillDirs,
   normalizeIssues,
   redactSecrets,
-} from "./review";
+} from "./style_review";
 
 const roots: string[] = [];
 

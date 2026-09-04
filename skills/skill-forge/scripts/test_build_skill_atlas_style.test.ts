@@ -50,8 +50,9 @@ describe("build atlas style", () => {
 
   test("style issues are actionable atlas findings", () => {
     _skill("bad", ["Run a task.", "Explain its origin.", "Use when the task is needed."], "Run `/Users/example/work/task.py`.\n");
-    const policy = path.join(skills, "skill-atlas");
-    fs.mkdirSync(policy);
+    // the policy file lives inside the skill-review skill, which is itself a linted skill
+    _skill("skill-review", ["Run fleet checks.", "Use when auditing the skill collection."]);
+    const policy = path.join(skills, "skill-review");
     fs.writeFileSync(
       path.join(policy, "policy.json"),
       JSON.stringify({
