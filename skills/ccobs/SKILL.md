@@ -45,6 +45,9 @@ bun "$CCOBS_SKILL_DIR/scripts/rollup.ts" --dry-run
   wording are done in code, so a hand-edited line is never reworded
 - Refuses to write if the digest changed while it was merging; keeps 5 backups in `rules/.bak/`
 - Rides the hourly launchd job, never the Stop hook
+- After merging it sweeps each project's `.claude/LEARNED.md`: entries dated
+  before that scope's watermark are deleted, so the inbox only holds what the
+  pipeline hasn't caught up with
 
 ## Read on demand
 

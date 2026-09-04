@@ -22,7 +22,7 @@ import { Database } from "bun:sqlite";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
-import { GLOBAL_SCOPE as GLOBAL, OBS_DIR, RULES_DIR, digestPath, normalizeScope, parseRuleLine, renderRuleLine, type Rule } from "./rules-digest.ts";
+import { GLOBAL_SCOPE as GLOBAL, OBS_DIR, RULES_DIR, digestPath, normalizeScope, parseRuleLine, renderRuleLine, sweepLearnedInbox, type Rule } from "./rules-digest.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const BAK_DIR = join(RULES_DIR, ".bak");
@@ -255,3 +255,39 @@ for (const scope of scopes) {
   }
 }
 console.log(`ccobs rollup: ${touched} 份摘要更新`);
+
+// ---------------------------------------------------------------------------
+// LEARNED.md sweep — after merging, each scope's watermark says which days the
+// pipeline has fully digested; the raw inbox keeps only what it hasn't caught
+// up with. Runs for every digest on disk, not just scopes touched this round:
+// a project with no new candidates still deserves its sweep.
+// ---------------------------------------------------------------------------
+
+/** Most recent main-checkout cwd recorded for this scope; null if none matches. */
+function latestCwd(scope: string): string | null {
+  const rows = db
+    .prepare(
+      `SELECT cwd, MAX(ended_at) AS e FROM sessions
+       WHERE cwd IS NOT NULL AND (project = ?1 OR project LIKE ?1 || '--claude-worktrees-%')
+       GROUP BY cwd ORDER BY e DESC LIMIT 20`,
+    )
+    .all(scope) as { cwd: string }[];
+  // raw encode without the worktree fold: a worktree cwd must not match, its
+  // .claude/LEARNED.md (if any) is not the project inbox
+  for (const r of rows) if (r.cwd.replace(/\/+$/, "").replace(/[/.]/g, "-") === scope) return r.cwd;
+  return null;
+}
+
+if (!flag("--dry-run")) {
+  for (const f of readdirSync(RULES_DIR)) {
+    if (!f.endsWith(".md")) continue;
+    const scope = f.slice(0, -3);
+    if (scope === GLOBAL || (only && scope !== only)) continue;
+    const { watermark } = parseDigest(scope);
+    if (watermark === EPOCH) continue;
+    const cwd = latestCwd(scope);
+    if (!cwd) continue;
+    const swept = sweepLearnedInbox(join(cwd, ".claude", "LEARNED.md"), watermark.slice(0, 10));
+    if (swept) console.log(`  ${scope}: LEARNED.md 清出 ${swept} 条水位线前旧条目`);
+  }
+}

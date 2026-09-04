@@ -4,7 +4,7 @@
 // a mismatch shows up as "no rules yet", which is indistinguishable from success
 // because the hook always exits 0.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -60,6 +60,33 @@ export function readRules(scope: string): Rule[] {
     if (r) rules.push(r);
   }
   return rules;
+}
+
+/**
+ * Trim `.claude/LEARNED.md` entries dated before the rollup watermark day:
+ * those sessions are already distilled (or gated out of distill for good), so
+ * the raw inbox only keeps what the pipeline hasn't caught up with. Entries
+ * from the watermark day itself stay — their sessions may still be pending.
+ * Header, blank and undated lines always survive. Returns removed line count.
+ */
+export function sweepLearnedInbox(learnedPath: string, watermarkDay: string): number {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(watermarkDay)) return 0;
+  let mtimeBefore: number;
+  try { mtimeBefore = statSync(learnedPath).mtimeMs; } catch { return 0; } // no inbox → nothing to sweep
+  const kept: string[] = [];
+  let removed = 0;
+  for (const line of readFileSync(learnedPath, "utf8").split("\n")) {
+    const m = /^- (\d{4}-\d{2}-\d{2}) /.exec(line);
+    if (m && m[1] < watermarkDay) { removed++; continue; }
+    kept.push(line);
+  }
+  if (!removed) return 0;
+  try {
+    // a Stop hook may append concurrently; if the file moved, skip — next rollup retries
+    if (statSync(learnedPath).mtimeMs !== mtimeBefore) return 0;
+    writeFileSync(learnedPath, kept.join("\n"));
+  } catch { return 0; }
+  return removed;
 }
 
 /** Project rules first, then global rules not already covered, by count desc. */
