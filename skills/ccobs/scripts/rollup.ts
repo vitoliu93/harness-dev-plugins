@@ -22,7 +22,7 @@ import { Database } from "bun:sqlite";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
-import { GLOBAL_SCOPE as GLOBAL, OBS_DIR, RULES_DIR, digestPath, normalizeScope, parseRuleLine, renderRuleLine, sweepLearnedInbox, type Rule } from "./rules-digest.ts";
+import { GLOBAL_SCOPE as GLOBAL, OBS_DIR, RULES_DIR, digestPath, normalizeScope, parseRuleLine, pruneStale, renderRuleLine, sweepLearnedInbox, type Rule } from "./rules-digest.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const BAK_DIR = join(RULES_DIR, ".bak");
@@ -247,9 +247,13 @@ for (const scope of scopes) {
     watermark = batch[batch.length - 1].at;
   }
   if (watermark === since) continue;
-  if (writeDigest(scope, renderDigest(scope, watermark, rules), mtimeBefore)) {
+  // 94% of the digest was ×1 notes nobody ever saw again; they still cost the
+  // merge model its EXISTING_CAP slots. Drop the ones that stayed ×1 for 90 days.
+  const kept = pruneStale(rules, new Date().toISOString().slice(0, 10));
+  const pruned = rules.length - kept.length;
+  if (writeDigest(scope, renderDigest(scope, watermark, kept), mtimeBefore)) {
     touched++;
-    console.log(`  ${scope}: ${rules.length} 条规则, watermark → ${watermark}`);
+    console.log(`  ${scope}: ${kept.length} 条规则${pruned ? `（清出 ${pruned} 条 90 天未再现的 ×1）` : ""}, watermark → ${watermark}`);
   } else {
     console.error(`  ${scope}: 摘要文件在合并期间被改动，本轮放弃`);
   }

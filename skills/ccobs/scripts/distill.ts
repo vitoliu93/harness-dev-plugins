@@ -102,7 +102,10 @@ function readItYourself(filePath: string): string {
 }
 
 const db = new Database(DB_PATH);
-try { db.exec("ALTER TABLE observations ADD COLUMN sop_candidate TEXT"); } catch {} // 存量库迁移;已有则跳过
+// 存量库迁移;已有则跳过
+for (const col of ["sop_candidate TEXT", "conclusion TEXT", "files TEXT"]) {
+  try { db.exec(`ALTER TABLE observations ADD COLUMN ${col}`); } catch {}
+}
 const sessionFilter = opt("--session");
 const pending = db
   .prepare(
@@ -160,8 +163,8 @@ const tomb = db.prepare(
 const put = db.prepare(
   `INSERT OR REPLACE INTO observations
    (session_id, distilled_at, distill_model, task_type, outcome, corrections,
-    dispatch_engine, dispatch_result, summary, learn_candidates, sop_candidate)
-   VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    dispatch_engine, dispatch_result, summary, learn_candidates, sop_candidate, conclusion, files)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 );
 
 let ok = 0;
@@ -192,6 +195,8 @@ for (const s of pending) {
       j.dispatch_engine ?? null, j.dispatch_result ?? null,
       String(j.summary).slice(0, 200), JSON.stringify(j.learn_candidates ?? []),
       j.sop_candidate ? String(j.sop_candidate).slice(0, 60) : null,
+      j.conclusion ? String(j.conclusion).slice(0, 200) : null,
+      JSON.stringify(Array.isArray(j.files) ? j.files.slice(0, 6).map(String) : []),
     );
     ok++;
   } catch (e) {

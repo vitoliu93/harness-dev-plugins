@@ -100,7 +100,9 @@ CREATE TABLE IF NOT EXISTS observations (
   dispatch_result  TEXT,                 -- ok|retried|blocked
   summary          TEXT,                 -- one line, human-readable
   learn_candidates TEXT,                 -- JSON array of rule candidates
-  sop_candidate    TEXT                  -- named repeatable procedure, or NULL (SOP-skill mining)
+  sop_candidate    TEXT,                  -- named repeatable procedure, or NULL (SOP-skill mining)
+  conclusion       TEXT,                  -- what the session concluded / where it died; recall shows it inline
+  files            TEXT                   -- JSON array of files the session touched
 );
 
 -- ============ the six observability views ============

@@ -89,6 +89,14 @@ export function sweepLearnedInbox(learnedPath: string, watermarkDay: string): nu
   return removed;
 }
 
+/** A rule seen once and not seen again for this long is a stale note; rollup drops it from the digest. */
+export const STALE_DAYS = 90;
+
+export function pruneStale(rules: Rule[], today: string, days = STALE_DAYS): Rule[] {
+  const cutoff = new Date(Date.parse(today) - days * 86_400_000).toISOString().slice(0, 10);
+  return rules.filter((r) => r.count > 1 || r.last >= cutoff);
+}
+
 /** How many project rules the SessionStart replay injects. */
 export const MAX_PROJECT_RULES = 12;
 /** A rule seen once is a note, not a rule; it stays in the digest but is not replayed. */

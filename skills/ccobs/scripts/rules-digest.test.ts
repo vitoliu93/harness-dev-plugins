@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { normalizeScope, parseRuleLine, pickRules, projectKey, renderRuleLine, sweepLearnedInbox } from "./rules-digest.ts";
+import { normalizeScope, parseRuleLine, pickRules, projectKey, pruneStale, renderRuleLine, sweepLearnedInbox } from "./rules-digest.ts";
 
 // If render and parse ever drift, every existing rule reads back as count 1 and
 // rollup rewrites the digest with all counts reset — the hand-curated content is
@@ -99,4 +99,13 @@ test("replay picks: drops ×1 notes, one-project 'global' rules, and rules the c
   });
   expect(picked.project.map((x) => x.text)).toEqual(["修改 SKILL.md 后必须跑 skill-atlas 对账"]);
   expect(picked.global.map((x) => x.text)).toEqual(["检查远程仓库前必须git fetch避免假阳性"]);
+});
+
+test("pruneStale drops ×1 rules older than the window and keeps everything else", () => {
+  const rules = [
+    { text: "old note", count: 1, last: "2026-05-01" },
+    { text: "fresh note", count: 1, last: "2026-08-20" },
+    { text: "old but repeated", count: 2, last: "2026-01-01" },
+  ];
+  expect(pruneStale(rules, "2026-09-05").map((r) => r.text)).toEqual(["fresh note", "old but repeated"]);
 });

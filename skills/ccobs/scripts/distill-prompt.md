@@ -19,6 +19,9 @@
 - `dispatch_engine`: 旧字段名。如果会话通过 use-agents/orchestrate 启动独立 CLI agent，写渠道名（如 "deepseek"、"claude"、"cursor"），否则 null。内置 subagent 仍按现有适配器单独记录。
 - `dispatch_result`: dispatch 的结局：`ok` | `retried`（续连重派过）| `blocked`（挂起交还用户）| null（没用 dispatch）。
 - `summary`: 一句中文，≤40 字，说清"这个会话做了什么、结果如何"。写给一个月后翻账本的人看。
+- `conclusion`: 一句中文，≤60 字。这个会话**得出的结论或踩到的坑**：最后判断是什么、为什么放弃某条路、留下了什么产物。
+  写给下次接着做同一件事的人看，要有「为什么」，不是重复 summary。没有就 ""。
+- `files`: 字符串数组，会话里**实际改过**或作为核心依据读过的文件路径（仓库内相对路径），≤6 条。没有就 []。
 - `learn_candidates`: 字符串数组。会话中出现的、值得沉淀为规则的教训——用户重复强调的偏好、
   助手踩过的坑、被纠正后确认的做法。没有就 []。每条 ≤30 字。
 - `sop_candidate`: 会话是否走了一段**可复现的多步流程**——固定顺序的操作/检查,换个任务
