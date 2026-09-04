@@ -66,7 +66,17 @@ function run(): void {
     );
   }
   try {
-    const { project, global } = topRules(cwd, MAX_PROJECT_RULES);
+    // Lines already in the model's context: a digest rule that restates one of
+    // them is a wasted slot, so hand them to the picker.
+    const known: string[] = [];
+    for (const f of [path.join(cwd, "AGENTS.md"), path.join(cwd, "CLAUDE.md"), path.join(homedir(), ".claude", "CLAUDE.md")]) {
+      if (!isFile(f)) continue;
+      for (const line of readFileSync(f, "utf-8").split(/\r\n?|\n/)) {
+        const t = line.replace(/^\s*[-*]\s*/, "").trim();
+        if (t.length >= 8 && !t.startsWith("#") && !t.startsWith("@")) known.push(t);
+      }
+    }
+    const { project, global } = topRules(cwd, MAX_PROJECT_RULES, known);
     if (project.length || global.length) {
       print("<rolled-up-rules>");
       print(

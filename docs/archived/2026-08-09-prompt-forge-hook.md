@@ -1,3 +1,5 @@
+> 已于 2026-09-05 移除（v2.54.0）。一个月台账：每句中等长度输入先等 20 秒（中位），改写只是主 agent 已有信息的子集，Codex 端读不到 transcript。原因见当日会话复盘。
+
 # prompt-forge: 实验性 UserPromptSubmit 增强 Hook
 
 ## 概述

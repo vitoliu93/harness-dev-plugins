@@ -14,7 +14,9 @@
 import { appendFileSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import * as path from "node:path";
 
-const MARKER = /\[LEARN\]\s*([a-z一-鿿-]+)?\s*[::]\s*(.+)/gi;
+// Anchored to the line start: a [LEARN] quoted mid-sentence (the model talking
+// ABOUT the convention) used to be captured as a half-sentence rule.
+const MARKER = /^[ \t]*(?:[-*]\s*)?\[LEARN\]\s*([a-z一-鿿-]+)?\s*[::]\s*(.+)/gim;
 const HEADER = "# LEARNED — raw inbox (auto-captured by learn-capture hook; graduate via /debrief)\n";
 
 // ---------------------------------------------------------------------------

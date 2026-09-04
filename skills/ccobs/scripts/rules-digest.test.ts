@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { normalizeScope, parseRuleLine, projectKey, renderRuleLine, sweepLearnedInbox } from "./rules-digest.ts";
+import { normalizeScope, parseRuleLine, pickRules, projectKey, renderRuleLine, sweepLearnedInbox } from "./rules-digest.ts";
 
 // If render and parse ever drift, every existing rule reads back as count 1 and
 // rollup rewrites the digest with all counts reset — the hand-curated content is
@@ -75,4 +75,28 @@ test("sweep survives a missing file and a bad watermark", () => {
   expect(sweepLearnedInbox(p, "not-a-date")).toBe(0);
   expect(sweepLearnedInbox(p, "1970-01-01")).toBe(0); // EPOCH watermark sweeps nothing
   expect(readFileSync(p, "utf8")).toBe(INBOX);
+});
+
+test("replay picks: drops ×1 notes, one-project 'global' rules, and rules the context already states", () => {
+  const r = (text: string, count: number) => ({ text, count, last: "2026-09-01" });
+  const digests = new Map([
+    ["proj-a", [r("检查远程仓库前必须 git fetch 避免假阳性", 3), r("改动必须基于 dev 分支而非 main", 6)]],
+    ["proj-b", [r("检查远程前先 git fetch，避免假阳性", 2)]],
+  ]);
+  const picked = pickRules({
+    project: [
+      r("每次发布必须把三份清单改成同一版本：plugin.json、marketplace.json", 7),
+      r("修改 SKILL.md 后必须跑 skill-atlas 对账", 2),
+      r("数据库懒打开错误需探针查询触发", 1),
+    ],
+    global: [
+      r("检查远程仓库前必须git fetch避免假阳性", 7), // echoed by two projects → global
+      r("改动必须基于dev分支而非main", 6), // only proj-a says so → not global
+    ],
+    digests,
+    known: ["每次发布都把 plugin.json、marketplace.json 改成同一版本，再提交和推送。"],
+    limit: 12,
+  });
+  expect(picked.project.map((x) => x.text)).toEqual(["修改 SKILL.md 后必须跑 skill-atlas 对账"]);
+  expect(picked.global.map((x) => x.text)).toEqual(["检查远程仓库前必须git fetch避免假阳性"]);
 });

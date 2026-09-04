@@ -4,7 +4,7 @@
 // a mismatch shows up as "no rules yet", which is indistinguishable from success
 // because the hook always exits 0.
 
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -89,23 +89,98 @@ export function sweepLearnedInbox(learnedPath: string, watermarkDay: string): nu
   return removed;
 }
 
-/** How many project rules the SessionStart replay injects; below this line a rule is "sunken". */
+/** How many project rules the SessionStart replay injects. */
 export const MAX_PROJECT_RULES = 12;
+/** A rule seen once is a note, not a rule; it stays in the digest but is not replayed. */
+export const MIN_REPLAY_COUNT = 2;
+/** A "global" rule must have been distilled independently in at least this many projects. */
+export const MIN_GLOBAL_PROJECTS = 2;
 
 const byWeight = (a: Rule, b: Rule) => b.count - a.count || b.last.localeCompare(a.last);
 
-/** Rules ranked below the session-start injection cap — the pool task-relevant recall picks from. */
-export function sunkenRules(cwd: string, skip = MAX_PROJECT_RULES): Rule[] {
-  return readRules(projectKey(cwd)).sort(byWeight).slice(skip);
+/** Character bigrams after dropping spaces and punctuation; works for Chinese and English alike. */
+export function bigrams(s: string): Set<string> {
+  const t = s.toLowerCase().replace(/[\s\p{P}]/gu, "");
+  const out = new Set<string>();
+  for (let i = 0; i + 1 < t.length; i++) out.add(t.slice(i, i + 2));
+  return out;
 }
 
-/** Project rules first, then global rules not already covered, by count desc. */
-export function topRules(cwd: string, limit: number): { project: Rule[]; global: Rule[] } {
-  const project = readRules(projectKey(cwd)).sort(byWeight).slice(0, limit);
-  const seen = new Set(project.map((r) => r.text));
-  const global = readRules(GLOBAL_SCOPE)
-    .filter((r) => r.count >= 3 && !seen.has(r.text))
-    .sort(byWeight)
-    .slice(0, limit);
-  return { project, global };
+/**
+ * Overlap coefficient |A∩B| / min(|A|,|B|). Chosen over Jaccard so a short rule
+ * that is fully contained in a long AGENTS.md sentence still reads as the same
+ * rule. ponytail: bigram overlap misses paraphrases that share no characters
+ * ("description应简洁" vs "技能描述需简洁"); an embedding pass if that matters.
+ */
+export function similar(a: Set<string>, b: Set<string>, threshold = 0.6): boolean {
+  const small = a.size <= b.size ? a : b;
+  const large = small === a ? b : a;
+  if (!small.size) return false;
+  let hit = 0;
+  for (const g of small) if (large.has(g)) hit++;
+  return hit / small.size >= threshold;
+}
+
+/** Every project digest on disk, keyed by scope; `_global` excluded. */
+export function readProjectDigests(): Map<string, Rule[]> {
+  const out = new Map<string, Rule[]>();
+  if (!existsSync(RULES_DIR)) return out;
+  for (const f of readdirSync(RULES_DIR)) {
+    if (!f.endsWith(".md")) continue;
+    const scope = f.slice(0, -3);
+    if (scope === GLOBAL_SCOPE) continue;
+    out.set(scope, readRules(scope));
+  }
+  return out;
+}
+
+export type PickInput = {
+  project: Rule[];
+  global: Rule[];
+  /** other projects' rules, to decide which global rules are really cross-project */
+  digests: Map<string, Rule[]>;
+  /** lines already in the model's context (AGENTS.md / CLAUDE.md); rules echoing them are dropped */
+  known: string[];
+  limit: number;
+};
+
+/** Pure selection; topRules is the IO wrapper. */
+export function pickRules({ project, global, digests, known, limit }: PickInput): { project: Rule[]; global: Rule[] } {
+  const knownG = known.map(bigrams).filter((g) => g.size >= 6);
+  const echoed = (g: Set<string>, list: Set<string>[]) => list.some((k) => similar(g, k));
+
+  const projectPicked: Rule[] = [];
+  const projectG: Set<string>[] = [];
+  for (const r of project.filter((r) => r.count >= MIN_REPLAY_COUNT).sort(byWeight)) {
+    const g = bigrams(r.text);
+    if (echoed(g, knownG) || echoed(g, projectG)) continue;
+    projectPicked.push(r);
+    projectG.push(g);
+    if (projectPicked.length >= limit) break;
+  }
+
+  const digestG = [...digests.values()].map((rules) => rules.map((r) => bigrams(r.text)));
+  const globalPicked: Rule[] = [];
+  const globalG: Set<string>[] = [];
+  for (const r of global.filter((r) => r.count >= 3).sort(byWeight)) {
+    const g = bigrams(r.text);
+    const projects = digestG.filter((list) => echoed(g, list)).length;
+    if (projects < MIN_GLOBAL_PROJECTS) continue;
+    if (echoed(g, knownG) || echoed(g, projectG) || echoed(g, globalG)) continue;
+    globalPicked.push(r);
+    globalG.push(g);
+    if (globalPicked.length >= limit) break;
+  }
+  return { project: projectPicked, global: globalPicked };
+}
+
+/** Project rules first, then global rules that are really cross-project, minus anything the context already says. */
+export function topRules(cwd: string, limit: number, known: string[] = []): { project: Rule[]; global: Rule[] } {
+  return pickRules({
+    project: readRules(projectKey(cwd)),
+    global: readRules(GLOBAL_SCOPE),
+    digests: readProjectDigests(),
+    known,
+    limit,
+  });
 }

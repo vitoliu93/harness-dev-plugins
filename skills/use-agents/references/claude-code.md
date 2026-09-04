@@ -19,8 +19,6 @@ claude -p '<prompt>' --model <model> --effort <level> \
 ## Herdr
 
 - Herdr kind: `claude`.
-- Pass `PROMPT_FORGE=0` on `herdr tab create --env`; the prompt is already the
-  complete instruction.
 - Pass native Claude arguments after `herdr agent start ... --`.
 
 ## Warnings
