@@ -62,7 +62,7 @@ async function listAgents(only: Set<string> | null) {
   return (j.result.agents as any[])
     .filter((a) => a.name && KINDS.has(a.agent))
     .filter((a) => !only || only.has(a.name))
-    .map((a) => ({ name: a.name as string, kind: a.agent as string, session: a.agent_session?.value as string }));
+    .map((a) => ({ name: a.name as string, kind: a.agent as string, session: a.agent_session?.value as string, cwd: a.cwd as string }));
 }
 
 async function nudge(name: string) {
@@ -85,14 +85,12 @@ async function main() {
 
   for (;;) {
     const now = new Date();
+    const weekly: object[] = [];
     for (const a of await listAgents(only)) {
       const screen = await herdr("agent", "read", a.name, "--source", "recent-unwrapped", "--lines", "40");
       const wall = detectWall(screen, now);
       if (!wall) { waiting.delete(a.name); continue; }
-      if (wall.kind === "weekly") {
-        log({ event: "weekly_limit", agent: a.name, kind: a.kind, session: a.session, action: "handoff" });
-        process.exit(2);
-      }
+      if (wall.kind === "weekly") { weekly.push({ agent: a.name, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
       const due = waiting.get(a.name) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
       if (!waiting.has(a.name)) { waiting.set(a.name, due); log({ event: "short_limit", agent: a.name, nudge_at: due.toISOString() }); }
       if (now >= due) {
@@ -101,6 +99,8 @@ async function main() {
         log({ event: "nudged", agent: a.name });
       }
     }
+    // Agents share one subscription, so several hit the weekly wall together; report them all at once.
+    if (weekly.length) { log({ event: "weekly_limit", agents: weekly, action: "handoff" }); process.exit(2); }
     if (once) break;
     await Bun.sleep(interval);
   }

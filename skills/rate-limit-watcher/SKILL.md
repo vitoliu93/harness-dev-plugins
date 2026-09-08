@@ -31,16 +31,18 @@ is every 10 minutes (`--interval` seconds); a wall does not go away, so a late
 sighting loses nothing.
 
 The script prints one JSON line per event: `short_limit` (with `nudge_at`),
-`nudged`, `weekly_limit`. On `weekly_limit` it exits with code 2; that exit
-is the wake-up signal for the caller.
+`nudged`, `weekly_limit`. Agents on one subscription hit walls together, so
+`weekly_limit` lists every walled agent (`agents[]` with `cwd` and `session`)
+and then exits with code 2; that exit is the wake-up signal for the caller.
 
 ## On weekly_limit
 
-1. Load `take-over`: save a handoff file for the blocked agent's session (the
-   event carries `session`), and tell the blocked agent to write its own
-   handoff first if it can still type.
-2. Load `use-agents`: start a new agent on a route whose quota record is
-   clear, in the same cwd, with the prompt `读 <handoff file>，按 Next Steps 继续`.
+1. For each agent in `agents[]`, load `take-over`: save a handoff file for
+   its session, and tell the agent to write its own handoff first if it can
+   still type.
+2. Load `use-agents`: the walled CLI is out for the week, so pick a route on
+   the other CLI or provider whose quota record is clear. Start one new agent
+   per handoff, in the same cwd, with `读 <handoff file>，按 Next Steps 继续`.
 3. Restart the watch so the new agent is covered.
 
 ## Gates
