@@ -19,11 +19,16 @@ The ranger watches other agents' screens. Two walls, two moves:
 
 ```bash
 RATE_LIMIT_WATCHER_DIR="<absolute path of the directory containing this SKILL.md>";
-bun "$RATE_LIMIT_WATCHER_DIR/scripts/watch.ts" --agents a,b --interval 60 --grace 120
+bun "$RATE_LIMIT_WATCHER_DIR/scripts/watch.ts" --agents a,b
 ```
 
 Always `run_in_background`. Without `--agents` it watches every named
 claude/codex agent in Herdr. `--once` does one scan and exits.
+
+Polling costs no tokens: the script reads screens itself and types `继续`
+itself. The caller is woken only by the exit on `weekly_limit`. Default scan
+is every 10 minutes (`--interval` seconds); a wall does not go away, so a late
+sighting loses nothing.
 
 The script prints one JSON line per event: `short_limit` (with `nudge_at`),
 `nudged`, `weekly_limit`. On `weekly_limit` it exits with code 2; that exit

@@ -1,7 +1,7 @@
 // Forest ranger: watch Herdr agents for rate-limit walls and act.
 // 5-hour wall  → wait for reset, then send "继续".
 // weekly wall  → print a handoff event and exit 2 so the caller finds another agent.
-// Usage: bun watch.ts [--agents a,b] [--interval 60] [--grace 120] [--once]
+// Usage: bun watch.ts [--agents a,b] [--interval 600] [--grace 120] [--once]
 
 const KINDS = new Set(["claude", "codex"]);
 const LIMIT_RE = /hit your (usage |session |weekly )?limit|usage limit reached|limit reached/i;
@@ -78,7 +78,7 @@ async function main() {
   const argv = process.argv.slice(2);
   const opt = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
   const only = opt("--agents") ? new Set(opt("--agents")!.split(",")) : null;
-  const interval = +(opt("--interval") ?? 60) * 1000;
+  const interval = +(opt("--interval") ?? 600) * 1000;
   const grace = +(opt("--grace") ?? 120) * 1000;
   const once = argv.includes("--once");
   const waiting = new Map<string, Date>(); // agent → when to nudge
