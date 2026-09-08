@@ -24,7 +24,7 @@ bun "$RATE_LIMIT_WATCHER_DIR/scripts/watch.ts" --agents a,b >> "$LOG"
 ```
 
 Always `run_in_background`. Without `--agents` it watches every named
-claude/codex agent in Herdr. `--once` scans once and exits. `--hours`
+claude/codex agent in Herdr. `--once` scans once, reports, never nudges, and exits. `--hours`
 (default 24) ends the shift with `shift_over`.
 
 Polling costs no tokens: the script reads screens and types `继续` itself,

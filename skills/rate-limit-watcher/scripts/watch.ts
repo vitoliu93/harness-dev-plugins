@@ -104,7 +104,8 @@ async function main() {
       if (wall.kind === "weekly") { weekly.push({ agent: a.name, pane: a.id, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
       const due = waiting.get(a.id) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
       if (!waiting.has(a.id)) { waiting.set(a.id, due); log({ event: "short_limit", agent: a.name, pane: a.id, nudge_at: local(due) }); }
-      if (now >= due) {
+      // --once is a report; only the long-running watch acts, so two processes never nudge twice.
+      if (now >= due && !once) {
         await nudge(a.id);
         waiting.delete(a.id);
         nudgedOn.set(a.id, wall.text);
