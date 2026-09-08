@@ -71,8 +71,11 @@ async function nudge(name: string) {
   await herdr("agent", "send-keys", name, "Enter");
 }
 
+// Local wall-clock time, e.g. "2026-09-09 01:03:00"; the user reads these lines.
+const local = (d: Date) => d.toLocaleString("sv-SE");
+
 function log(ev: Record<string, unknown>) {
-  console.log(JSON.stringify({ at: new Date().toISOString(), ...ev }));
+  console.log(JSON.stringify({ at: local(new Date()), ...ev }));
 }
 
 async function main() {
@@ -98,7 +101,7 @@ async function main() {
       if (nudgedOn.get(a.name) === wall.text) continue;
       if (wall.kind === "weekly") { weekly.push({ agent: a.name, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
       const due = waiting.get(a.name) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
-      if (!waiting.has(a.name)) { waiting.set(a.name, due); log({ event: "short_limit", agent: a.name, nudge_at: due.toISOString() }); }
+      if (!waiting.has(a.name)) { waiting.set(a.name, due); log({ event: "short_limit", agent: a.name, nudge_at: local(due) }); }
       if (now >= due) {
         await nudge(a.name);
         waiting.delete(a.name);
@@ -107,7 +110,7 @@ async function main() {
       }
     }
     log({ event: "scan", watching: agents.map((a) => a.name),
-      waiting: [...waiting].map(([agent, due]) => ({ agent, nudge_at: due.toISOString() })) });
+      waiting: [...waiting].map(([agent, due]) => ({ agent, nudge_at: local(due) })) });
     // Agents share one subscription, so several hit the weekly wall together; report them all at once.
     if (weekly.length) { log({ event: "weekly_limit", agents: weekly, action: "handoff" }); process.exit(2); }
     if (once) break;
