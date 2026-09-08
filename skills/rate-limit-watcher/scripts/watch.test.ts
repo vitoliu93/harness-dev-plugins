@@ -43,3 +43,10 @@ test("weekly wall", () => {
 test("no wall", () => {
   expect(detectWall("Reading files... rate limit for API x is 100/min", now)).toBeNull();
 });
+
+test("wall text is stable for de-dup", () => {
+  const a = detectWall("junk\nYou've hit your usage limit. Try again at 3:30 PM.\n", now)!;
+  const b = detectWall("other junk before\nYou've hit your usage limit. Try again at 3:30 PM.\nmore", now)!;
+  expect(a.text.startsWith("hit your")).toBe(true);
+  expect(a.text.split("\n")[0]).toBe(b.text.split("\n")[0]);
+});

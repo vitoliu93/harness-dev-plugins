@@ -8,17 +8,18 @@ const LIMIT_RE = /hit your (usage |session |weekly )?limit|usage limit reached|l
 const WEEKLY_RE = /week/i;
 const CONTINUE = "继续";
 
-export type Wall = { kind: "weekly" } | { kind: "short"; resetAt: Date | null };
+export type Wall = { kind: "weekly"; text: string } | { kind: "short"; resetAt: Date | null; text: string };
 
 export function detectWall(screen: string, now = new Date()): Wall | null {
   const m = screen.match(LIMIT_RE);
   if (!m) return null;
   const tail = screen.slice(Math.max(0, m.index! - 200), m.index! + 300);
-  if (WEEKLY_RE.test(tail)) return { kind: "weekly" };
+  const text = screen.slice(m.index!, m.index! + 200).split("\n")[0].trim();
+  if (WEEKLY_RE.test(tail)) return { kind: "weekly", text };
   const resetAt = parseReset(tail, now);
   // A reset more than a day away cannot be waited out; hand off instead.
-  if (resetAt && resetAt.getTime() - now.getTime() > 24 * 3600_000) return { kind: "weekly" };
-  return { kind: "short", resetAt };
+  if (resetAt && resetAt.getTime() - now.getTime() > 24 * 3600_000) return { kind: "weekly", text };
+  return { kind: "short", resetAt, text };
 }
 
 // "resets 3am" / "resets 7pm (Asia/Shanghai)" / "resets at 3:30pm" / "Try again at 3:00 PM"
@@ -82,6 +83,7 @@ async function main() {
   const grace = +(opt("--grace") ?? 120) * 1000;
   const once = argv.includes("--once");
   const waiting = new Map<string, Date>(); // agent → when to nudge
+  const nudgedOn = new Map<string, string>(); // agent → wall text we already answered
 
   for (;;) {
     const now = new Date();
@@ -89,13 +91,16 @@ async function main() {
     for (const a of await listAgents(only)) {
       const screen = await herdr("agent", "read", a.name, "--source", "recent-unwrapped", "--lines", "40");
       const wall = detectWall(screen, now);
-      if (!wall) { waiting.delete(a.name); continue; }
+      if (!wall) { waiting.delete(a.name); nudgedOn.delete(a.name); continue; }
+      // The old wall line stays on screen after a nudge; only a new message counts.
+      if (nudgedOn.get(a.name) === wall.text) continue;
       if (wall.kind === "weekly") { weekly.push({ agent: a.name, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
       const due = waiting.get(a.name) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
       if (!waiting.has(a.name)) { waiting.set(a.name, due); log({ event: "short_limit", agent: a.name, nudge_at: due.toISOString() }); }
       if (now >= due) {
         await nudge(a.name);
         waiting.delete(a.name);
+        nudgedOn.set(a.name, wall.text);
         log({ event: "nudged", agent: a.name });
       }
     }
