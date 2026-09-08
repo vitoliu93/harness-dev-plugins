@@ -58,12 +58,14 @@ async function herdr(...args: string[]): Promise<string> {
   return out;
 }
 
-async function listAgents(only: Set<string> | null) {
+// Herdr can drop an agent's name when it re-detects the process; the pane id stays.
+// So the pane id is the identity and the command target, the name is only a label.
+export async function listAgents(only: Set<string> | null) {
   const j = JSON.parse(await herdr("agent", "list"));
   return (j.result.agents as any[])
-    .filter((a) => a.name && KINDS.has(a.agent))
-    .filter((a) => !only || only.has(a.name))
-    .map((a) => ({ name: a.name as string, kind: a.agent as string, session: a.agent_session?.value as string, cwd: a.cwd as string }));
+    .filter((a) => KINDS.has(a.agent))
+    .filter((a) => !only || only.has(a.name) || only.has(a.pane_id))
+    .map((a) => ({ id: a.pane_id as string, name: (a.name ?? a.pane_id) as string, kind: a.agent as string, session: a.agent_session?.value as string, cwd: a.cwd as string }));
 }
 
 async function nudge(name: string) {
@@ -94,23 +96,23 @@ async function main() {
     const weekly: object[] = [];
     const agents = await listAgents(only);
     for (const a of agents) {
-      const screen = await herdr("agent", "read", a.name, "--source", "recent-unwrapped", "--lines", "40");
+      const screen = await herdr("agent", "read", a.id, "--source", "recent-unwrapped", "--lines", "40");
       const wall = detectWall(screen, now);
-      if (!wall) { waiting.delete(a.name); nudgedOn.delete(a.name); continue; }
+      if (!wall) { waiting.delete(a.id); nudgedOn.delete(a.id); continue; }
       // The old wall line stays on screen after a nudge; only a new message counts.
-      if (nudgedOn.get(a.name) === wall.text) continue;
-      if (wall.kind === "weekly") { weekly.push({ agent: a.name, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
-      const due = waiting.get(a.name) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
-      if (!waiting.has(a.name)) { waiting.set(a.name, due); log({ event: "short_limit", agent: a.name, nudge_at: local(due) }); }
+      if (nudgedOn.get(a.id) === wall.text) continue;
+      if (wall.kind === "weekly") { weekly.push({ agent: a.name, pane: a.id, kind: a.kind, cwd: a.cwd, session: a.session }); continue; }
+      const due = waiting.get(a.id) ?? new Date((wall.resetAt ?? new Date(now.getTime() + 30 * 60_000)).getTime() + grace);
+      if (!waiting.has(a.id)) { waiting.set(a.id, due); log({ event: "short_limit", agent: a.name, pane: a.id, nudge_at: local(due) }); }
       if (now >= due) {
-        await nudge(a.name);
-        waiting.delete(a.name);
-        nudgedOn.set(a.name, wall.text);
-        log({ event: "nudged", agent: a.name });
+        await nudge(a.id);
+        waiting.delete(a.id);
+        nudgedOn.set(a.id, wall.text);
+        log({ event: "nudged", agent: a.name, pane: a.id });
       }
     }
     log({ event: "scan", watching: agents.map((a) => a.name),
-      waiting: [...waiting].map(([agent, due]) => ({ agent, nudge_at: local(due) })) });
+      waiting: [...waiting].map(([pane, due]) => ({ agent: agents.find((a) => a.id === pane)?.name ?? pane, nudge_at: local(due) })) });
     // Agents share one subscription, so several hit the weekly wall together; report them all at once.
     if (weekly.length) { log({ event: "weekly_limit", agents: weekly, action: "handoff" }); process.exit(2); }
     if (once) break;
