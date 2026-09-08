@@ -29,6 +29,8 @@ outputs, write boundaries, dependencies, and completion checks are clear.
 
 ## Launch through use-agents
 
+请严格按照 team 推荐的模型顺序选择 agents，每个 agent 均已配备对应的工具和 mcp。
+
 Load `use-agents` for local routes and carrier commands. In Herdr, create one
 tab per role instance and keep `{role, agent_name, tab_id, route_id}`. Use
 `--no-focus` so the user's tab stays in place.
