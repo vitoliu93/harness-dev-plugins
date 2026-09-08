@@ -11,6 +11,7 @@
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | exa-code | atom | grill-me 盲区扫描 · 搜索需求 | ①③ |
 | skill-review | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ②③ |
+| rate-limit-watcher | sop | "守林员/限额了帮我盯着/rate limit watcher" · use-agents 夜间无人值守启动后 | ①③ |
 | take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
 | ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |

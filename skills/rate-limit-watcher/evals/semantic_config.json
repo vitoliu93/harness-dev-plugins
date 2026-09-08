@@ -1,0 +1,63 @@
+{
+  "positive_concepts": {
+    "watch": {
+      "weight": 0.7,
+      "phrases": [
+        "守林员",
+        "rate limit watcher",
+        "盯着 agent",
+        "限额了",
+        "hit your limit",
+        "watch the agents",
+        "overnight agents",
+        "深夜 agent",
+        "rate limit wall",
+        "限额了帮我盯着"
+      ]
+    },
+    "wait": {
+      "weight": 0.6,
+      "phrases": [
+        "5 小时限额",
+        "five hour limit",
+        "到点继续",
+        "恢复了让它继续",
+        "自动发继续",
+        "wake it after reset",
+        "after reset",
+        "限额卡住",
+        "自动恢复",
+        "限额了帮我盯着"
+      ]
+    },
+    "handoff": {
+      "weight": 0.6,
+      "phrases": [
+        "周限额",
+        "weekly limit",
+        "另一个 agent 接手",
+        "hand over to another agent",
+        "another agent",
+        "接手它的活"
+      ]
+    }
+  },
+  "negative_concepts": {
+    "api": {
+      "weight": 0.7,
+      "exclusive": true,
+      "phrases": [
+        "429",
+        "API rate limit",
+        "限流中间件",
+        "重试策略",
+        "retry backoff"
+      ]
+    }
+  },
+  "fallback_positive_concepts": [
+    "watch",
+    "wait",
+    "handoff"
+  ]
+}

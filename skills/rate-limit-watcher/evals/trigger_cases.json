@@ -1,0 +1,21 @@
+{
+  "recommended_threshold": 0.28,
+  "negative_patterns": ["API rate limit", "429"],
+  "should_trigger": [
+    {"text": "我要睡了，agent 到限额了帮我盯着，恢复了让它继续", "family": "watch"},
+    {"text": "起一个守林员盯着那几个 codex agent", "family": "watch_ranger"},
+    {"text": "start a rate limit watcher for the overnight agents", "family": "watch_en"},
+    {"text": "claude 触发 5 小时限额了，到点自动发继续", "family": "wait"},
+    {"text": "周限额到了，让另一个 agent 接手它的活", "family": "handoff"},
+    {"text": "凌晨 agent 被限额卡住了怎么自动恢复", "family": "wait"}
+  ],
+  "should_not_trigger": [
+    {"text": "我们的 API 被 429 rate limit 了，怎么加重试", "family": "api"},
+    {"text": "给这个接口加一个 rate limit 中间件", "family": "api"}
+  ],
+  "near_neighbor": [
+    {"text": "接手这个 session 继续做", "family": "take_over"},
+    {"text": "用 herdr 开一个独立 agent", "family": "use_agents"},
+    {"text": "quota reset time 保存在哪里", "family": "use_agents_quota"}
+  ]
+}
