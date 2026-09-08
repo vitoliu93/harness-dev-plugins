@@ -10,7 +10,8 @@ metadata:
 
 # rate-limit-watcher
 
-The ranger watches other agents' screens. Two walls, two moves:
+The ranger watches other agents' screens. Run it on a cheap model
+(sonnet); the script does the work, the model only reports. Two walls, two moves:
 
 - **5-hour wall** → wait until the reset time plus a grace period, then send `继续` and press Enter.
 - **Weekly wall**, or any reset more than a day away → stop waiting; another agent takes the task over.
