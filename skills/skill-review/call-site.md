@@ -9,12 +9,12 @@
 |---|---|---|---|
 | advanced-plan | sop | ship(kox) 计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
-| exa-code | atom | grill-me 盲区扫描 · 搜索需求(skill-guard→executor) | ①③ |
+| exa-code | atom | grill-me 盲区扫描 · 搜索需求 | ①③ |
 | skill-review | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ②③ |
 | take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
 | ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
-| media-understanding | atom | 本地音视频/录屏(skill-guard→executor) | ③ |
+| media-understanding | atom | 本地音视频/录屏 | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
 | orchestrate | sop | "编排角色/fan out/advisor+programmer+audit" · 模型主动(准备多角色协作前) | ①③ |
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
@@ -22,7 +22,7 @@
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | study-coach | atom | 目标审计/迷茫/盘点/出题/垫脚石 | ③ |
-| use-html | atom | 可视化(skill-guard→executor) · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
+| use-html | atom | 可视化 · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
 | no-ai-slop | atom | 收尾汇报 · "汇报/说人话/去 AI 味" | ②③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |

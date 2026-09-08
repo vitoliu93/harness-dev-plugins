@@ -77,7 +77,7 @@ Delegation now goes through the
 ## Hooks
 
 `hooks/hooks.json` registers:
-- PreToolUse: `skill-guard.sh`, `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
+- PreToolUse: `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
 - Session/Stop/PostToolUse/PostCompact: `learn-capture.ts`, `session-replay.ts`, `plan-anchor.ts`, `security-warning-relay.ts`, `compact-audit.ts`, and ccobs `obs-enqueue.ts`
 
 Restart after hook edits.
