@@ -89,7 +89,8 @@ async function main() {
   for (;;) {
     const now = new Date();
     const weekly: object[] = [];
-    for (const a of await listAgents(only)) {
+    const agents = await listAgents(only);
+    for (const a of agents) {
       const screen = await herdr("agent", "read", a.name, "--source", "recent-unwrapped", "--lines", "40");
       const wall = detectWall(screen, now);
       if (!wall) { waiting.delete(a.name); nudgedOn.delete(a.name); continue; }
@@ -105,6 +106,8 @@ async function main() {
         log({ event: "nudged", agent: a.name });
       }
     }
+    log({ event: "scan", watching: agents.map((a) => a.name),
+      waiting: [...waiting].map(([agent, due]) => ({ agent, nudge_at: due.toISOString() })) });
     // Agents share one subscription, so several hit the weekly wall together; report them all at once.
     if (weekly.length) { log({ event: "weekly_limit", agents: weekly, action: "handoff" }); process.exit(2); }
     if (once) break;
