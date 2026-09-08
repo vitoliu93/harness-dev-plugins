@@ -28,7 +28,12 @@ claude/codex agent in Herdr. `--once` does one scan and exits.
 Polling costs no tokens: the script reads screens itself and types `继续`
 itself. The caller is woken only by the exit on `weekly_limit`. Default scan
 is every 10 minutes (`--interval` seconds); a wall does not go away, so a late
-sighting loses nothing.
+sighting loses nothing. The shift ends after `--hours` (default 24) with a
+`shift_over` event and exit 0.
+
+A finished agent shows no wall, so it is skipped without any check on the
+task. Each new wall carries a new reset time and counts as a new wait, so one
+agent can be woken as many times as the night needs.
 
 The script prints one JSON line per event: `short_limit` (with `nudge_at`),
 `nudged`, `weekly_limit`. Agents on one subscription hit walls together, so
