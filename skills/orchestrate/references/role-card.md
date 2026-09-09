@@ -42,3 +42,9 @@ Rules:
   one line per batch (`N/M, elapsed, failures`) plus an idempotent
   failure list for resume. The host's sentinel watches that file; nobody
   reads terminal scrollback.
+- A card that builds or reshapes a table, dataset, or any row-per-thing
+  deliverable states the row meaning in one sentence ("one row = one
+  reference image, with its one video") and the host confirms that sentence
+  with the user before the first agent starts. "Like the last deliverable"
+  constrains quality, not shape. A deletion against a live service with more
+  than one table names the table; the host does not pick the scope itself.

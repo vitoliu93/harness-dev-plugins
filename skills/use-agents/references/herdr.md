@@ -58,7 +58,7 @@ Launch is three steps; skip one and the agent is not launched:
 Claude kind: start with `--permission-mode auto` so it never stops at a
 `Do you want to proceed?` box (user decision 2026-08-27).
 
-Sentinel: always `run_in_background`; a foreground poll blocks the user's next
+Sentinel: use `scripts/wait-result.sh <agent> <result-file> <marker> [timeout]` next to this skill (exit 0 ready · 2 stuck · 3 idle · 4 timeout) instead of rewriting the loop. Always `run_in_background`; a foreground poll blocks the user's next
 message. It must recognise three stuck states besides "no result file":
 prompt left unsubmitted in the input box, a permission box, and
 `agent_status: blocked`. Text sent through `pane send-text` is shell-parsed
