@@ -51,6 +51,11 @@ Return `{agent_name, tab_id, pane_id, route_id}` to the caller.
 Launch is three steps; skip one and the agent is not launched:
 
 1. `agent start`, then `pane read` — trust the screen, not the start exit code.
+   Running `agent start` in the same second as `tab create` can silently
+   register nothing (`agent prompt` then fails with `agent_not_found`, seen
+   2026-09-09 ×3). Wait ~3s after `tab create`, confirm with
+   `herdr agent get <name>` before prompting; if missing, run `agent start`
+   again on the same pane.
 2. `agent prompt` + `send-keys Enter`, then `pane read` again: it must be
    reading the task card, not sitting at `→ <your prompt>`.
 3. Only now attach the sentinel and tell the user it is running.
