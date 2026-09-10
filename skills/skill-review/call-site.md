@@ -14,7 +14,6 @@
 | take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
 | ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
-| media-understanding | atom | 本地音视频/录屏 | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
 | orchestrate | sop | "编排角色/fan out/advisor+programmer+audit" · 模型主动(准备多角色协作前) | ①③ |
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
