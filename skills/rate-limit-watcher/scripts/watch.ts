@@ -2,6 +2,7 @@
 // 5-hour wall  → wait for reset, then send "继续".
 // weekly wall  → print a handoff event and exit 2 so the caller finds another agent.
 // Usage: bun watch.ts [--agents a,b] [--interval 600] [--grace 120] [--hours 24] [--once]
+// Without --agents it watches every claude/codex agent except the ranger's own pane (HERDR_PANE_ID).
 
 const KINDS = new Set(["claude", "codex"]);
 const LIMIT_RE = /hit your (usage |session |weekly )?limit|usage limit reached|limit reached/i;
@@ -63,7 +64,7 @@ async function herdr(...args: string[]): Promise<string> {
 export async function listAgents(only: Set<string> | null) {
   const j = JSON.parse(await herdr("agent", "list"));
   return (j.result.agents as any[])
-    .filter((a) => KINDS.has(a.agent))
+    .filter((a) => KINDS.has(a.agent) && a.pane_id !== process.env.HERDR_PANE_ID)
     .filter((a) => !only || only.has(a.name) || only.has(a.pane_id))
     .map((a) => ({ id: a.pane_id as string, name: (a.name ?? a.pane_id) as string, kind: a.agent as string, session: a.agent_session?.value as string, cwd: a.cwd as string }));
 }

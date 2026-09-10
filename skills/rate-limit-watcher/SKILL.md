@@ -20,12 +20,17 @@ The ranger watches other agents' screens. Run it on a cheap model
 
 ```bash
 RATE_LIMIT_WATCHER_DIR="<absolute path of the directory containing this SKILL.md>";
-LOG="${TMPDIR:-/tmp}/rate-limit-watcher.log";
-bun "$RATE_LIMIT_WATCHER_DIR/scripts/watch.ts" --agents a,b >> "$LOG"
+LOG="${TMPDIR:-/tmp}/rate-limit-watcher.log"; echo "$LOG";
+nohup bun "$RATE_LIMIT_WATCHER_DIR/scripts/watch.ts" >> "$LOG" 2>&1 & disown
 ```
 
-Always `run_in_background`. Without `--agents` it watches every named
-claude/codex agent in Herdr. `--once` scans once, reports, never nudges, and exits. `--hours`
+Launch with `nohup … & disown`, not `run_in_background`: the harness kills
+background tasks when memory runs low, and a watch that dies at 3am nudges
+nobody. Keep the printed absolute `$LOG` path; every later check uses it.
+
+Without `--agents` it watches every claude/codex agent in Herdr except the
+ranger's own pane, so agents started later are covered too. `--agents a,b`
+narrows to a list. `--once` scans once, reports, never nudges, and exits. `--hours`
 (default 24) ends the shift with `shift_over`.
 
 Polling costs no tokens: the script reads screens and types `继续` itself,
@@ -44,7 +49,9 @@ The user cannot see the log, so the ranger speaks three times:
 1. **On start**: run `--once`, report who is watched and who is waiting, then
    start the background watch.
 2. **Every 30 minutes**: `/loop 30m` (or ScheduleWakeup) reads the last
-   `scan` line and reports the same two lists.
+   `scan` line and reports the same two lists. In the same check run
+   `pgrep -f watch.ts`; if the process is gone and the last event is a plain
+   `scan`, it was killed, so relaunch the same command and say so.
 3. **When the watch exits**: report the last event before acting on it.
 
 ## On weekly_limit
