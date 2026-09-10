@@ -40,7 +40,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | advanced-plan | Write and track an acceptance-bearing dev plan as a mini-project. |
 | debrief | Archive plan artifacts, distill one memory, surface skill candidates. |
 | use-agents | Start an independent agent and find its local route or definition. |
-| grill-me | Escalate only high-risk decisions before substantive work. |
+| grill-me | Round-by-round interview across a design tree until every branch is settled. |
 | take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
 | exa-code | Search the web for code examples and API docs via Exa. |
 | use-html | Self-contained HTML explainer or pre-build clickable prototype. |

@@ -25,7 +25,7 @@
 | 你纠正我 | 正常说就行 | 我打一行 `[LEARN] 类型: 规则` → Stop 钩子存进 `.claude/LEARNED.md` → 下次会话自动回放最近 5 条 |
 | 月度体检 | "skill 体检" | skill-review:路由重叠 / 陈旧度 / 触发评测 / token 预算,只报告不动手 |
 | 铸造新技能 | 候选满 3 次时我会主动提议 | skill-forge(消化自 yao-meta-skill:资格门 + trigger-first 评测,工具链已 vendored) |
-| 动手前对齐决策 | "grill me / 盘问我" | grill-me(CEO/CTO 分层:高风险决策逐个问,细节自决+公示) |
+| 动手前对齐决策 | "grill me / 盘问我" | grill-me(决策树按轮走前沿:每轮一批问题带推荐答案,前沿空了才动手) |
 
 **先重启会话**:v1.11 的三个钩子和新技能要重启才加载。
 
