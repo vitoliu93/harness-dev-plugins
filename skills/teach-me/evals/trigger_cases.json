@@ -1,0 +1,23 @@
+{
+  "recommended_threshold": 0.48,
+  "should_trigger": [
+    { "text": "teach me Rust 的所有权", "family": "teach" },
+    { "text": "教我 tmux，我只有十分钟", "family": "teach" },
+    { "text": "讲讲 Kubernetes 的 Service 是什么", "family": "teach" },
+    { "text": "先讲讲点积，我没印象了", "family": "teach" },
+    { "text": "我在看 Postgres 文档，MVCC 是什么意思", "family": "docs_concept" },
+    { "text": "我想学 Docker，从哪开始", "family": "teach" }
+  ],
+  "should_not_trigger": [
+    { "text": "把今天的学习进度存档", "family": "resume_learning" },
+    { "text": "读档，继续上次的学习", "family": "resume_learning" },
+    { "text": "面试前考考我算法题", "family": "interview" },
+    { "text": "我不懂这个 Python 报错", "family": "engineering_help" },
+    { "text": "帮我做职业规划", "family": "career" }
+  ],
+  "near_neighbor": [
+    { "text": "总结一下这篇教材", "family": "summary" },
+    { "text": "给这段代码做 code review", "family": "code_review" },
+    { "text": "帮我写一个 tmux 配置", "family": "build" }
+  ]
+}

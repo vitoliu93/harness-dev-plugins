@@ -51,7 +51,7 @@
 执行层   Explore · Claude Code / pi / cursor-agent · 项目自己的执行器
 项目层   kox 插件的 gitee-ent MCP / kox-browser-test / kox-deploy-k8s / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)
-学习层   resume-learning · study-coach 五模式(目标/急救/盘点/出题/垫脚石)
+学习层   resume-learning · teach-me(摸底后只讲缺口)
 基座     session jsonl 全量日志 —— "The log is the agent",一切沉淀都是日志上的投影
 ```
 

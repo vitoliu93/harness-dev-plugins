@@ -6,7 +6,7 @@ One file per project root `<项目根>/RESUME.md`:
 
 ```markdown
 # 存档 — <项目名> 学习进度
-> 目标行: … (study-coach sets; this skill read-only)
+> 目标行: … (set via grill-me; this skill read-only)
 > CWD: /abs/path/to/project/root
 
 ## 当前主线: <主题>
@@ -39,7 +39,7 @@ One file per project root `<项目根>/RESUME.md`:
 ## Temperature (both modes)
 
 Evidence-based praise · report real days only · slope over absolute · interruptions are normal.
-Deep motivation → study-coach.
+Concept gaps → teach-me.
 
 ## Rules
 

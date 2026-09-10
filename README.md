@@ -61,7 +61,7 @@ Boundary: *learning vs shipping* (`docs/study/north-star.md`).
 | Skill | What it does |
 |---|---|
 | resume-learning | Save/restore learning progress to `RESUME.md` with evidence + recall. |
-| study-coach | Goal audit, motivation rescue, progress review, practice, prerequisites. |
+| teach-me | Probe what you know about one topic, then explain only the gap. |
 
 Moved out (v2.0): `ship` → `kox-agent-plugins`.
 

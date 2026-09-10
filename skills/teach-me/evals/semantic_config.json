@@ -1,36 +1,22 @@
 {
   "positive_concepts": {
-    "study_coaching": {
+    "teach_me": {
       "weight": 1.0,
       "phrases": [
-        "为什么学",
-        "为什么要学",
-        "该学什么",
-        "路线合理吗",
-        "目标审计",
-        "goal audit",
-        "learning goals",
-        "不想学",
-        "学不下去",
-        "又断了",
-        "迷茫",
-        "motivation rescue",
-        "stuck motivation",
-        "学习盘点",
-        "进度分析",
-        "progress review",
-        "study inventory",
-        "出题",
-        "考考我",
-        "练一下",
-        "quizzes",
+        "teach me",
+        "教我",
+        "讲讲",
         "先讲讲",
-        "不懂",
+        "是什么",
+        "什么意思",
         "没印象",
-        "垫脚石",
-        "primers",
-        "coach",
-        "self-directed learning"
+        "不懂",
+        "想了解",
+        "想学",
+        "从哪开始",
+        "怎么理解",
+        "explain",
+        "what is"
       ]
     }
   },
@@ -61,7 +47,8 @@
         "报错",
         "bug",
         "代码审查",
-        "code review"
+        "code review",
+        "帮我写"
       ]
     }
   }

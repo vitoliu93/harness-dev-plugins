@@ -3,8 +3,9 @@
   "aliases": {
     "report": "no-ai-slop",
     "blindspot": "grill-me",
-    "quiz-me": "study-coach",
-    "stepping-stone": "study-coach",
+    "quiz-me": "teach-me",
+    "stepping-stone": "teach-me",
+    "study-coach": "teach-me",
     "docs-organize": "context-audit",
     "audit-context": "context-audit",
     "plan-prototype": "use-html",
