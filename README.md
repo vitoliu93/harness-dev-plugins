@@ -42,7 +42,6 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | use-agents | Start an independent agent and find its local route or definition. |
 | grill-me | Round-by-round interview across a design tree until every branch is settled. |
 | take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
-| exa-code | Search the web for code examples and API docs via Exa. |
 | use-html | Self-contained HTML explainer or pre-build clickable prototype. |
 | media-understanding | Transcribe and understand local audio/video. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
