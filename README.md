@@ -46,7 +46,6 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | use-html | Self-contained HTML explainer or pre-build clickable prototype. |
 | media-understanding | Transcribe and understand local audio/video. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
-| no-ai-slop | Human-voice editing, AI-slop detection, CEO-style task reports. |
 | skill-review | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | recall | Retrieve up to five past-session clues from ccobs. |

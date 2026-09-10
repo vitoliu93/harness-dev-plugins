@@ -14,7 +14,7 @@
 ## Power
 
 - **CTO (this skill)**: architecture/domain/rules including rule-making
-- **CEO (user)**: direction summary via `no-ai-slop`; veto via 规则变更公示
+- **CEO (user)**: direction summary in 结果/风险语言; veto via 规则变更公示
 - **Line detail**: hand off to code-simplify / ponytail-review
 
 ## Rule lifecycle

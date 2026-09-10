@@ -24,7 +24,6 @@
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | study-coach | atom | 目标审计/迷茫/盘点/出题/垫脚石 | ③ |
 | use-html | atom | 可视化 · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
-| no-ai-slop | atom | 收尾汇报 · "汇报/说人话/去 AI 味" | ②③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
