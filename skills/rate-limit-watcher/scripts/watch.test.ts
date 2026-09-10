@@ -15,8 +15,14 @@ test("codex try again at", () => {
   expect((w as any).resetAt.getMinutes()).toBe(30);
 });
 
-test("pm time already passed rolls to tomorrow", () => {
+test("clock that just passed is a stale wall, reset already happened", () => {
   const d = parseReset("resets 7pm", new Date("2026-09-08T20:00:00"))!;
+  expect(d.getDate()).toBe(8);
+  expect(d.getHours()).toBe(19);
+});
+
+test("clock far in the past means tomorrow", () => {
+  const d = parseReset("resets 3am", new Date("2026-09-08T23:00:00"))!;
   expect(d.getDate()).toBe(9);
 });
 

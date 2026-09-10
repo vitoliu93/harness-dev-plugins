@@ -48,7 +48,9 @@ export function parseReset(text: string, now = new Date()): Date | null {
   if (clock[3].toLowerCase() === "pm") h += 12;
   const d = new Date(now);
   d.setHours(h, +(clock[2] ?? 0), 0, 0);
-  if (d <= now) d.setDate(d.getDate() + 1);
+  // A 5-hour wall resets at most 5h ahead, so a clock that passed less than 19h ago is a stale
+  // line whose reset already happened: leave it in the past so the nudge is due now.
+  if (d <= now && now.getTime() - d.getTime() > 19 * 3600_000) d.setDate(d.getDate() + 1);
   return d;
 }
 
@@ -119,7 +121,9 @@ async function main() {
     if (weekly.length) { log({ event: "weekly_limit", agents: weekly, action: "handoff" }); process.exit(2); }
     if (once) break;
     if (Date.now() >= stopAt) { log({ event: "shift_over" }); break; }
-    await Bun.sleep(interval);
+    // Wake at the earliest nudge time instead of sleeping the whole interval past it.
+    const soonest = Math.min(interval, ...[...waiting.values()].map((d) => d.getTime() - Date.now()));
+    await Bun.sleep(Math.max(soonest, 5_000));
   }
 }
 
