@@ -20,6 +20,8 @@
 - When a dependency finishes, the host checks its output and passes the exact
   artifact to the next role.
 - Agents do not talk to each other directly.
+- Once a sentinel watches a role's result file, do not poll that role by hand;
+  the sentinel wakes the host. Hand-poll at most once when the host's own line is idle.
 - Send one clear correction list when a role misses its card. Repeated failure
   means choose another route or take the work back.
 

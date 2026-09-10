@@ -22,7 +22,13 @@ Rules:
 
 - Use paths and source material, not a retelling when the source exists.
 - One card covers one role instance.
-- Freeze shared contracts before parallel programmers start.
+- Freeze shared contracts before parallel programmers start. Then turn every
+  `must` / `must not` line of the contract into a runnable check (one shell line
+  is enough) before the first line of implementation; both the maker and the
+  reviewer copy their checks from that list, not from intuition.
+- When the reviewer's acceptance card may raise open rulings, ask for the
+  rulings first as a separate 5-minute deliverable; the host rules, then the
+  maker starts.
 - Intersect write lists before launch. Any overlap must be serialized or split.
 - A programmer's `writes` never includes a production database or environment.
   Migrations are written to the repo only; the host runs them, test first.

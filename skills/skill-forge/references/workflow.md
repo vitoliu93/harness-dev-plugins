@@ -49,6 +49,7 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 - plugin-dev:skill-reviewer
 - bump `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, and `.codex-plugin/plugin.json` to the same version
 - list exactly 3 next iterations
+- runtime skill (wraps a script): four acceptance layers before calling it done — synthetic-input unit tests → edge-case hand checks → full real-data regression → blind `claude -p` sessions that name the intent but not the skill, plus one neighbor-intent case that must not trigger
 
 ## Vendored tools
 
@@ -61,7 +62,15 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 | skill_usage.ts | obs.db usage with aliases |
 | style_review.ts | semantic style judge (pi) |
 
-Stdlib-only; fix in place.
+Stdlib-only; fix in place. None of them support `--help`. Argument shapes:
+
+| script | takes |
+|---|---|
+| context_sizer.ts | skill **directory**; a file path silently reports 0 tokens |
+| skill_style.ts | `--workspace-root <skills root>` (lints every skill; filter by name in output) |
+| style_review.ts | `--skill-dir <dir>` |
+| trigger_eval.ts | `--description-file` (plain text, not SKILL.md) `--cases` `--semantic-config`; JSON keys: `precision recall misfires results` |
+| build_skill_atlas.ts | `--workspace-root`; set `SKILL_ATLAS_DIR` to keep output out of the fleet atlas |
 
 `style_review.ts` calls the shared `pi-call` layer; do not send the semantic check to another agent.
 Run its fixed eval after changing either prompt under `references/style-review-*.md`.
