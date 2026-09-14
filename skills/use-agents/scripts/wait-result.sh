@@ -12,7 +12,8 @@ while [ $SECONDS -lt $end ]; do
   st=$(herdr agent get "$name" 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"]["agent"]["agent_status"])' 2>/dev/null)
   echo "$tail" | grep -qE "Interrupted|Do you want to proceed|\(y/n\)|API Error: Connection lost" && { echo "STUCK: prompt/permission box/connection lost"; echo "$tail"; exit 2; }
   [ "$st" = "blocked" ] && { echo "STUCK: blocked"; echo "$tail"; exit 2; }
-  if [ "$st" = "idle" ] || [ "$st" = "done" ]; then quiet=$((quiet+1)); else quiet=0; fi
+  # idle with a background shell still running is working, not stopped
+  if { [ "$st" = "idle" ] || [ "$st" = "done" ]; } && ! echo "$tail" | grep -qE '[0-9]+ shells?( still running)?'; then quiet=$((quiet+1)); else quiet=0; fi
   [ $quiet -ge 3 ] && { echo "IDLE without result"; herdr agent read "$name" --lines 20 2>/dev/null; exit 3; }
 done
 echo TIMEOUT; exit 4

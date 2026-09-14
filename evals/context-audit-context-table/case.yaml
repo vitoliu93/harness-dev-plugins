@@ -1,0 +1,10 @@
+schema_version: "1.0"
+name: context-audit-context-table
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: 帮我审一下这个项目每轮都会加载的 CLAUDE.md 和 AGENTS.md，把没用的删掉，精简一下。
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Bash, Skill, Write, Edit]
+  append_system_prompt: 评估环境：不要修改当前工作目录以外的文件，不要 git commit。

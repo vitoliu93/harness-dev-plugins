@@ -1,0 +1,13 @@
+schema_version: "1.0"
+name: visual-evidence-canvas
+description: 分层画布验收：满幅抑制、坐标点击误选、像素假框、缺角标，产出探针
+tags: [visual-evidence, trigger]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 30
+  timeout_seconds: 900
+  allowed_tools: [Read, Glob, Grep, Skill, Write]
+  prompt: |
+    帮我验收 CHANGE.md 里这次画布改动。浏览器现在用不了，同事上午用浏览器取到的数据记在 evidence/session-notes.md。
+    每项给我结论。能沉淀的项写成可重跑探针，统一放进 probes/canvas-probes.ts 一个文件。

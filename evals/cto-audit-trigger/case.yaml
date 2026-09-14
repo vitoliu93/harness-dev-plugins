@@ -1,0 +1,14 @@
+schema_version: "1.0"
+name: cto-audit-trigger
+description: 小型订单项目上跑 CTO 审计，看报告必备段落、宪法断言和三方取证
+tags: [cto-audit, trigger]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 80
+  timeout_seconds: 1800
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write, Edit, Agent]
+  append_system_prompt: |
+    评估环境限制：本项目没有 issue 系统。不要访问网络、MCP、飞书或任何外部服务，不要读写 ~/.claude 和 ~/.codex，不要 git push。需要 issue 数据的步骤直接跳过，并在报告里写一句说明。不要问用户问题，自己做决定并完成。
+  prompt: |
+    对当前目录这个项目做一次 CTO 视角的全量技术审计：架构、领域模型、规则边界有没有跑偏。报告写到 docs/audit/report.md。

@@ -51,6 +51,15 @@ Preserve gates while moving detail; do not shorten by deleting lifecycle or safe
 - list exactly 3 next iterations
 - runtime skill (wraps a script): four acceptance layers before calling it done — synthetic-input unit tests → edge-case hand checks → full real-data regression → blind `claude -p` sessions that name the intent but not the skill, plus one neighbor-intent case that must not trigger
 
+## Behaviour eval (`claude plugin eval`)
+
+Cases live in the repo-root `evals/<skill>-<slug>/`, separate from each skill's trigger `evals/`. Read the with-minus-without delta, not the raw score.
+
+- Grade with `file_exists`, `regex`, or `tool_used` first. Give an `llm` grader only one short named file (`focus: {source: file, path: …}`) or a short last message: a long `trace` reaches the judge cut down, `focus: files` shows only file names, and the judge then fails correct runs.
+- A negative case is a near miss the description excludes, not an unrelated prompt; an unrelated one passes in both arms and proves nothing.
+- A skill that reads `${CCOBS_DIR:-$HOME/.claude/observability}` gets a fixture from `context.scaffold_script`; without one the score measures the empty sandbox.
+- Drop runs with `error`, a $0 cost, or a `grader threw` verdict before scoring. Judge with `--judge-model sonnet`.
+
 ## Vendored tools
 
 | script | use |

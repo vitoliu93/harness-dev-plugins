@@ -1,0 +1,36 @@
+schema_version: "1.0"
+name: resume-learning-trigger
+context:
+  scaffold_script: scaffold.sh
+execution:
+  prompt: 读档，继续学 micrograd。
+  max_turns: 12
+  timeout_seconds: 400
+  allowed_tools: [Read, Glob, Grep, Bash, Skill]
+  append_system_prompt: 这是一次评估。不要修改或新建任何文件，不要 git commit。
+graders:
+  - name: fired
+    type: tool_used
+    tool: Skill
+    input_match: '(?:dev-kit:)?resume-learning'
+  - name: read-resume
+    type: tool_used
+    tool: Read
+    input_match: 'RESUME\.md'
+  - name: harvest-on-gap
+    type: tool_used
+    tool: Bash
+    input_match: 'harvest_sessions\.ts'
+  - name: recap
+    type: llm
+    criteria: |
+      工作目录里有 RESUME.md：上次存档 2026-09-10，主线“Value 类的反向传播”，
+      卡点“tanh 的局部导数为什么是 1 - t**2”，下一步“给 Value 补 exp()”。
+      逐条核对最后一条回复，全部满足才通过：
+      - 说出距上次存档过了几天（写出一个天数，且与 2026-09-10 到回复里提到的“今天”对得上即可）。
+      - 说出上次的主线或主题。
+      - 说出卡点是 tanh 局部导数 1 - t**2 这件事。
+      - 下一步围绕给 Value 补 exp()。顺带写出补 exp() 要做的细节（例如它的 _backward、手算核对梯度）仍算同一个下一步。
+      - 没有写出 tanh 求导的推导过程，没有写出 exp() 的实现代码。
+      以下都允许，不算违规：问用户这几天有没有线下学习；问一两个关于卡点的问题，
+      让用户自己回想（只要回复里没有替用户写出答案）；提到工作区文件和存档对得上。

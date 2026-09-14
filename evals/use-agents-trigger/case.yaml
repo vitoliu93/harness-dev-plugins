@@ -1,0 +1,17 @@
+schema_version: "1.0"
+name: use-agents-trigger
+context:
+  scaffold_script: scaffold.sh
+graders:
+  - name: routes
+    type: regex
+    pattern: 'agents/agents\.json'
+    match: contains
+    target: trace
+    weight: 0.5
+  - name: quota-skip
+    type: regex
+    pattern: 'gpt-5\.6-luna'
+    match: contains
+    target: last_message
+    weight: 1
