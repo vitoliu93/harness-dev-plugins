@@ -64,9 +64,24 @@ function findGoals(cwd: string): string[] {
   const paths = out.split("\n").filter((l) => l.trim()).map(pyPath);
   // A vanished file must abort the whole run silently (Python stat() raise →
   // exit 0), so statSync here is deliberately allowed to throw.
-  return paths
-    .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
-    .slice(0, MAX_PLANS);
+  return paths.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+}
+
+/**
+ * Keep only plans this session actually talked about: the slug (plan dir name)
+ * must appear in the transcript. Newest-mtime alone anchored other people's
+ * plans after compaction (93 compactions over a month: the top hits were plans
+ * the session never opened). No transcript → keep the old mtime behaviour.
+ */
+function mentionedIn(transcriptPath: unknown, goals: string[]): string[] {
+  if (typeof transcriptPath !== "string" || !isFile(transcriptPath)) return goals;
+  let text: string;
+  try {
+    text = readFileSync(transcriptPath, "utf-8");
+  } catch {
+    return goals;
+  }
+  return goals.filter((g) => text.includes(path.posix.basename(path.posix.dirname(g))));
 }
 
 /** Keep only the sections that carry constraints, drop the narrative. */
@@ -92,7 +107,7 @@ function run(): void {
   if (payload === null || typeof payload !== "object" || Array.isArray(payload)) return;
   if (payload.source !== "compact") return;
   const cwd = pyPath(String(payload.cwd || "."));
-  const goals = findGoals(cwd);
+  const goals = mentionedIn(payload.transcript_path, findGoals(cwd)).slice(0, MAX_PLANS);
   if (!goals.length) return;
 
   print("<plan-anchor>");

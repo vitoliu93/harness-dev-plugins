@@ -103,9 +103,24 @@ function liveGoals(cwd: string): string[] {
   const paths = out.split("\n").filter((l) => l.trim()).map(pyPath);
   // A vanished file must abort the whole run silently (Python stat() raise →
   // exit 0), so statSync here is deliberately allowed to throw.
-  return paths
-    .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
-    .slice(0, 2);
+  return paths.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+}
+
+/**
+ * Keep only plans this session actually talked about: the slug (plan dir name)
+ * must appear in the transcript. Newest-mtime alone anchored other people's
+ * plans after compaction (93 compactions over a month: the top hits were plans
+ * the session never opened). No transcript → keep the old mtime behaviour.
+ */
+function mentionedIn(transcriptPath: unknown, goals: string[]): string[] {
+  if (typeof transcriptPath !== "string" || !isFile(transcriptPath)) return goals;
+  let text: string;
+  try {
+    text = readFileSync(transcriptPath, "utf-8");
+  } catch {
+    return goals;
+  }
+  return goals.filter((g) => text.includes(path.posix.basename(path.posix.dirname(g))));
 }
 
 function anchorsOf(goal: string): string[] {
@@ -143,7 +158,7 @@ function run(): void {
   // datetime.now(timezone.utc).isoformat(timespec="seconds")
   const now = new Date().toISOString().replace(/\.\d{3}Z$/, "+00:00");
 
-  const goals = liveGoals(cwd);
+  const goals = mentionedIn(payload.transcript_path, liveGoals(cwd)).slice(0, 2);
   if (!goals.length && !summary) return; // nothing to say
 
   mkdirSync(SUMMARIES, { recursive: true });

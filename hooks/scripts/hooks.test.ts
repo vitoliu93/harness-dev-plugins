@@ -90,6 +90,18 @@ test("plan-anchor", async () => {
     expect(out).not.toContain("archived, must not appear"); // _archive not excluded
 
     expect(await run("plan-anchor.ts", { source: "startup", cwd: d })).toBe(""); // fired on non-compact
+
+    // with a transcript, only plans the session mentioned are replayed
+    const other = join(d, "docs", "advanced-plans", "2026-07-26-other");
+    mkdirSync(other, { recursive: true });
+    writeFileSync(join(other, "goal.md"), "## Done means\n- other plan, never opened here\n");
+    const tp = join(d, "t.jsonl");
+    writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "看 2026-07-25-demo 的 goal" } }) + "\n");
+    const only = await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp });
+    expect(only).toContain("the thing works");
+    expect(only).not.toContain("never opened here"); // newest-mtime plan not from this session leaked
+    writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "unrelated" } }) + "\n");
+    expect(await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp })).toBe(""); // no mention → silent
   } finally {
     rmSync(d, { recursive: true, force: true });
   }
@@ -158,6 +170,13 @@ test("compact-audit", async () => {
     expect(plans.survived).toContain("prototype.html");
     expect(plans.survived).toContain("IK3L2X");
     expect(readFileSync(row.summary_file, "utf-8").startsWith("Work continued")).toBe(true);
+
+    // transcript given: a plan the session never mentioned is not audited
+    const tp = join(d, "t.jsonl");
+    writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "unrelated" } }) + "\n");
+    await run("compact-audit.ts", { ...payload, transcript_path: tp }, { CCOBS_DIR: obs });
+    const rows = readFileSync(join(obs, "compaction.jsonl"), "utf-8").trim().split("\n");
+    expect(JSON.parse(rows[rows.length - 1]).plans).toEqual([]);
   } finally {
     rmSync(d, { recursive: true, force: true });
   }
