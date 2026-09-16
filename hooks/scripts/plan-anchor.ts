@@ -69,9 +69,8 @@ function findGoals(cwd: string): string[] {
 
 /**
  * Keep only plans this session actually talked about: the slug (plan dir name)
- * must appear in the transcript. Newest-mtime alone anchored other people's
- * plans after compaction (93 compactions over a month: the top hits were plans
- * the session never opened). No transcript → keep the old mtime behaviour.
+ * must appear in the transcript. Newest mtime alone picks whichever plan was
+ * touched last, which is often another task's. No transcript → mtime order.
  */
 function mentionedIn(transcriptPath: unknown, goals: string[]): string[] {
   if (typeof transcriptPath !== "string" || !isFile(transcriptPath)) return goals;
