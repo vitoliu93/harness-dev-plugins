@@ -43,6 +43,9 @@ bun "$FORGE/style_review.ts" \
 Gate: zero origin-story, incident-lore, tuition-narrative,
 marketing-language, meaning-level prose-wall, or gate-loss findings. A missing
 `skill-style-review` key in `llm.json` means the audit is incomplete, not clean.
+
+Scope: this judge collects `*.md` only. Narrative prose inside `scripts/`
+comments ships unreviewed — review those by hand until the collector covers them.
 The reviewer calls the shared `pi-call` layer, then adjudicates candidates; the
 commit hook remains deterministic and does not make remote API calls.
 
