@@ -48,7 +48,12 @@ prompt with `herdr pane send-text <pane-id> '<prompt>'` + `herdr pane send-keys
 
 Return `{agent_name, tab_id, pane_id, route_id}` to the caller.
 
-Launch is three steps; skip one and the agent is not launched:
+Launch is three steps; skip one and the agent is not launched. Do not retype them:
+`scripts/launch-agent.sh <name> <kind> <label> <prompt-file> [-- <native-args>]`
+next to this skill runs all three with the checks below and prints the JSON
+(one session hand-typed the sequence 11 times across 7 rounds, 2026-09-16).
+
+The steps it performs:
 
 1. `agent start`, then `pane read` — trust the screen, not the start exit code.
    Running `agent start` in the same second as `tab create` can silently
