@@ -23,7 +23,10 @@ the user where it is. If no team fits the task, write a new team file for that
 scene from the task itself, with roles and default agents filled in, and let the
 user correct it in one line.
 
-Choose the fewest roles from that team. Write one
+Choose the fewest roles from that team. Roles are not headcount: the host sets
+how many instances each role gets from the task size and the time budget, and
+a change that splits into independent slices (separate dirs, no shared files)
+goes to parallel programmers, one card and one write boundary each. Write one
 [role card](references/role-card.md) per role instance. Do not launch until
 outputs, write boundaries, dependencies, and completion checks are clear.
 
