@@ -47,6 +47,10 @@ routes are unavailable. Read the route-specific quota file before launch.
 - Agents do not coordinate with each other. The host passes outputs between them.
 - Whoever made a change does not check it. The checking role reruns the checks
   itself and does not accept the maker's report as evidence.
+- Freeze reviewed targets during review: the reviewed directory accepts no
+  changes once review starts; to change it, stop review or await its report,
+  record the new commit or diff summary, and re-review. Review cards state the
+  baseline (commit or `git diff` sha256).
 - The host runs each completion check and the final integrated check.
 - Quota failure: keep the tab and partial output, then choose another available route.
 

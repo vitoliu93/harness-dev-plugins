@@ -16,25 +16,14 @@ facts, or edit files yourself.
 
 ## Run the mandate
 
-Load `orchestrate`, pick the team that fits the scene, then load `use-agents`
-for routes and launch. Use `orchestrate`'s default Herdr transport unless the
-user chooses another transport. Send a researcher for facts before choosing an
-approach.
-
 - Before the first task card, state who reads the result, what they must then
   be able to do, and what it must not contain. If the user has not said, assume
   the user is the reader and say so.
 - Open the work item and take its issue id before the first agent starts.
-- Write the card with Write; the first prompt is the full task pointing at that
-  file — never a fragment, never mixed into a publish/install/commit Bash call.
-- Launch with the carrier's default interactive mode; do not pass a `--mode`
-  flag to an interactive Herdr launch.
-- Wait through a background sentinel that watches for the result file; never
-  sleep or poll in the main turn. Read that file, not the terminal scrollback.
-- A job expected to run over 10 minutes must append one line per batch to a
-  progress file (`N/M, elapsed, ETA`); the sentinel also watches that file's
-  mtime and wakes you only when it goes quiet past a threshold. No extra
-  reporter agent, no timed check-ins.
+  Exception: when the task requires reading the source first, dispatch one
+  read-only researcher that writes no repository files and reports to a path
+  outside that repository; open the work item as soon as the task is known,
+  obtain the issue id before starting other roles, and backfill the findings.
 - Accept only after an independent read-only reviewer returns PASS. That
   PASS is necessary, not sufficient; the cross-check below is yours alone.
 - The reviewer reruns the checks itself; its report must contain the commands
@@ -45,49 +34,18 @@ approach.
 - The programmer does not commit until you accept, then commits with the issue
   id; an assistant closes the external items.
 
+Execution details (cards, launch, sentinels, progress): [run.md](references/run.md).
+
 ## Cross-check every report
 
-You are the only party who sees the goal, every card, and every report. Each
-agent sees one slice and reports from inside it. That gap is your instrument;
-use it before you accept anything.
-
-- Before opening a report, write what it must contain if the job was done
-  right: files touched, counts, which checks, which claims. Read the report
-  against that list, not the list against the report.
-- Lay the reports side by side. The researcher's facts, the programmer's
-  assumptions, the reviewer's diff, and the progress file's last line must
-  agree. A disagreement is a defect even when every report says PASS.
-- Reconcile the numbers: files claimed versus files listed, tests claimed
-  versus the pasted total, batches versus elapsed. Arithmetic that does not
-  close is the cheapest lie detector you have.
-- A claim that would change a decision needs its evidence pasted: the command
-  and its output, or the quoted line. Without it the claim is a hypothesis;
-  send it back for the paste rather than filling the gap yourself.
-- Match the report's first claim to the card's goal sentence. A report that
-  answers a nearby easier question is not done.
-- Treat a clean report as a signal, not a relief: zero findings, all green,
-  or finished far under estimate. Send one narrow question to a fresh
-  read-only agent ("paste the output of X", "does Y contain Z") instead of
-  rerunning the role.
-- When two agents disagree, do not side with the more confident one. Ask a
-  third for the single fact, or for the raw output that settles it.
-- Never settle a doubt by reading the source yourself. Doubt is dispatched,
-  narrow and cheap, and the answer goes on the record.
+You are the only party who sees the goal, every card, and every report. Read
+[cross-check.md](references/cross-check.md) before opening any report; numbers
+that do not close or disagree across reports are defects.
 
 ## Decide by reversibility
 
-Decide yourself anything that can be undone inside the repo: branch, merge,
-approach, scope trims, leftover repairs, found bugs, batch sizes, concurrency.
-Ask only for what cannot be undone or leaves the repo: production deploy,
-messages to people, deleting data, spending past quota, changing an interface
-others depend on. Ask one question at a time and carry a recommendation.
-
-## Keep digging
-
-A problem found on the way is part of the job when it is reversible in the
-same codebase. Fix it, then the next one, until the chain ends. Each found
-problem gets its own record (a work item or one line in the progress file)
-and appears in the report.
+Decide reversible repo changes yourself; ask only for what leaves the repo.
+Reversibility and problem fixing rules: [decisions.md](references/decisions.md).
 
 ## Report
 

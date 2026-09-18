@@ -56,8 +56,7 @@ The steps it performs:
 
 1. `agent start`, then `pane read` — trust the screen, not the start exit code.
    Running `agent start` in the same second as `tab create` can silently
-   register nothing (`agent prompt` then fails with `agent_not_found`, seen
-   2026-09-09 ×3). Wait ~3s after `tab create`, confirm with
+   register nothing. Wait ~3s after `tab create`, confirm with
    `herdr agent get <name>` before prompting; if missing, run `agent start`
    again on the same pane.
 2. `agent prompt` + `send-keys Enter`, then `pane read` again: it must be
@@ -65,15 +64,23 @@ The steps it performs:
 3. Only now attach the sentinel and tell the user it is running.
 
 Claude kind: start with `--permission-mode auto` so it never stops at a
-`Do you want to proceed?` box (user decision 2026-08-27).
+`Do you want to proceed?` box.
 
-Sentinel: use `scripts/wait-result.sh <agent> <result-file> <marker> [timeout]` next to this skill (exit 0 ready · 2 stuck · 3 idle with no background shell · 4 timeout) instead of rewriting the loop. Always `run_in_background`; a foreground poll blocks the user's next
-message. It must recognise three stuck states besides "no result file":
-prompt left unsubmitted in the input box, a permission box, and
-`agent_status: blocked`. `idle` alone is not stopped: an agent that pushed work
-into a background shell ends its turn while the screen tail still shows
-`N shells`; keep waiting. Text sent through `pane send-text` is shell-parsed
-again — quote lines containing `=`.
+Sentinel: use
+`scripts/wait-result.sh <agent> <result-file> <marker> [timeout] [progress-file] [stall-seconds]`
+next to this skill (exit 0 ready · 2 stuck · 3 idle · 4 timeout · 5 stalled)
+instead of rewriting the loop. The run completes (exit 0) only when the result
+file's last non-empty line equals `<marker>` alone, ignoring leading or trailing
+whitespace and CRLF. When given a progress file, the sentinel waits for the
+stall-seconds startup grace period (default 600s) before checking; it exits 5 if
+the progress file is missing or its mtime does not advance past stall-seconds.
+On exit 5, stderr prints the reason and the last line of the progress file.
+Always `run_in_background`; a foreground poll blocks the user's next message.
+It must recognise three stuck states besides "no result file": prompt left
+unsubmitted in the input box, a permission box, and `agent_status: blocked`.
+`idle` alone is not stopped: an agent that pushed work into a background shell
+ends its turn while the screen tail still shows `N shells`; keep waiting. Text
+sent through `pane send-text` is shell-parsed again — quote lines containing `=`.
 
 ## Inspect and take over
 

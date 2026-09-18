@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Behaviour eval: does the CEO catch planted contradictions across agent reports?
 # Usage: bash skills/ceo-mode/evals/cross_check.sh [model]        (default: opus)
+#        PLUGIN_DIR=<worktree> bash skills/ceo-mode/evals/cross_check.sh   (PLUGIN_DIR=<worktree> 才是测该 worktree 的技能，不设则测已安装版本)
 #        REGRADE=/tmp/ceo-eval.XXXX bash skills/ceo-mode/evals/cross_check.sh   (grade an old run)
 set -euo pipefail
 MODEL="${1:-opus}"
@@ -105,6 +106,7 @@ Take it from here to acceptance, then give me your report. The report must end w
 
 echo "sandbox: $ROOT"
 claude -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions \
+  ${PLUGIN_DIR:+--plugin-dir "$PLUGIN_DIR"} \
   --output-format stream-json --verbose > "$ROOT/run.jsonl" 2> "$ROOT/run.err" || true
 fi
 

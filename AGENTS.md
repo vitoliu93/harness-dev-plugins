@@ -38,6 +38,7 @@
 
 ```bash
 bun test
+bash skills/use-agents/scripts/wait-result.selftest.sh
 bun skills/skill-forge/scripts/skill_style.ts --workspace-root skills --fail-on-issues
 bun skills/skill-forge/scripts/build_skill_atlas.ts --workspace-root skills --fail-on-style
 claude plugin validate --strict .

@@ -4,7 +4,7 @@
 # The three-step Herdr launch from references/herdr.md, with its checks:
 #   tab create → (3s) → agent start → agent get (retry once) → prompt + Enter → status.
 # Prints one JSON line {agent_name, tab_id, pane_id, agent_status}. Exit 2 = agent never registered.
-# Sentinel is separate: scripts/wait-result.sh <name> <result-file> <marker> [timeout].
+# Sentinel is separate: scripts/wait-result.sh <name> <result-file> <marker> [timeout] [progress-file] [stall-seconds].
 set -euo pipefail
 [ $# -ge 4 ] || { echo "usage: launch-agent.sh <name> <kind> <label> <prompt-file> [-- <native-agent-args>]" >&2; exit 1; }
 name=$1; kind=$2; label=$3; prompt_file=$4; shift 4

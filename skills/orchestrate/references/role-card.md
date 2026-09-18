@@ -39,13 +39,16 @@ Rules:
   checks; it never takes the maker's report as evidence. Its `writes` cover
   only the tests or acceptance list it wrote before the change started, never
   the files it reviews; its report goes to a path outside that repository.
+  When a card's completion is watched with a sentinel, the done marker must
+  occupy the result file's last non-empty line alone (ignoring leading or trailing
+  whitespace and CRLF).
 - A card that writes to a shared live service (a CLI login, a database, an
   API) states the account it must run as, forbids switching it, and orders a
   `dry-run → small batch → review → full run` gate. The small batch is a fixed
   gold set chosen to cover the edge cases (each named entity, none, silent or
   empty items, short items); the full run starts only after that set passes.
 - A card whose job runs past ten minutes names a progress file and requires
-  one line per batch (`N/M, elapsed, failures`) plus an idempotent
+  one line per batch (`N/M, elapsed, ETA, failures`) plus an idempotent
   failure list for resume. The host's sentinel watches that file; nobody
   reads terminal scrollback.
 - A card that builds or reshapes a table, dataset, or any row-per-thing
