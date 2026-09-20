@@ -15,7 +15,7 @@
 | ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
 | recall | meta | "以前查过吗/recall" · research 开工 | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
-| orchestrate | sop | "编排角色/fan out/advisor+programmer+audit" · 模型主动(准备多角色协作前) | ①③ |
+| orchestrate | sop | "编排角色/fan out/advisor+programmer+audit/独立复核" · 模型主动(准备多角色协作或运行行为改动验收前) | ①③ |
 | cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |

@@ -8,11 +8,12 @@
     {"text": "这个任务该安排哪些 agent 角色", "family": "roles"},
     {"text": "三个 agent 并行干活但不要改到同一批文件", "family": "ownership"},
     {"text": "researcher 查资料，reviewer 定验收，再交给 programmer", "family": "dependencies"},
+    {"text": "功能改完后派一个没写代码的 reviewer 独立复核，PASS 才交付", "family": "independent_review"},
     {"text": "所有 agent 完成后统一验收并关闭 herdr tabs", "family": "lifecycle"},
     {"text": "fan out this work and coordinate the handoffs", "family": "fanout"}
   ],
   "should_not_trigger": [
-    {"text": "你自己改这个单个函数", "family": "inline"},
+    {"text": "只改文档里的一个错字", "family": "docs_only"},
     {"text": "不用 agent，直接完成", "family": "inline"}
   ],
   "near_neighbor": [

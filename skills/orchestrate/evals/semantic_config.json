@@ -2,7 +2,7 @@
   "positive_concepts": {
     "roles": {
       "weight": 0.65,
-      "phrases": ["researcher", "programmer", "reviewer", "assistant", "角色", "分工", "role card"]
+      "phrases": ["researcher", "programmer", "reviewer", "assistant", "roles", "角色", "分工", "role card"]
     },
     "orchestration": {
       "weight": 0.65,
@@ -11,6 +11,10 @@
     "lifecycle": {
       "weight": 0.65,
       "phrases": ["through completion", "依赖顺序", "验收", "完成后", "关闭 herdr", "不要撞车", "handoff"]
+    },
+    "independent_review": {
+      "weight": 0.65,
+      "phrases": ["独立复核", "独立 reviewer", "没写代码的 reviewer", "PASS 才交付"]
     }
   },
   "negative_concepts": {
@@ -22,8 +26,8 @@
     "inline": {
       "weight": 0.4,
       "exclusive": true,
-      "phrases": ["你自己改", "不用 agent", "单个函数"]
+      "phrases": ["不用 agent"]
     }
   },
-  "fallback_positive_concepts": ["roles", "orchestration", "lifecycle"]
+  "fallback_positive_concepts": ["roles", "orchestration", "lifecycle", "independent_review"]
 }
