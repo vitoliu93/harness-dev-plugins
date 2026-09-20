@@ -1,6 +1,6 @@
 # 项目规则
 
-本仓库为 Claude Code 和 Codex 提供同一套插件与技能。`AGENTS.md` 是唯一的项目规则文件，`CLAUDE.md` 只写一行 `@AGENTS.md` 把它引入，不要复制成两份内容。
+本仓库为 Claude Code 和 Codex 提供同一套插件与技能。`AGENTS.md` 是唯一的项目规则文件，两端都直接读它，不要再建 `CLAUDE.md`。
 
 ## 配置目录
 
