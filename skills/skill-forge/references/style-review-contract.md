@@ -32,6 +32,10 @@ Do not flag:
 - product names or factual capability claims with an observable check.
 
 Every reported issue blocks the semantic review. Do not emit advisory findings.
+One reviewer pass flakes: about one run in six invents a finding. With
+`--fail-on-issues` the runner reviews the skill a second time and reports only
+findings both passes produce, so a gate run costs two passes when anything is
+found.
 The local runner keeps `gate-loss` only when its evidence appears in deleted Git
 lines; once grounded, the false-positive adjudicator cannot discard it.
 

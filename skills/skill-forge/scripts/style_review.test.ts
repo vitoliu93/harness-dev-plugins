@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   chunkDocuments,
+  confirmedIssues,
   discoverMarkdown,
   discoverSkillDirs,
   normalizeIssues,
@@ -176,5 +177,24 @@ describe("response validation", () => {
 
     expect(issues).toHaveLength(1);
     expect(issues[0].line).toBe(0);
+  });
+});
+
+describe("confirmedIssues", () => {
+  const issue = (line: number, category = "prose-wall") => ({
+    file: "SKILL.md",
+    line,
+    category,
+    evidence: "e",
+    reason: "r",
+    rewrite: "w",
+  });
+
+  test("keeps a finding both passes report", () => {
+    expect(confirmedIssues([issue(3)], [issue(3)])).toHaveLength(1);
+  });
+
+  test("drops a finding only one pass reports", () => {
+    expect(confirmedIssues([issue(3), issue(9)], [issue(3)])).toEqual([issue(3)]);
   });
 });

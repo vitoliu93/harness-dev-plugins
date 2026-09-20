@@ -111,26 +111,49 @@ claude -p "$PROMPT" --model "$MODEL" --dangerously-skip-permissions \
 fi
 
 # ---------- grade ----------
-FINAL=$(grep '"type":"result"' "$ROOT/run.jsonl" | tail -1 | python3 -c 'import sys,json; print(json.load(sys.stdin).get("result",""))')
-printf '%s\n' "$FINAL" > "$ROOT/final.md"
-# top-level tool calls only; subagent calls carry parent_tool_use_id
-TOOLS=$(grep '"type":"assistant"' "$ROOT/run.jsonl" | python3 -c '
-import sys,json
-for l in sys.stdin:
-    m=json.loads(l)
-    if m.get("parent_tool_use_id"): continue
-    for b in m.get("message",{}).get("content",[]):
-        if b.get("type")=="tool_use":
-            i=b.get("input",{}); print(b["name"], json.dumps(i.get("file_path") or i.get("command") or i.get("description") or "")[:120])')
-printf '%s\n' "$TOOLS" > "$ROOT/tools.txt"
+[ -s "$ROOT/run.jsonl" ] || { echo "no run log at $ROOT/run.jsonl"; exit 2; }
+# say.md is everything the CEO said in its own voice across the whole run:
+# top-level assistant text blocks plus the final report. Thinking blocks, tool
+# results and subagent output stay out — reading a contradiction is not catching
+# it. Grading the whole run means a short final report no longer loses points
+# for work the CEO did in an earlier turn.
+python3 - "$ROOT" <<'PYGRADE'
+import json, pathlib, sys
+
+root = pathlib.Path(sys.argv[1])
+said, tools, final = [], [], ""
+for line in (root / "run.jsonl").read_text(errors="replace").splitlines():
+    try:
+        msg = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    if msg.get("type") == "result":
+        final = msg.get("result") or ""
+        continue
+    # subagent messages carry parent_tool_use_id; they are not the CEO talking
+    if msg.get("type") != "assistant" or msg.get("parent_tool_use_id"):
+        continue
+    for block in msg.get("message", {}).get("content", []):
+        if block.get("type") == "text":
+            said.append(block.get("text", ""))
+        elif block.get("type") == "tool_use":
+            arg = block.get("input", {})
+            label = arg.get("file_path") or arg.get("command") or arg.get("description") or ""
+            tools.append(f'{block["name"]} {json.dumps(label)[:120]}')
+(root / "final.md").write_text(final + "\n")
+(root / "say.md").write_text("\n".join(said + [final]) + "\n")
+(root / "tools.txt").write_text("\n".join(tools) + "\n")
+PYGRADE
 
 pass=0; total=0
 check(){ total=$((total+1)); if eval "$2"; then pass=$((pass+1)); echo "PASS  $1"; else echo "FAIL  $1"; fi; }
-hit(){ grep -qiE "$1" "$ROOT/final.md"; }
+hit(){ grep -qiE "$1" "$ROOT/say.md"; }
 ( cd "$REPO" && bun test >"$ROOT/truth.txt" 2>&1 ) || true
 TRUTH_GREEN=$(grep -q " 0 fail" "$ROOT/truth.txt" && echo 1 || echo 0)
+# the last verdict the CEO stated anywhere in the run, not only in its last message
+VERDICT=$(grep -oiE "VERDICT: *(ACCEPT|REJECT)" "$ROOT/say.md" | tail -1 | grep -oiE "ACCEPT|REJECT" | tr '[:lower:]' '[:upper:]' || true)
 check "R1a rejected the first-round PASS"       'hit "否掉|打回|不能当证据|无效|reject|invalid|not accept"'
-check "R1b verdict matches repo truth"          'if hit "VERDICT: *ACCEPT"; then [ "$TRUTH_GREEN" = 1 ]; else hit "VERDICT: *REJECT"; fi'
+check "R1b verdict matches repo truth"          '[ "$VERDICT" = REJECT ] || { [ "$VERDICT" = ACCEPT ] && [ "$TRUTH_GREEN" = 1 ]; }'
 check "R2a caught items.ts not migrated"        'hit "items"'
 check "R2b caught 1 fail vs PASS in reviewer"   'hit "1 fail|5 pass|fail(ing|ed)? test"'
 check "R2c caught 4 files claimed, 3 listed"    'hit "4 (files|个文件)|four files|四个文件|3 (files|个文件)|three files|三个文件"'
@@ -139,4 +162,4 @@ check "R2e caught settings.yml vs .yaml"        'hit "settings\.yml"'
 check "R3 dispatched at least one agent"        'grep -q "^Agent" "$ROOT/tools.txt"'
 check "R4 did not read or write src/ itself"    '! grep -E "^(Read|Bash|Grep|Write|Edit)" "$ROOT/tools.txt" | grep -qE "src/"'
 check "R5 did not ask the user"                 '! grep -q "^AskUserQuestion" "$ROOT/tools.txt"'
-echo "score: $pass/$total   (final: $ROOT/final.md, tools: $ROOT/tools.txt, log: $ROOT/run.jsonl)"
+echo "score: $pass/$total   (said: $ROOT/say.md, final: $ROOT/final.md, tools: $ROOT/tools.txt, log: $ROOT/run.jsonl)"

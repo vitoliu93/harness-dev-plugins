@@ -607,6 +607,14 @@ async function runSemanticEval(
   };
 }
 
+// One reviewer pass flakes: about one run in six invents a finding. A gate run
+// reviews twice and keeps only what both passes report.
+export function confirmedIssues(first: ReviewIssue[], second: ReviewIssue[]): ReviewIssue[] {
+  const key = (issue: ReviewIssue) => `${issue.file}:${issue.line}:${issue.category}`;
+  const seen = new Set(second.map(key));
+  return first.filter((issue) => seen.has(key(issue)));
+}
+
 async function reviewSkill(
   model: string,
   prompt: string,
@@ -731,15 +739,13 @@ async function main(): Promise<void> {
     skills = [];
     for (const [index, skillDir] of targetDirs.entries()) {
       console.error(`[${index + 1}/${targetDirs.length}] ${skillName(skillDir)}`);
-      skills.push(
-        await reviewSkill(
-          model,
-          prompt,
-          adjudicationPrompt,
-          skillDir,
-          maxChars,
-        ),
-      );
+      const review = await reviewSkill(model, prompt, adjudicationPrompt, skillDir, maxChars);
+      if (options.failOnIssues && review.issues.length) {
+        console.error(`    ${review.issues.length} finding(s); re-reviewing to confirm`);
+        const second = await reviewSkill(model, prompt, adjudicationPrompt, skillDir, maxChars);
+        review.issues = confirmedIssues(review.issues, second.issues);
+      }
+      skills.push(review);
     }
   } catch (error) {
     fail(error instanceof Error ? error.message : String(error));
