@@ -14,6 +14,7 @@ This is personal machine state. Do not commit it and do not put API keys in it.
   "agents": {
     "example": {
       "description": "水桶型。厂商 X 的主力（$5/$25），样样都行，没有明显短板。",
+      "effort": "",
       "routes": [
         {
           "id": "provider:example-model",
@@ -48,6 +49,19 @@ reach for it. Tier words, cheapest last:
 
 The line describes the model, not the job. Which role uses which agent lives in
 the team files.
+
+## Effort
+
+`effort` is the alias's default thinking level. Empty or absent means pass no
+effort flag and take the carrier default. A caller that names a level for one
+run beats the field.
+
+| Carrier | How it is passed |
+|---|---|
+| pi | `--thinking <level>`: off, minimal, low, medium, high, xhigh, max |
+| claude | `--effort <level>` |
+| cursor-agent | part of the model ID; leave the field empty |
+| codex | model config; leave the field empty |
 
 ## Read order
 

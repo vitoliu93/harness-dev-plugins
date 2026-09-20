@@ -17,6 +17,8 @@ pi --list-models | grep '<model>'
 pi -p --mode json --model <provider>/<model> --thinking <level> '<prompt>'
 ```
 
+The level is the alias's `effort` field. Drop the flag when that field is empty.
+
 Herdr kind: `pi`. Pass native arguments after `herdr agent start ... --`.
 
 ## Warnings

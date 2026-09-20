@@ -9,7 +9,8 @@ command -v claude
 claude --help
 ```
 
-Always pass the model from `agents.json`. Choose effort separately.
+Always pass the model from `agents.json`. Take `--effort` from the alias's
+`effort` field, and drop the flag when that field is empty.
 
 ```bash
 claude -p '<prompt>' --model <model> --effort <level> \
