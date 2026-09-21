@@ -10,6 +10,8 @@ set -euo pipefail
 name=$1; kind=$2; label=$3; prompt_file=$4; shift 4
 [ "${1:-}" = "--" ] && shift
 [ -f "$prompt_file" ] || { echo "prompt file not found: $prompt_file" >&2; exit 1; }
+# Validate UTF-8 before creating anything; herdr rejects invalid args mid-launch and would leave the tab behind.
+iconv -f UTF-8 -t UTF-8 "$prompt_file" >/dev/null 2>&1 || { echo "prompt file is not valid UTF-8: $prompt_file" >&2; exit 2; }
 command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
 
 ws=(); [ -n "${HERDR_WORKSPACE_ID:-}" ] && ws=(--workspace "$HERDR_WORKSPACE_ID")
@@ -25,7 +27,10 @@ for _ in 1 2; do
 done
 herdr agent get "$name" >/dev/null 2>&1 || { echo "agent $name not registered on pane $pane (tab $tab)" >&2; exit 2; }
 
-herdr agent prompt "$name" "$(cat "$prompt_file")" >/dev/null
+herdr agent prompt "$name" "$(cat "$prompt_file")" >/dev/null || {
+  echo "prompt failed; tab $tab and agent $name are already created. Clean up: herdr tab close $tab" >&2
+  exit 1
+}
 herdr agent send-keys "$name" Enter >/dev/null
 sleep 5
 status=$(herdr agent get "$name" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["agent"]["agent_status"])')

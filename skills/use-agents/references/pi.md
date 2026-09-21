@@ -14,6 +14,11 @@ pi auth check --provider <provider> --json
 pi --list-models | grep '<model>'
 ```
 
+`auth check` only knows providers configured natively. A provider registered
+by an extension (OAuth-style, e.g. CLIProxyAPI) can report `not_ready`
+falsely. For such a provider the only verdict is a real call:
+`pi -p --no-context-files --model <provider>/<model> 'Reply with exactly: ok'`.
+
 ## Start
 
 ```bash
