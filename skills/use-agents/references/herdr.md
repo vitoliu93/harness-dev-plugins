@@ -36,7 +36,7 @@ herdr agent prompt <name> '<prompt>'
 herdr agent send-keys <name> Enter
 ```
 
-`<native-agent-args>` are flags only (`--model x --trust`). Herdr prepends the
+`<native-agent-args>` are flags only (`--model <provider/id> --trust`). Herdr prepends the
 binary itself; writing `-- cursor-agent --model x` makes the extra word the
 agent's first prompt and it answers that instead of your task.
 

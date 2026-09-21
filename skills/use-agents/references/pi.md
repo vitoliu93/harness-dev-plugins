@@ -1,7 +1,10 @@
 # pi carrier
 
-`pi` can reach several providers. The provider is part of the route, so always
-pass the full `provider/model` value from `agents.json`.
+`pi` can reach several providers, and one model id often exists under several
+providers at once. A bare model name is a fuzzy match and can land on any of
+them. The provider is part of the route, so copy the `model` field of the
+chosen route in `agents.json` verbatim:
+`--model cliproxyapi/gemini-3.8-flash`, never `--model gemini-3.8-flash`.
 
 ## Check
 
@@ -23,7 +26,6 @@ Herdr kind: `pi`. Pass native arguments after `herdr agent start ... --`.
 
 ## Warnings
 
-- Never omit the provider. Pi otherwise uses its configured default.
 - Pi has no permission flag. Use a worktree when writes are allowed.
 - Use `--no-tools` for a text-only opinion and `--no-context-files` when the
   run must ignore discovered instruction files.
