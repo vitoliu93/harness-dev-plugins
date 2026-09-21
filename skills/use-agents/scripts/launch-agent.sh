@@ -11,7 +11,11 @@ name=$1; kind=$2; label=$3; prompt_file=$4; shift 4
 [ "${1:-}" = "--" ] && shift
 [ -f "$prompt_file" ] || { echo "prompt file not found: $prompt_file" >&2; exit 1; }
 # Validate UTF-8 before creating anything; herdr rejects invalid args mid-launch and would leave the tab behind.
-iconv -f UTF-8 -t UTF-8 "$prompt_file" >/dev/null 2>&1 || { echo "prompt file is not valid UTF-8: $prompt_file" >&2; exit 2; }
+# 别用 iconv：它把转换结果往 stdout 写，某些环境里对 /dev/null 会报
+# "iconv(): Inappropriate ioctl for device" 而退非 0，合法文件被判成非法。
+# python 只解码不输出，判的就是编码本身。
+python3 -c 'import sys;open(sys.argv[1],"rb").read().decode("utf-8")' "$prompt_file" 2>/dev/null \
+  || { echo "prompt file is not valid UTF-8: $prompt_file" >&2; exit 2; }
 command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
 
 ws=(); [ -n "${HERDR_WORKSPACE_ID:-}" ] && ws=(--workspace "$HERDR_WORKSPACE_ID")
