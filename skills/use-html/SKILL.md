@@ -1,8 +1,8 @@
 ---
 name: use-html
 description: >-
-  Build one self-contained HTML explainer or clickable pre-build prototype.
-  Use for visual explainers, infographics, or approval prototypes before UI or PRD work.
+  Build one self-contained HTML page that explains something visually or lets the user click through a UI before it is built; not for HTML that ships to users, such as email templates, web pages, or components.
+  Use for infographics, flow or timeline explainers, and approval prototypes before PRD or UI work.
 metadata:
   kind: atom
 ---

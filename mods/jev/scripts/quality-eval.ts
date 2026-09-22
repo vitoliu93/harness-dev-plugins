@@ -36,7 +36,7 @@ const cases: Case[] = [
   { name: "hneg-plan-param", prompt: "这个函数的 plan 参数是什么意思，为什么可以传 null", want: [] },
   { name: "hneg-context-word", prompt: "把 React 的 context 和 props 的区别用一句话说清", want: [], ok: ["teach-me", "eli5:eli5"] },
   { name: "hneg-audit-table", prompt: "audit_log 表按 user_id 和 created_at 怎么建联合索引", want: [] },
-  { name: "hneg-html-email", prompt: "帮我写个 HTML 的营销邮件模板", want: [], known: "use-html scores ~0.76 on the word HTML alone (2026-09-22)" },
+  { name: "hneg-html-email", prompt: "帮我写个 HTML 的营销邮件模板", want: [] },
   { name: "hneg-agent-word", prompt: "把 agent 这个词翻成中文，给三个候选", want: [] },
   { name: "hneg-summary", prompt: "把你上面说的用三句话总结一下", recent: [{ role: "assistant", text: "迁移分四步：备份、停写、跑迁移、切流量。" }], want: [] },
   { name: "hneg-recall-word", prompt: "Python 里 lru_cache 的 recall 性能怎么样", want: [] },
