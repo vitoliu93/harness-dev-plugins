@@ -1,7 +1,7 @@
 {
   "name": "dev-kit-jev",
-  "version": "2.64.12",
-  "description": "Optional Claude Mod: contextual agent recommendations and historical references through Jev.",
+  "version": "2.65.0",
+  "description": "Optional Claude Mod: contextual skill recommendations and historical references through Jev.",
   "author": {
     "name": "vito"
   },

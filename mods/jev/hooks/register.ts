@@ -1,7 +1,11 @@
 import type { On, PluginOptions, Timer } from "claude-code";
-import { agentsFrom, clean, decide, historyFrom, makeRequest, recentFrom, render, type Snapshot } from "./core.ts";
+import { decide, historyFrom, makeRequest, recentFrom, render, skillsFrom, type Snapshot } from "./core.ts";
+
+// ponytail: one in-memory cache per working directory; a new skill shows up within five minutes or on restart.
+const SKILL_CACHE_MS = 300_000;
 
 export function register(on: On, options: PluginOptions): void {
+  const skillCache = new Map<string, { at: number; rows: unknown }>();
   // Serialize overlapping submissions' marker updates; never leave an ownership
   // token behind after downstream classic hooks finish (including hot unload).
   let owners = 0;
@@ -37,38 +41,30 @@ export function register(on: On, options: PluginOptions): void {
           if (next.signal.aborted) abort();
         });
         const work = async (): Promise<string | null> => {
-          const [home, cwd, messages, active, now, obsOverride, agentsOverride] = await Promise.all([
-            $.env.get("HOME"), $.session.cwd(), $.session.messages(), $.agent.list(), $.clock.now(),
-            $.env.get("CCOBS_DIR"), $.env.get("AGENTS_CONFIG"),
-          ]);
-          if (expired || !home) return null;
-          const root = obsOverride || `${home}/.claude/observability`;
-          let catalog: unknown = {}, quota: unknown = {};
-          try { catalog = JSON.parse(await $.fs.read(agentsOverride || `${root}/agents/agents.json`)); } catch { /* no catalogue: main agent only */ }
-          try {
-            const path = `${root}/agents/quota.json`;
-            if (await $.fs.exists(path)) quota = JSON.parse(await $.fs.read(path));
-          } catch { catalog = {}; } // unknown quota state must not advertise unavailable routes
-          const recent = recentFrom(messages, [key]);
-          let rows: unknown = [];
-          if (!expired) {
-            try {
-              const result = await $.process.run(["bun", `${$.plugin.root}/scripts/recall-candidates.ts`], {
-                stdin: JSON.stringify({ cwd, query: `${e.text.slice(0,3000)}\n${recent.map(m=>m.text).join("\n")}`, session }),
-                timeoutMs: Math.min(timeoutMs, 1500),
-              });
-              if (result.exitCode === 0 && result.stdout.length <= 100_000) rows = JSON.parse(result.stdout);
-            } catch { /* recall unavailable: routing can still work */ }
-          }
+          const [cwd, messages, now] = await Promise.all([$.session.cwd(), $.session.messages(), $.clock.now()]);
           if (expired) return null;
-          const snapshot: Snapshot = {
-            prompt: e.text, recent, agents: agentsFrom(catalog, quota, now, [key]), history: historyFrom(rows, session, [key]),
-            active: active.filter(a => a.status === "running").map(a => ({ name: a.name || a.id, description: a.description })),
+          const recent = recentFrom(messages, [key]);
+          // Both adapters are separate read-only processes: SQLite and globbing are unavailable inside the Mod.
+          const adapter = async (script: string, stdin: Record<string, string>, fallback: unknown): Promise<unknown> => {
+            if (expired) return fallback;
+            try {
+              const result = await $.process.run(["bun", `${$.plugin.root}/scripts/${script}`], { stdin: JSON.stringify(stdin), timeoutMs: Math.min(timeoutMs, 1500) });
+              return result.exitCode === 0 && result.stdout.length <= 200_000 ? JSON.parse(result.stdout) : fallback;
+            } catch { return fallback; }
           };
-          // Nothing to choose between: an empty advice block would only cost context.
-          if (!snapshot.agents.length && !snapshot.history.length) return null;
+          const cached = skillCache.get(cwd);
+          const skillsPromise = cached && now - cached.at < SKILL_CACHE_MS ? Promise.resolve(cached.rows)
+            : adapter("scan-skills.ts", { cwd }, null).then(rows => { if (rows) skillCache.set(cwd, { at: now, rows }); return rows ?? []; });
+          const [rawSkills, rows] = await Promise.all([
+            skillsPromise,
+            adapter("recall-candidates.ts", { cwd, query: `${e.text.slice(0, 3000)}\n${recent.slice(-4).map(m => m.text).join("\n")}`, session }, []),
+          ]);
+          if (expired) return null;
+          const full: Snapshot = { prompt: e.text, recent, skills: skillsFrom(rawSkills, [key]), history: historyFrom(rows, session, [key]) };
+          // Nothing to choose between: no request, no context cost.
+          if (!full.skills.length && !full.history.length) return null;
           const model = typeof options.model === "string" ? options.model : "jev-1.13.0";
-          const body = makeRequest(snapshot, model, [key]);
+          const { body, snapshot } = makeRequest(full, model, [key]);
           if (expired) return null;
           const response = await $.http.fetch("https://api.typesafe.ai/v1/systemone", {
             method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` }, body,
@@ -76,8 +72,8 @@ export function register(on: On, options: PluginOptions): void {
           if (expired) return null;
           if (!response.ok || response.text.length > 100_000) throw new Error(`http-${response.status}`);
           const result = decide(JSON.parse(response.text), snapshot);
-          $.ui.log(`dev-kit-jev: ${result.delegation}; ${result.agents.length} agent suggestion(s), ${result.history.length} reference(s)`, { to: "debug" });
-          return render(result);
+          $.ui.log(`dev-kit-jev: ${result.skills.length} skill suggestion(s) from ${snapshot.skills.length}/${full.skills.length} scored, ${result.history.length} reference(s)`, { to: "debug" });
+          return render(result) || null;
         };
         extra = await Promise.race([work(), deadline]) ?? undefined;
         if (expired && !next.signal.aborted) $.ui.log("dev-kit-jev: timed out; continuing without recommendations", { to: "debug" });
