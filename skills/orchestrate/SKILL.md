@@ -42,7 +42,9 @@ Follow the team's route order. Read quota first; use `fallback` only when all
 - Start independent roles in parallel; serialize declared dependencies.
 - Agents do not coordinate with each other. The host passes outputs between them.
 - Whoever made a change does not check it. The checking role reruns the checks
-  itself and does not accept the maker's report as evidence.
+  itself and does not accept the maker's report as evidence, and builds its own
+  fixture: a maker's rig can disable the very thing it claims to prove — an env
+  override that also starves a dependency, a probe that samples only the hit.
 - Runtime-changing delivery always gets a reviewer for correctness, project fit
   and simplification, and algorithm and performance. Blocking findings cite
   exact code and evidence; no PASS, no delivery.

@@ -51,7 +51,7 @@ bunx tsc -p mods/jev/tsconfig.json
 ## 发布
 
 - 代码改完、`## 检查` 里的命令全部通过后，直接 commit 并 push 到 origin/main，不用等用户再单独说一次。
-- 每次发布都把 `.claude-plugin/plugin.json`、`.claude-plugin/marketplace.json` 和 `.codex-plugin/plugin.json` 改成同一版本，再提交和推送。否则客户端可能无法发现更新。
+- 每次发布把所有版本位置改成同一版本，再提交和推送，否则客户端可能无法发现更新。位置不止三处：`.claude-plugin/plugin.json`、`.codex-plugin/plugin.json`、`.claude-plugin/marketplace.json` 的 `metadata.version` 与**每个** `plugins` 条目，以及每个子插件自己的 `.claude-plugin/plugin.json`（现为 `mods/jev/`）。
 - `skills/` 只通过插件分发，不要在 `~/.agents/skills` 创建软链接。
 - `vito-agents` marketplace 只托管 `dev-kit`。`study-kit` 已在 2026-07-28 合入本仓库，不需要跨仓库同步。
 - 本仓库公开。技能示例引用真实会话时，函数名、工单号、模块名和人名必须改成虚构内容，只保留示例结构。
