@@ -6,9 +6,9 @@ const secret="synthetic-test-key-never-real";
 const catalog=JSON.stringify({agents:{researcher:{description:"Read-only code research",routes:[{id:"test:research",use:"normal",model:"fiction",cli:"claude"}]}}});
 const rows=[{session_id:"fictional-history",day:"2026-09-01",summary:"retry bug",conclusion:"retry once",file_path:"/fiction/transcript.jsonl"}];
 const answer={answers:{delegation:{type:"choice",choice:"delegate",confidence:0.9,probabilities:{self:0.05,delegate:0.9,unknown:0.05}},a0:{type:"noul",noul:0.9},r0:{type:"noul",noul:0.9}}};
-function fixture(on:On, options:{enabled?:boolean,key?:string,catalog?:string,rows?:unknown,delay?:number,bad?:boolean,throwNext?:boolean}={}){
+function fixture(on:On, options:{key?:string,catalog?:string,rows?:unknown,delay?:number,bad?:boolean,throwNext?:boolean}={}){
  const clock=mock.clock(on,{now:Date.parse("2026-09-22")});
- const env:Record<string,string|undefined>={HOME:"/fiction",CCOBS_DIR:"/fiction/obs",AGENTS_CONFIG:"/fiction/agents.json",DEVKIT_JEV_ENABLED:options.enabled===false?"0":"1",TYPESAFE_API_KEY:options.key??secret};
+ const env:Record<string,string|undefined>={HOME:"/fiction",CCOBS_DIR:"/fiction/obs",AGENTS_CONFIG:"/fiction/agents.json",TYPESAFE_API_KEY:options.key??secret};
  const sent:any[]=[];const logs:string[]=[];const processes:any[]=[];const seen:any[]=[];const messages:any[]=[];
  on("env.get",($,e)=>({value:env[e.name]}));
  on("env.set",($,e)=>{env[e.name]=e.value;return {value:undefined};});
@@ -26,10 +26,10 @@ function fixture(on:On, options:{enabled?:boolean,key?:string,catalog?:string,ro
 }
 const prompt={text:"Independently research the retry bug",origin:{kind:"sdk" as const},wait:false};
 describe("register",()=>{
- test("disabled or missing key never sends, injects or owns recall",async($,on)=>{
-  const f=fixture(on,{enabled:false});
+ test("a missing key never sends, injects or owns recall",async($,on)=>{
+  const f=fixture(on,{key:""});
   const result=await $.prompt.submit(prompt);expect(result.text).toBe(prompt.text);expect(result.context).toBeUndefined();expect(f.sent).toEqual([]);expect(f.processes).toEqual([]);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
-  f.env.DEVKIT_JEV_ENABLED="1";f.env.TYPESAFE_API_KEY="";
+  f.env.TYPESAFE_API_KEY=undefined; // unset, not just empty
   await $.prompt.submit(prompt);expect(f.sent).toEqual([]);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
  });
  test("injects advice and original sources without changing the user input",async($,on)=>{
@@ -64,10 +64,10 @@ describe("register",()=>{
   const f=fixture(on,{bad:true});const result=await $.prompt.submit(prompt);
   expect(result.context).toBeUndefined();expect(f.seen.length).toBe(1);expect(f.logs.join(" ")).not.toContain(secret);
  });
- test("no candidates needs no network and disabling restores legacy ownership",async($,on)=>{
+ test("no candidates needs no network and removing the key restores legacy ownership",async($,on)=>{
   const f=fixture(on,{catalog:"{}",rows:[]});const result=await $.prompt.submit(prompt);expect(f.sent).toEqual([]);expect(result.context).toBeUndefined();
   expect(f.seen[0].legacyOwner).toBe("fictional-current");expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
-  f.env.DEVKIT_JEV_ENABLED="0";await $.prompt.submit(prompt);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
+  f.env.TYPESAFE_API_KEY="";await $.prompt.submit(prompt);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
  });
  test("a downstream failure is not replayed by the Mod",async($,on)=>{
   const f=fixture(on,{throwNext:true});try{await $.prompt.submit(prompt);}catch{}

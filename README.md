@@ -81,16 +81,22 @@ Restart after hook edits.
 
 ## Optional Mod: `mods/jev`
 
-Claude Code only, off by default. On each typed prompt it asks Jev whether to
-delegate and which past sessions are worth reading, then adds the answer as
-hidden context. Load it beside dev-kit:
+Claude Code only, and a separate install from dev-kit. On each typed prompt it
+asks Jev whether to delegate and which past sessions are worth reading, then
+adds the answer as hidden context.
 
-```bash
-CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude --plugin-dir <checkout-path>/mods/jev
+```
+/plugin install dev-kit-jev@vito-agents
 ```
 
-Turn it on with the plugin's `enabled` option or `DEVKIT_JEV_ENABLED=1`, and set
-`TYPESAFE_API_KEY`. Off, without a key, or on any failure the
+It only loads where function hooks are enabled, so put this in your settings
+once: `{"env": {"CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1"}}`. Debugging from a
+checkout instead: `claude --plugin-dir <checkout-path>/mods/jev`, which
+`claude --help` says lasts for that session only.
+
+`TYPESAFE_API_KEY` (or the `apiKey` option) is the only switch: with the plugin
+installed and a key exported, every prompt goes to TypeSafe; to stop that,
+remove the key or uninstall. Without a key, or on any failure, the
 prompt goes through unchanged. Only the current prompt, the last four messages
 and ccobs summaries are sent, redacted and size-bounded; tool output and paths
 are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).

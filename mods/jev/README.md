@@ -6,22 +6,41 @@ answer as hidden context. Advice only: it never starts an agent.
 
 Claude Code only. Codex ignores this directory.
 
-## Load and switch on
+## Install
 
-```bash
-CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 TYPESAFE_API_KEY=... DEVKIT_JEV_ENABLED=1 \
-  claude --plugin-dir <checkout-path>/mods/jev
+```
+/plugin marketplace add <checkout-path>
+/plugin install dev-kit-jev@vito-agents
 ```
 
-It stays off until both a switch and a key are present, so loading it alone
-changes nothing. The switch is either `DEVKIT_JEV_ENABLED=1` or the `enabled`
-option; the key is either `TYPESAFE_API_KEY` or the `apiKey` option. Options go
-in user or `--settings` settings under `pluginConfigs["dev-kit-jev"].options`
-(project settings are not read):
+**Function hooks must be enabled or this Mod never loads.** Anthropic's mods
+doc: *hooks modules load only where function hooks are enabled*. Set it once in
+your settings instead of typing it before every command:
+
+```json
+{ "env": { "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1" } }
+```
+
+**The key is the only switch.** Export `TYPESAFE_API_KEY` (or set the `apiKey`
+option). With the plugin installed and a key in your shell — a lot of people
+export it in `.zshrc` — every prompt you type starts going to TypeSafe; there is
+no separate on/off flag. To stop that, remove the key or uninstall the plugin.
+With no key it does nothing at all: no request, no injection, no warning.
+
+### From source, for debugging
+
+```bash
+claude --plugin-dir <checkout-path>/mods/jev
+```
+
+`claude --help` on `--plugin-dir`: *for this session only*. Use it while working
+on the Mod; normal use is the install above.
+
+Options go in user or `--settings` settings under
+`pluginConfigs["dev-kit-jev"].options` (project settings are not read):
 
 | Option | Default | Meaning |
 |---|---|---|
-| `enabled` | `false` | Master switch. |
 | `apiKey` | — | TypeSafe key. Prefer the environment variable. |
 | `model` | `jev-1.13.0` | TypeSafe model version. |
 | `timeoutMs` | `3000` | Extra time budget per prompt, clamped to 200–8000. |
@@ -52,7 +71,7 @@ override both for testing.
 
 While this Mod owns a session it sets `DEVKIT_JEV_RECALL_SESSION`, and
 `hooks/scripts/recall-precedent.ts` returns without doing anything — one recall
-per turn, never two. Ownership starts as soon as the Mod is on with a key, even
+per turn, never two. Ownership starts as soon as a key is present, even
 if the Jev call then fails, so a failure does not fall through to a second model
 call. Codex, other sessions and sessions without the Mod keep the old path.
 

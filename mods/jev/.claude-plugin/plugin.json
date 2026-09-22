@@ -1,21 +1,15 @@
 {
   "name": "dev-kit-jev",
-  "version": "2.64.11",
+  "version": "2.64.12",
   "description": "Optional Claude Mod: contextual agent recommendations and historical references through Jev.",
   "author": {
     "name": "vito"
   },
   "userConfig": {
-    "enabled": {
-      "type": "boolean",
-      "default": false,
-      "description": "Send bounded, redacted prompt context to TypeSafe for agent and recall recommendations.",
-      "title": "Enable Jev"
-    },
     "apiKey": {
       "type": "string",
       "sensitive": true,
-      "description": "TypeSafe API key. The TYPESAFE_API_KEY environment variable is also read.",
+      "description": "TypeSafe API key; with no key the Mod does nothing. The TYPESAFE_API_KEY environment variable is also read.",
       "title": "TypeSafe API key"
     },
     "model": {

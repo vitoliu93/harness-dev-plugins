@@ -6,14 +6,23 @@
   },
   "metadata": {
     "description": "Vito's agent skills marketplace.",
-    "version": "2.64.11"
+    "version": "2.64.12"
   },
   "plugins": [
     {
       "name": "dev-kit",
       "source": "./",
       "description": "Cross-client agent toolkit with 18 shared skills, local model routes, and skill quality guards.",
-      "version": "2.64.11",
+      "version": "2.64.12",
+      "author": {
+        "name": "vito"
+      }
+    },
+    {
+      "name": "dev-kit-jev",
+      "source": "./mods/jev",
+      "description": "Optional Claude Mod: contextual agent recommendations and historical references through Jev.",
+      "version": "2.64.12",
       "author": {
         "name": "vito"
       }

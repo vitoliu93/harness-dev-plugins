@@ -20,12 +20,13 @@ export function register(on: On, options: PluginOptions): void {
     let abort: (() => void) | undefined;
     try {
       const session = await $.session.id();
-      const enabled = options.enabled === true || await $.env.get("DEVKIT_JEV_ENABLED") === "1";
-      const key = enabled ? String(options.apiKey || await $.env.get("TYPESAFE_API_KEY") || "") : "";
-      if (!enabled || !key) {
+      // The key is the only switch: no key, no Jev, and the session must not stay
+      // owned by a Mod that cannot work — the legacy recall has to take over again.
+      const key = String(options.apiKey || await $.env.get("TYPESAFE_API_KEY") || "");
+      if (!key) {
         if (!owners && await $.env.get("DEVKIT_JEV_RECALL_SESSION") === session) await $.env.set("DEVKIT_JEV_RECALL_SESSION", undefined);
       } else {
-        // This enabled, authenticated Mod owns recall for this session, including failure:
+        // This authenticated Mod owns recall for this session, including failure:
         // no second 12-second legacy model call after a Jev timeout. Child sessions have other IDs.
         ownSession = session;
         const timeoutMs = Math.min(8000, Math.max(200, Number(options.timeoutMs) || 3000));
