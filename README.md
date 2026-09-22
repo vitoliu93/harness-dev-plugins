@@ -79,6 +79,24 @@ Delegation now goes through the
 
 Restart after hook edits.
 
+## Optional Mod: `mods/jev`
+
+Claude Code only, off by default. On each typed prompt it asks Jev whether to
+delegate and which past sessions are worth reading, then adds the answer as
+hidden context. Load it beside dev-kit:
+
+```bash
+CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude --plugin-dir <checkout-path>/mods/jev
+```
+
+Turn it on with the plugin's `enabled` option or `DEVKIT_JEV_ENABLED=1`, and set
+`TYPESAFE_API_KEY`. Off, without a key, or on any failure the
+prompt goes through unchanged. Only the current prompt, the last four messages
+and ccobs summaries are sent, redacted and size-bounded; tool output and paths
+are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
+While it owns a session's recall, `recall-precedent.ts` stays quiet, so Codex
+and sessions without the Mod keep the old behavior. Manual: `mods/jev/README.md`.
+
 ## Layout
 
 ```
@@ -86,6 +104,7 @@ Restart after hook edits.
 .codex-plugin/    # Codex plugin.json
 skills/           # 22 active skills
 hooks/            # shared hook registration + scripts
+mods/jev/         # optional Claude-only Mod (separate --plugin-dir, not in the marketplace)
 archive/          # retired skills + subagents (not auto-discovered)
 ```
 

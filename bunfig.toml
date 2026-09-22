@@ -1,0 +1,3 @@
+[test]
+# Run this suite with Claude's own engine, not bun:test.
+pathIgnorePatterns = ["mods/jev/tests/**"]

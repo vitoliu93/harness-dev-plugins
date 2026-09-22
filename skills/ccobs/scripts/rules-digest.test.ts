@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -29,6 +29,15 @@ test("writer and reader derive the same project key", () => {
   // a worktree folds into its parent project on both sides
   expect(projectKey(cwd + "/.claude/worktrees/feat-a")).toBe(projectKey(cwd));
   expect(normalizeScope("-w-codebase-proj--claude-worktrees-feat-a")).toBe(projectKey(cwd));
+});
+
+test("a symlinked path gives the same key as the directory it points at", () => {
+  const real = realpathSync(mkdtempSync(join(tmpdir(), "ccobs-key-")));
+  const link = join(real, "link");
+  try {
+    symlinkSync(real, link);
+    expect(projectKey(link)).toBe(projectKey(real));
+  } finally { rmSync(real, { recursive: true, force: true }); }
 });
 
 // --- sweepLearnedInbox -------------------------------------------------------

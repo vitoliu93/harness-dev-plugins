@@ -43,6 +43,7 @@ bun skills/skill-forge/scripts/skill_style.ts --workspace-root skills --fail-on-
 bun skills/skill-forge/scripts/build_skill_atlas.ts --workspace-root skills --fail-on-style
 claude plugin validate --strict .
 uv run --with pyyaml python "$HOME/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py" .
+bunx tsc -p mods/jev/tsconfig.json
 ```
 
 如果一条 `&&` 命令中的前一项失败，后面的命令不会执行。修好后要分别重跑。

@@ -4,7 +4,7 @@
 // a mismatch shows up as "no rules yet", which is indistinguishable from success
 // because the hook always exits 0.
 
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -38,7 +38,11 @@ export function parseRuleLine(line: string): Rule | null {
 export function projectKey(cwd: string): string {
   // Claude Code's own encoding turns both "/" and "." into "-", which is why a
   // worktree shows up as "--claude-worktrees-" rather than "-.claude-...".
-  return normalizeScope(cwd.replace(/\/+$/, "").replace(/[/.]/g, "-"));
+  // It also records the resolved path, so /tmp and /private/tmp are one project
+  // on macOS. A path that no longer exists keeps the spelling it was given.
+  let path = cwd;
+  try { path = realpathSync(cwd); } catch { /* gone or unreadable */ }
+  return normalizeScope(path.replace(/\/+$/, "").replace(/[/.]/g, "-"));
 }
 
 /** Same fold applied to a key already stored in `sessions.project`. */

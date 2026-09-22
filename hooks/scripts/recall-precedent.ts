@@ -70,6 +70,9 @@ async function run(): Promise<void> {
   const sessionId = String(payload.session_id ?? "");
   const cwd = String(payload.cwd ?? "");
   if (!sessionId || !cwd) return;
+  // A loaded, explicitly enabled Claude Mod owns recall for this exact session.
+  // Codex and child sessions retain their existing path.
+  if (process.env.DEVKIT_JEV_RECALL_SESSION === sessionId) return;
   if (prompt.length < MIN_PROMPT_CHARS) return; // "继续" / "ok" carry no task
   if (prompt.startsWith("/") || prompt.startsWith("!")) return; // slash command / shell passthrough
 

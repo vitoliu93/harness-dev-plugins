@@ -1,0 +1,34 @@
+{
+  "name": "dev-kit-jev",
+  "version": "2.64.11",
+  "description": "Optional Claude Mod: contextual agent recommendations and historical references through Jev.",
+  "author": {
+    "name": "vito"
+  },
+  "userConfig": {
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Send bounded, redacted prompt context to TypeSafe for agent and recall recommendations.",
+      "title": "Enable Jev"
+    },
+    "apiKey": {
+      "type": "string",
+      "sensitive": true,
+      "description": "TypeSafe API key. The TYPESAFE_API_KEY environment variable is also read.",
+      "title": "TypeSafe API key"
+    },
+    "model": {
+      "type": "string",
+      "default": "jev-1.13.0",
+      "description": "TypeSafe model version.",
+      "title": "Jev model"
+    },
+    "timeoutMs": {
+      "type": "number",
+      "default": 3000,
+      "description": "Maximum extra time per prompt, clamped to 200–8000 ms.",
+      "title": "Prompt timeout (ms)"
+    }
+  }
+}
