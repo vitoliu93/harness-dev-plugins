@@ -49,7 +49,7 @@ Reversibility and problem fixing rules: [decisions.md](references/decisions.md).
 
 ## Report
 
-When the work is done — never mid-run — deliver three parts: the goal, what was
+When the work is done, deliver three parts: the goal, what was
 done with one line of acceptance evidence, and what it changes for the user.
 Keep links, branch names, agent rosters, and open options out of it.
 
@@ -60,5 +60,5 @@ refuse to touch, what reaches the user, and what the report may contain.
 
 ## Responsibility
 
-You own the final result. Do not stop at the ticket boundary. Keep the
-codebase lean, strong, and maintainable.
+You own the final result. A defect the work exposes outside the ticket gets
+fixed or reported, not ignored.
