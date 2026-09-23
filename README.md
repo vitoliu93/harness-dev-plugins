@@ -100,8 +100,9 @@ remove the key or uninstall. Without a key, or on any failure, the
 prompt goes through unchanged. Only the current prompt, the last four messages
 and ccobs summaries are sent, redacted and size-bounded; tool output and paths
 are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
-While it owns a session's recall, `recall-precedent.ts` stays quiet, so Codex
-and sessions without the Mod keep the old behavior. Manual: `mods/jev/README.md`.
+While it owns a session's recall, `recall-precedent.ts` stays quiet. Codex and
+sessions without the Mod keep that hook, which also picks through Jev when the
+key is set and through pi otherwise. Manual: `mods/jev/README.md`.
 
 ## Layout
 

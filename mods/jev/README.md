@@ -81,7 +81,7 @@ normal message and is sent.
 
 The whole request is capped at 40 KB, counted in UTF-8 bytes. To fit, messages
 are dropped oldest-first, then skills last-first (plugin skills go before
-workspace ones); precedents are never dropped. With about 70 skills on this
+workspace ones); precedents go last-first only after every skill is gone. With about 70 skills on this
 kind of setup only the newest message or two remain, and with more than
 roughly 80 skills the last ones are not scored. The debug line names how many
 skills were scored.
@@ -95,7 +95,9 @@ While this Mod owns a session it sets `DEVKIT_JEV_RECALL_SESSION`, and
 `hooks/scripts/recall-precedent.ts` returns without doing anything — one recall
 per turn, never two. Ownership starts as soon as a key is present, even
 if the Jev call then fails, so a failure does not fall through to a second model
-call. Codex, other sessions and sessions without the Mod keep the old path.
+call. Codex, other sessions and sessions without the Mod keep the hook, which
+asks Jev itself when `TYPESAFE_API_KEY` is set (up to 24 candidates, 5-second
+cap) and falls back to pi only when there is no key.
 
 ## When it breaks
 

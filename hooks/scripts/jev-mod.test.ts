@@ -58,6 +58,12 @@ describe("Jev shaping",()=>{
   const c=makeRequest({prompt:"中".repeat(3000),recent:[],skills:skills(85,"中".repeat(200)),history},"jev-test");
   expect(size(c.body)).toBeLessThanOrEqual(40000);expect(c.body.length).toBeLessThan(size(c.body));expect(c.snapshot.skills.length).toBeGreaterThan(30);
   expect(historyFrom(Array.from({length:30},(_,i)=>({...row,session_id:`history-${i}`})),"none")).toHaveLength(8);
+  // Recall hook: 24 candidates at historyFrom's own caps, no skills, longest prompt — trims precedents last-first instead of throwing.
+  const recall=historyFrom(Array.from({length:30},(_,i)=>({...row,session_id:`history-${i}`,summary:"中".repeat(300),conclusion:"中".repeat(300)})),"none",[],24);
+  expect(recall).toHaveLength(24);
+  const r=makeRequest({prompt:"中".repeat(3000),recent:[],skills:[],history:recall},"jev-test");
+  expect(size(r.body)).toBeLessThanOrEqual(40000);expect(r.snapshot.history.length).toBeGreaterThan(8);expect(r.snapshot.history.length).toBeLessThan(24);
+  expect(r.snapshot.history[0].id).toBe("r0");
  });
  test("every skill at or above 0.75 is kept in score order; none below; history capped at three",()=>{
   expect(decide(response(),snapshot).skills).toEqual([skill]);
@@ -107,9 +113,9 @@ describe("read-only history adapter and legacy compatibility",()=>{
  test("restricts project, age, current session; folds worktrees; bounds output without writes",()=>{
   const dir=mkdtempSync(join(tmpdir(),"jev-history-test-"));const path=join(dir,"obs.db");
   try{
-   const db=new Database(path);db.exec("CREATE TABLE sessions(session_id TEXT,project TEXT,ended_at TEXT,file_path TEXT);CREATE TABLE observations(session_id TEXT,summary TEXT,conclusion TEXT)");
+   const db=new Database(path);db.exec("CREATE TABLE sessions(session_id TEXT,project TEXT,ended_at TEXT,file_path TEXT);CREATE TABLE observations(session_id TEXT,summary TEXT,conclusion TEXT,files TEXT)");
    for(const [sid,project,day] of [["matching-session",projectKey("/demo"),new Date().toISOString()],["current-session",projectKey("/demo"),new Date().toISOString()],["unrelated-project","other",new Date().toISOString()],["too-old-session",projectKey("/demo"),"2000-01-01T00:00:00"]]){
-    db.run("INSERT INTO sessions VALUES(?,?,?,?)",[sid!,project!,day!,"/fiction/trace"]);db.run("INSERT INTO observations VALUES(?,?,?)",[sid!,"retry bug "+"s".repeat(10000),"c".repeat(10000)]);
+    db.run("INSERT INTO sessions VALUES(?,?,?,?)",[sid!,project!,day!,"/fiction/trace"]);db.run("INSERT INTO observations VALUES(?,?,?,?)",[sid!,"retry bug "+"s".repeat(10000),"c".repeat(10000),null]);
    }db.close();
    const before=statSync(path).mtimeMs;
    const result=candidates(path,"/demo/.claude/worktrees/task","retry","current-session");

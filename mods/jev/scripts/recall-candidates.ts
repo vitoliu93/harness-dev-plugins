@@ -7,13 +7,13 @@ import { join } from "node:path";
 // This optional Mod ships inside dev-kit; reuse its canonical project encoding.
 import { bigrams, projectKey } from "../../../skills/ccobs/scripts/rules-digest.ts";
 
-type Row = { session_id: string; day: string; summary: string; conclusion: string; file_path: string };
+type Row = { session_id: string; day: string; summary: string; conclusion: string; files: string | null; file_path: string };
 export function candidates(dbPath: string, cwd: string, query: string, session: string): Row[] {
   if (!existsSync(dbPath)) return [];
   const db = new Database(dbPath, { readonly: true });
   try {
     const rows = db.query(`SELECT o.session_id, substr(s.ended_at,1,10) AS day,
-      substr(o.summary,1,2000) AS summary, substr(coalesce(o.conclusion,''),1,2000) AS conclusion, substr(s.file_path,1,1200) AS file_path
+      substr(o.summary,1,2000) AS summary, substr(coalesce(o.conclusion,''),1,2000) AS conclusion, o.files, substr(s.file_path,1,1200) AS file_path
       FROM observations o JOIN sessions s ON s.session_id=o.session_id
       WHERE s.project=? AND o.session_id<>? AND o.summary IS NOT NULL AND o.summary<>''
         AND s.ended_at>strftime('%Y-%m-%dT%H:%M:%S','now','-90 days')

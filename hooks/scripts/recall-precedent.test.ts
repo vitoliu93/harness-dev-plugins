@@ -24,3 +24,10 @@ test("a prose refusal yields nothing", () => {
   expect(parsePrecedents("NONE")).toEqual([]);
 });
 
+
+test("keeps Codex and subagent session ids", () => {
+  expect(parsePrecedents("- 2026-09-01 ses_0945a5e3cffeOtTcWhJPwsIxCC — 修登录\n- 2026-09-02 agent-a379b008a62a7f6a1 — 查日志")).toEqual([
+    "- 2026-09-01 ses_0945a5e3cffeOtTcWhJPwsIxCC — 修登录",
+    "- 2026-09-02 agent-a379b008a62a7f6a1 — 查日志",
+  ]);
+});
