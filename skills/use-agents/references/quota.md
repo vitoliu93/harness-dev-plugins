@@ -26,6 +26,8 @@ mode `0600`. It contains no API keys.
 - If the message gives only words, keep them verbatim in `reset_hint`.
 - Calculate `reset_at` only from an exact duration. Otherwise keep it `null`.
 - Key by route ID. One limited model does not disable its whole CLI.
+- Routes that share one account quota count as one: check the shared balance
+  before you start a second long run on it.
 - Before reset, skip the route. After reset, allow one cheap probe.
 - Delete the route entry after a successful probe; otherwise replace it with
   the new message.

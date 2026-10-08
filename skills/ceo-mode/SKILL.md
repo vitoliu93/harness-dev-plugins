@@ -45,6 +45,7 @@ that do not close or disagree across reports are defects.
 ## Decide by reversibility
 
 Decide reversible repo changes yourself; ask only for what leaves the repo.
+Run user-authorized outward actions yourself; agents never see that consent.
 Reversibility and problem fixing rules: [decisions.md](references/decisions.md).
 
 ## Report
