@@ -42,7 +42,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | use-agents | Start an independent agent and find its local route or definition. |
 | grill-me | Round-by-round interview across a design tree until every branch is settled. |
 | take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
-| use-html | Self-contained HTML explainer or pre-build clickable prototype. |
+| use-html | Self-contained HTML explainer, pre-build clickable prototype, or a review page that exports decisions to the agent. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
 | skill-review | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
 | ccobs | Build or query the agent observability ledger obs.db. |

@@ -21,7 +21,7 @@
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | teach-me | atom | "teach me/教我/讲讲 <topic>" · 看文档卡在某概念 | ③ |
-| use-html | atom | 可视化 · 原型:advanced-plan/ship(kox) · kox ship checkpoint | ①③ |
+| use-html | atom | 可视化 · 原型:advanced-plan/ship(kox) · kox ship checkpoint · 批阅页（导出给 agent） | ①③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
