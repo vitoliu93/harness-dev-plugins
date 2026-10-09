@@ -29,6 +29,15 @@ Rules:
 - When the reviewer's acceptance card may raise open rulings, ask for the
   rulings first as a separate 5-minute deliverable; the host rules, then the
   maker starts.
+- A fix card that touches auth, ownership, billing, or untrusted input states
+  its invariants before the maker starts, not after the reviewer finds each
+  bypass: what decides permission comes only from rows the caller cannot write
+  (never a client-sent type, owner, or key row); errors and empty catalogs
+  deny; every input has a length and count cap; charges happen after all
+  checks. Before fixing the scope, `rg` every sibling entry point (the twin
+  route, the other client that reads the same table) and sample real
+  production values (non-ASCII keys, other buckets). Every ruling the host
+  gives the reviewer goes to the maker in the same message.
 - Intersect write lists before launch. Any overlap must be serialized or split.
 - A programmer's `writes` never includes a production database or environment.
   Migrations are written to the repo only; the host runs them, test first.
@@ -39,6 +48,11 @@ Rules:
   checks; it never takes the maker's report as evidence. Its `writes` cover
   only the tests or acceptance list it wrote before the change started, never
   the files it reviews; its report goes to a path outside that repository.
+  Every card the host watches, read-only auditors included, ends its result
+  file with a done marker, and the host waits with use-agents
+  `scripts/wait-result.sh`, never a hand-written loop on `agent_status`: a
+  finished Claude agent reports `done`, not `idle`, so a loop that waits for
+  `idle` can sit half an hour after the file is written.
   When a card's completion is watched with a sentinel, the done marker must
   occupy the result file's last non-empty line alone (ignoring leading or trailing
   whitespace and CRLF).
