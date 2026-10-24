@@ -12,6 +12,10 @@ herdr status server | grep '^status: running$' >/dev/null || {
 `HERDR_ENV=1` means the caller is already inside Herdr; it is not required.
 Outside Herdr, connect to the running local Herdr. Stop with the command error
 when Herdr is missing or unreachable; do not switch transports.
+The `herdr` skill's "Requires HERDR_ENV=1, stop outside Herdr" gate is for a
+caller controlling its own pane, not for launching agents; this file wins here.
+Run the preflight before every launch: Herdr down at the start of a task does
+not authorize later headless launches.
 
 ## One agent, one tab
 

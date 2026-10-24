@@ -20,8 +20,9 @@
 //   4. retries exhausted (pi retries the same model 3x on 429 by itself)
 //
 // pi has no model-level fallback: `openRouterRouting.allow_fallbacks` swaps the
-// upstream provider inside one model, not the model. A second model would go
-// right here, before returning null.
+// upstream provider inside one model, not the model. Model-level fallback is
+// ours: llm.json `"fallback": {"ark/deepseek-v4-flash": "deepseek/deepseek-v4-flash"}`,
+// tried once when the primary returns nothing (see fallbackModel below).
 
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -88,21 +89,43 @@ export function extractJson(text: string): any {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-export async function piCall(
-  prompt: string,
-  {
-    scenario = "default",
-    model = resolveModel(scenario) ?? undefined,
-    system,
-    files = [],
-    tools = [],
-    timeoutMs = 8000,
-  }: {
-    scenario?: string; model?: string; system?: string;
-    files?: string[]; tools?: string[]; timeoutMs?: number;
-  } = {},
-): Promise<string | null> {
+/**
+ * Backup model from llm.json's `"fallback": {"<provider/model>": "<provider/model>"}`.
+ * Keyed without the ":level" suffix; the primary's suffix carries over unless the
+ * backup names its own. Example: {"ark/deepseek-v4-flash": "deepseek/deepseek-v4-flash"}.
+ */
+export function fallbackModel(model: string): string | null {
+  const path = llmConfigPath();
+  if (!existsSync(path)) return null;
+  const fb = (JSON.parse(readFileSync(path, "utf8")) as any).fallback;
+  const [base, level] = model.split(":");
+  const next = fb && typeof fb === "object" ? fb[base] : null;
+  if (typeof next !== "string" || !next.trim()) return null;
+  return next.includes(":") || !level ? next.trim() : `${next.trim()}:${level}`;
+}
+
+type PiOpts = {
+  scenario?: string; model?: string; system?: string;
+  files?: string[]; tools?: string[]; timeoutMs?: number;
+};
+
+// ponytail: one hop only, and it also fires after a timeout, so a slow primary
+// can cost two full timeouts. Make it error-only if that ever hurts.
+export async function piCall(prompt: string, opts: PiOpts = {}): Promise<string | null> {
+  const model = opts.model ?? resolveModel(opts.scenario ?? "default") ?? undefined;
   if (!model) return null; // no llm.json, or no key for this scenario
+  const answer = await piCallOnce(prompt, { ...opts, model });
+  if (answer) return answer;
+  const backup = fallbackModel(model);
+  if (!backup || backup === model) return null;
+  console.error(`[pi-call] ${model} gave nothing, falling back to ${backup}`);
+  return piCallOnce(prompt, { ...opts, model: backup });
+}
+
+async function piCallOnce(
+  prompt: string,
+  { model, system, files = [], tools = [], timeoutMs = 8000 }: PiOpts & { model: string },
+): Promise<string | null> {
   // ponytail: the prompt rides argv, and ARG_MAX is 1MB on this machine. Over
   // the line Bun.spawn throws E2BIG, the catch below eats it, and the caller
   // fails open with nothing in stderr — so refuse loudly instead. Files are
@@ -138,6 +161,9 @@ export async function piCall(
     const out = await new Response(proc.stdout).text();
     if ((await proc.exited) !== 0) return null;
     let last = "";
+    // pi reports provider errors (429 quota, auth) only inside the JSON stream,
+    // with exit 0 and an empty stderr. Without this the caller sees just null.
+    let lastError = "";
     for (const line of out.split("\n")) {
       if (!line.startsWith("{")) continue;
       let o: any;
@@ -146,6 +172,7 @@ export async function piCall(
       if (!Array.isArray(msgs)) continue;
       for (const m of msgs) {
         if (m?.role !== "assistant") continue;
+        if (m.errorMessage) lastError = String(m.errorMessage);
         const text = (Array.isArray(m.content) ? m.content : [])
           .filter((c: any) => c?.type === "text" && c.text)
           .map((c: any) => c.text)
@@ -154,6 +181,7 @@ export async function piCall(
         if (text) last = text; // keep the last non-empty one
       }
     }
+    if (!last && lastError) console.error(`[pi-call] ${model}: ${lastError.slice(0, 300)}`);
     return last || null;
   } catch {
     return null;
