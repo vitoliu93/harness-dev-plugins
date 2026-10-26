@@ -13,6 +13,12 @@ Execution mechanics for loading teams, authoring cards, launching agents, sentin
   flag to an interactive Herdr launch.
 - Wait through a background sentinel that watches for the result file; never
   sleep or poll in the main turn. Read that file, not the terminal scrollback.
+  The sentinel is `use-agents/scripts/wait-result.sh`, not a hand-written
+  file-only loop: only it exits when the agent goes idle without the file, which
+  is how a report written to the wrong path shows up in minutes instead of an hour.
+- After a restart or context compaction, background sentinels are gone. Before
+  anything else, run `herdr agent list` and re-arm one sentinel per agent still
+  owing a result.
 - A job expected to run over 10 minutes must append one line per batch to a
   progress file (`N/M, elapsed, ETA, failures`); the sentinel watches that file's
   mtime through `wait-result.sh`'s progress-file parameter and wakes you only

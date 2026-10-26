@@ -84,6 +84,11 @@ while [ $SECONDS -lt $end ]; do
   [ "$st" = "blocked" ] && { echo "STUCK: blocked"; echo "$tail"; exit 2; }
   # idle with a background shell still running is working, not stopped
   if { [ "$st" = "idle" ] || [ "$st" = "done" ]; } && ! echo "$tail" | grep -qE '[0-9]+ shells?( still running)?'; then quiet=$((quiet+1)); else quiet=0; fi
-  [ $quiet -ge 3 ] && { echo "IDLE without result"; herdr agent read "$name" --lines 20 2>/dev/null; exit 3; }
+  if [ $quiet -ge 3 ]; then
+    echo "IDLE without result"
+    # 最常见的原因是写错了路径（多套一层目录之类）：在附近找同名文件给个提示。
+    find "$(dirname "$file")" -maxdepth 3 -name "$(basename "$file")" -newermt "@$base_mtime" 2>/dev/null | grep -vxF "$file" | sed 's/^/HINT: same-name file at /'
+    herdr agent read "$name" --lines 20 2>/dev/null; exit 3
+  fi
 done
 echo TIMEOUT; exit 4
