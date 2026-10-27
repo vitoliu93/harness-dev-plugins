@@ -1,6 +1,6 @@
--- ccobs schema — derived, rebuildable index over agent observability JSONL/SQLite.
+-- ccobs schema — derived index over agent observability JSONL/SQLite.
 -- Facts + pointers for every source; locally available Cursor message parts are also retained.
--- Drop the DB and re-ingest at will.
+-- Images keep only size + sha256. Do not drop the DB: observations and purged raw JSONL cannot be re-ingested.
 -- Seven sources: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent.
 
 PRAGMA journal_mode = WAL;

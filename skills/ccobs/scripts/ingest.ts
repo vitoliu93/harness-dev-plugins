@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 // ccobs ingest — incremental, idempotent sweep of agent observability data into obs.db.
 // Nine adapters: claude-code, codex, droid, grok, opencode, cursor-ide, cursor-agent, kimi-code, pi.
-// Facts + pointers for every source; locally available Cursor transcript parts are retained.
-// Safe to re-run any time; safe to delete the DB and rebuild.
+// Facts + pointers for every source; locally available Cursor transcript parts are retained,
+// with images reduced to size + sha256 (the bytes stay in the source file).
+// Safe to re-run any time. Not safe to delete the DB: observations and purged raw JSONL are gone for good.
 //
 // Usage:
 //   bun ingest.ts                           # full incremental sweep
@@ -15,6 +16,7 @@ import { Database } from "bun:sqlite"
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, renameSync, statSync } from "node:fs"
 import { homedir } from "node:os"
 import { basename, dirname, join, relative, sep } from "node:path"
+import { stripImages } from "./slim-db"
 
 const ROOT = process.env.CCOBS_ROOT ?? join(homedir(), ".claude", "projects")
 const OBS_DIR = process.env.CCOBS_DIR ?? join(homedir(), ".claude", "observability")
@@ -72,7 +74,7 @@ function textValue(value: unknown): string | null {
 
 function jsonValue(value: unknown): string | null {
   if (value == null) return null
-  try { return JSON.stringify(value) } catch { return null }
+  try { return JSON.stringify(stripImages(value)) } catch { return null }
 }
 
 // ===================== shared prepared statements =====================

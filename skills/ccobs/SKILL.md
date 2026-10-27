@@ -10,9 +10,10 @@ metadata:
 # ccobs
 
 Raw tool logs → SQLite evidence layer → observations distill (claude-code only)
-→ rollup into markdown rule digests. DB is a rebuildable index at
-`${CCOBS_DIR:-$HOME/.claude/observability/}`; the digests under `rules/` are not —
-they carry hand corrections made in `/debrief`, so only ever append to them.
+→ rollup into markdown rule digests. DB lives at `${CCOBS_DIR:-$HOME/.claude/observability/}`
+and stores facts and pointers; images keep only size and sha256. Do not delete it to rebuild:
+`observations` costs model calls and raw claude-code JSONL gets purged. The digests under
+`rules/` carry hand corrections made in `/debrief`, so only ever append to them.
 
 Set `CCOBS_SKILL_DIR` to the absolute directory containing this loaded
 `SKILL.md`. Keep the assignment and use in the same shell command because shell
