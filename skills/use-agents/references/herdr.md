@@ -67,6 +67,16 @@ The steps it performs:
    reading the task card, not sitting at `→ <your prompt>`.
 3. Only now attach the sentinel and tell the user it is running.
 
+Screen blockers seen repeatedly; clear them before prompting:
+
+- Claude shows `New MCP server found` at start → `send-keys Enter`, then send the prompt again.
+- A `Heads up` tip owns the input box → `send-keys <name> 0` first, or the prompt is swallowed.
+- A cursor/grok agent running one long foreground shell command (a serial render) does not
+  read queued messages. Ask for short or backgrounded commands, and after sending, `agent read`
+  to confirm the message was acted on; `working` alone proves nothing.
+- Claude agents can drop with `Connection lost`: status leaves `working` with no result file.
+  A watcher that only waits for the file misses it; watch status too.
+
 Claude kind: start with `--permission-mode auto` so it never stops at a
 `Do you want to proceed?` box.
 
