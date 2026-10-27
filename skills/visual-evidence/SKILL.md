@@ -36,6 +36,14 @@ metadata:
 5. 首轮通过的项沉淀探针（命令序列或断言脚本），输出 JSON verdict。
 6. 回报证据包：每项一行结论 + 一条决定性证据 + 复现步骤。
 
+## Electron / 桌面端
+
+- 用 puppeteer-core `connect({ browserURL: 'http://127.0.0.1:<调试端口>', defaultViewport: null })` 接正在运行的应用；收尾 `disconnect()`，不要 `close()`。
+- iframe 里的目标：`page.frames()` 按 URL 找 frame，坐标 = `frameElement().boundingBox()` 加元素 rect。
+- `page.mouse.click` / `element.click()` 在 Electron 上会挂住：改走 `page.createCDPSession()` 发 `Input.dispatchMouseEvent`（pressed + released）。
+- 窗口被遮挡时 `visibilityState=hidden`，不出帧、播放暂停；时序和首帧证据只在窗口可见时采。
+- 比较新旧版本时，用一个独立回放页扮演宿主，按真实协议驱动被测页；同一页可以对本地、测试、生产各跑一遍。
+
 ## 证据包契约
 
 - 每项：`PASS | FAIL | BLOCKED` + **一条**带具体数字的决定性证据（DOM 数值或结构断言）+ 复现步骤。
