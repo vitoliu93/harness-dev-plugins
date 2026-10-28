@@ -20,8 +20,11 @@ not authorize later headless launches.
 ## One agent, one tab
 
 ```bash
-herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" --label '<label>' --no-focus
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "$PWD" --label '<label>' --no-focus --env DEVKIT_DELEGATED=1
 ```
+
+`DEVKIT_DELEGATED=1` tells dev-kit hooks the agent was dispatched, so the
+user-facing injections (understand-first, todo triage) skip it. Keep it.
 
 The agent must live in the caller's workspace. `HERDR_WORKSPACE_ID` (also injected
 at session start as `<herdr-context>`) names it; never create or pick another

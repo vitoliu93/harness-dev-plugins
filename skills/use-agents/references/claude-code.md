@@ -13,7 +13,7 @@ Always pass the model from `agents.json`. Take `--effort` from the alias's
 `effort` field, and drop the flag when that field is empty.
 
 ```bash
-claude -p '<prompt>' --model <model> --effort <level> \
+DEVKIT_DELEGATED=1 claude -p '<prompt>' --model <model> --effort <level> \
   --output-format stream-json --verbose
 ```
 

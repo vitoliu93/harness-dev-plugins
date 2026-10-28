@@ -19,7 +19,8 @@ python3 -c 'import sys;open(sys.argv[1],"rb").read().decode("utf-8")' "$prompt_f
 command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
 
 ws=(); [ -n "${HERDR_WORKSPACE_ID:-}" ] && ws=(--workspace "$HERDR_WORKSPACE_ID")
-tab_json=$(herdr tab create "${ws[@]}" --cwd "$PWD" --label "$label" --no-focus)
+# DEVKIT_DELEGATED marks the agent as dispatched: dev-kit hooks meant for the user stay out of its context.
+tab_json=$(herdr tab create "${ws[@]}" --cwd "$PWD" --label "$label" --no-focus --env DEVKIT_DELEGATED=1)
 pane=$(printf '%s' "$tab_json" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])')
 tab=$(printf '%s' "$tab_json" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["tab"]["tab_id"])')
 sleep 3   # start in the same second as tab create can register nothing (herdr.md)

@@ -31,3 +31,8 @@ test("with a transcript it repeats until the lines are written, at most 3 times"
   writeFileSync(transcript, JSON.stringify({ text: "【理解】目标：断点续传" }) + "\n");
   expect(await fire(env, { transcript_path: transcript })).toBe("");
 });
+
+test("a dispatched agent never gets the protocol", async () => {
+  const env = { ...process.env, CCOBS_DIR: mkdtempSync(join(tmpdir(), "und-")), DEVKIT_DELEGATED: "1" };
+  expect(await fire(env)).toBe("");
+});

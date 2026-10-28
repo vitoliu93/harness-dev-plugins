@@ -73,8 +73,11 @@ function run(): void {
   const payload = JSON.parse(readFileSync(0, "utf-8")) as Record<string, unknown>;
   if (payload === null || typeof payload !== "object" || Array.isArray(payload)) return;
   const cwd = String(payload.cwd || ".");
-  print(`<todo-convention>${TODO_CONVENTION}</todo-convention>`);
-  printTodos(cwd);
+  // A dispatched agent keeps to its task card: no triage duty, no backlog to wander into.
+  if (!process.env.DEVKIT_DELEGATED) {
+    print(`<todo-convention>${TODO_CONVENTION}</todo-convention>`);
+    printTodos(cwd);
+  }
   if (payload.source === "compact") return; // the rest survives compaction; don't re-inject
   const learned = path.join(cwd, ".claude", "LEARNED.md");
 

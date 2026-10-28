@@ -39,7 +39,8 @@ export function shouldFire(prompt: string): boolean {
 function run(payload: Record<string, any>): string | null {
   const prompt = String(payload.prompt ?? "");
   const sid = String(payload.session_id ?? "");
-  if (!sid || !shouldFire(prompt)) return null;
+  // Dispatched agents (use-agents sets this) work from a task card, not from the user.
+  if (process.env.DEVKIT_DELEGATED || !sid || !shouldFire(prompt)) return null;
   mkdirSync(MARK_DIR, { recursive: true });
   const mark = join(MARK_DIR, sid.replaceAll("/", "_"));
   const tries = existsSync(mark) ? Number(readFileSync(mark, "utf8")) || 1 : 0;
