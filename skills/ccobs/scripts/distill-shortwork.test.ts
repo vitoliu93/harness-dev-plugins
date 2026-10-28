@@ -13,11 +13,11 @@ const PENDING_SQL = /`(SELECT s\.session_id, s\.file_path[\s\S]*?LIMIT \?2)`/.ex
 function seeded(): Database {
   const db = new Database(":memory:");
   db.exec(`CREATE TABLE sessions (session_id TEXT PRIMARY KEY, kind TEXT, source TEXT,
-           file_path TEXT, ended_at TEXT)`);
+           file_path TEXT, ended_at TEXT, cwd TEXT)`);
   db.exec(`CREATE TABLE observations (session_id TEXT PRIMARY KEY)`);
   db.exec(`CREATE TABLE turns (session_id TEXT, output_tokens INTEGER)`);
   const add = (id: string, turns: number, tokensEach: number) => {
-    db.prepare(`INSERT INTO sessions VALUES (?,'main','claude-code','/tmp/x.jsonl','2020-01-01T00:00:00')`).run(id);
+    db.prepare(`INSERT INTO sessions VALUES (?,'main','claude-code','/tmp/x.jsonl','2020-01-01T00:00:00',NULL)`).run(id);
     for (let i = 0; i < turns; i++) {
       db.prepare(`INSERT INTO turns VALUES (?,?)`).run(id, tokensEach);
     }

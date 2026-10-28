@@ -47,7 +47,7 @@ cat > "$PLIST" <<EOF
   <array>
     <string>/bin/zsh</string>
     <string>-c</string>
-    <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"</string>
+    <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"; "${BUN}" "${SCRIPT_DIR}/todo-review.ts"</string>
   </array>
   <key>StartInterval</key><integer>3600</integer>
   <key>RunAtLoad</key><true/>

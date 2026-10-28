@@ -17,6 +17,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
+import { TODO_DDL, addTodo, closeTodo, gitRoot, openTodos } from "./todo.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -102,14 +103,33 @@ function readItYourself(filePath: string): string {
 }
 
 const db = new Database(DB_PATH);
+const projectOf = (cwd: string | null) => (cwd && existsSync(cwd) ? gitRoot(cwd) : cwd);
+function todoList(cwd: string | null): string {
+  const rows = openTodos(db, projectOf(cwd));
+  return rows.length ? rows.map((r) => `${r.id} | ${r.title}${r.evidence ? ` | ${r.evidence}` : ""}`).join("\n") : "（无）";
+}
+// New findings go in; items this session resolved close themselves. Closing is
+// passive on purpose: the user only reopens a wrong close (`todo.ts reopen`).
+function applyTodos(s: { session_id: string; cwd: string | null }, j: any): void {
+  const project = projectOf(s.cwd);
+  const open = new Set(openTodos(db, project, 200).map((t) => t.id));
+  for (const r of Array.isArray(j.todos_resolved) ? j.todos_resolved : []) {
+    if (r && open.has(String(r.id))) closeTodo(db, String(r.id), "done", `auto:${s.session_id}${r.evidence ? `:${String(r.evidence).slice(0, 120)}` : ""}`);
+  }
+  for (const t of (Array.isArray(j.todo_candidates) ? j.todo_candidates : []).slice(0, 5)) {
+    if (t?.title) addTodo(db, { title: String(t.title), why: t.why ? String(t.why) : undefined, evidence: t.evidence ? String(t.evidence) : undefined, project, source: "distill", session: s.session_id });
+  }
+}
 // 存量库迁移;已有则跳过
-for (const col of ["sop_candidate TEXT", "conclusion TEXT", "files TEXT"]) {
+db.exec("PRAGMA busy_timeout = 5000");
+db.exec(TODO_DDL);
+for (const col of ["sop_candidate TEXT", "conclusion TEXT", "files TEXT", "understanding TEXT"]) {
   try { db.exec(`ALTER TABLE observations ADD COLUMN ${col}`); } catch {}
 }
 const sessionFilter = opt("--session");
 const pending = db
   .prepare(
-    `SELECT s.session_id, s.file_path, s.ended_at
+    `SELECT s.session_id, s.file_path, s.ended_at, s.cwd
      FROM sessions s LEFT JOIN observations o ON o.session_id = s.session_id
      WHERE s.kind = 'main'
        AND s.source = 'claude-code' -- digest 解析器只认 Claude 式 JSONL;Cursor 的 state.vscdb(2.8GB 二进制)曾把整条管线 SIGTRAP 打死两周
@@ -127,7 +147,7 @@ const pending = db
      ORDER BY s.ended_at DESC LIMIT ?2`,
   )
   .all(sessionFilter, flag("--dry-run") ? 20 : Number(opt("--limit") ?? 50)) as
-  { session_id: string; file_path: string; ended_at: string }[];
+  { session_id: string; file_path: string; ended_at: string; cwd: string | null }[];
 
 if (pending.length === 0) {
   console.log("ccobs distill: nothing pending");
@@ -143,7 +163,7 @@ if (flag("--dry-run")) {
   }
   const digest = buildDigest(s.file_path);
   console.log(`# session ${s.session_id} (${s.ended_at})\n`);
-  console.log(PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", digest));
+  console.log(PROMPT_TPL.replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", digest));
   process.exit(0);
 }
 
@@ -163,8 +183,8 @@ const tomb = db.prepare(
 const put = db.prepare(
   `INSERT OR REPLACE INTO observations
    (session_id, distilled_at, distill_model, task_type, outcome, corrections,
-    dispatch_engine, dispatch_result, summary, learn_candidates, sop_candidate, conclusion, files)
-   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    dispatch_engine, dispatch_result, summary, learn_candidates, sop_candidate, conclusion, files, understanding)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 );
 
 let ok = 0;
@@ -181,7 +201,7 @@ for (const s of pending) {
   if (big) bigged++;
   try {
     const answer = await piCall(
-      PROMPT_TPL.replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : digestWithSource(s.file_path)),
+      PROMPT_TPL.replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : digestWithSource(s.file_path)),
       // 两条分支都开工具:大文件是没别的办法,小文件是让它能补摘要删掉的那部分。
       // 大文件给更长的钟,它得整个文件自己翻一遍,来回好几趟。
       { model, system: JSON_ONLY, tools: READ_ONLY_TOOLS, timeoutMs: big ? 900_000 : 300_000 },
@@ -197,7 +217,9 @@ for (const s of pending) {
       j.sop_candidate ? String(j.sop_candidate).slice(0, 60) : null,
       j.conclusion ? String(j.conclusion).slice(0, 200) : null,
       JSON.stringify(Array.isArray(j.files) ? j.files.slice(0, 6).map(String) : []),
+      ["absent", "shown", "confirmed", "edited"].includes(j.understanding) ? j.understanding : null,
     );
+    applyTodos(s, j);
     ok++;
   } catch (e) {
     failed++; // left undistilled; retried next run

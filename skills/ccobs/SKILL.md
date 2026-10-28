@@ -50,6 +50,14 @@ bun "$CCOBS_SKILL_DIR/scripts/rollup.ts" --dry-run
   before that scope's watermark are deleted, so the inbox only holds what the
   pipeline hasn't caught up with
 
+## Todo ledger
+
+`scripts/todo.ts` keeps problems found but not handled (`todos` in obs.db).
+Agents add with `add --title --why --evidence`; distill files `todo_candidates`
+and closes items a session resolved; `scripts/todo-review.ts` runs daily at the
+end of the launchd chain: expires, merges, closes, then pushes the top 3 to
+Feishu (`${CCOBS_DIR}/todo.json`). Closing is automatic; `reopen <id>` undoes one.
+
 ## Read on demand
 
 - [data-model.md](references/data-model.md) — source/model, eight adapters
