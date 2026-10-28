@@ -118,3 +118,9 @@ test("pruneStale drops ×1 rules older than the window and keeps everything else
   ];
   expect(pruneStale(rules, "2026-09-05").map((r) => r.text)).toEqual(["fresh note", "old but repeated"]);
 });
+
+test("a 默认： rule replays from its first sighting; other one-off notes do not", () => {
+  const rule = (text: string, count: number) => ({ text, count, last: "2026-10-28" }) as any;
+  const picked = pickRules({ project: [rule("默认：上传类任务的范围只含后端", 1), rule("一次性的笔记", 1)], global: [], digests: new Map(), known: [], limit: 12 });
+  expect(picked.project.map((r) => r.text)).toEqual(["默认：上传类任务的范围只含后端"]);
+});

@@ -163,7 +163,8 @@ export function pickRules({ project, global, digests, known, limit }: PickInput)
 
   const projectPicked: Rule[] = [];
   const projectG: Set<string>[] = [];
-  for (const r of project.filter((r) => r.count >= MIN_REPLAY_COUNT).sort(byWeight)) {
+  // A 默认： rule is the user's own correction of a guessed scope/goal; one sighting is enough.
+  for (const r of project.filter((r) => r.count >= MIN_REPLAY_COUNT || r.text.startsWith("默认：")).sort(byWeight)) {
     const g = bigrams(r.text);
     if (echoed(g, knownG) || echoed(g, projectG)) continue;
     projectPicked.push(r);

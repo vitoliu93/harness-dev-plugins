@@ -43,22 +43,27 @@ export function openDb(path = join(OBS_DIR, "obs.db")): Database {
   return db;
 }
 
+// One line, no angle brackets: titles come from models and get injected back into context.
+export const flat = (s: string | undefined, max: number) => s ? s.replace(/\s+/g, " ").replace(/[<>]/g, "").trim().slice(0, max) : undefined;
+const DISMISS_MEMORY_DAYS = 30;
 const norm = (s: string) => s.toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
 export const dedupeKey = (project: string | null | undefined, title: string) => `${project ?? ""}|${norm(title)}`;
 
 /** Returns the new id, or null when an open twin exists or this session already filed it (distill reruns stay idempotent). */
 export function addTodo(db: Database, t: Todo): string | null {
-  const title = t.title.trim().slice(0, 200);
+  const title = flat(t.title, 200) ?? "";
   if (!title) return null;
   const key = dedupeKey(t.project, title);
   return db.transaction(() => {
-    const dup = db.query(`SELECT id FROM todos WHERE dedupe_key = ? AND (status = 'open' OR (source_session IS NOT NULL AND source_session = ?)) LIMIT 1`).get(key, t.session ?? null);
+    // A dismissed item stays dismissed for a while; a done one may come back (fixed, then broke again).
+    const dup = db.query(`SELECT id FROM todos WHERE dedupe_key = ?1 AND (status = 'open' OR (source_session IS NOT NULL AND source_session = ?2)
+      OR (status = 'dismissed' AND closed_at >= ?3)) LIMIT 1`).get(key, t.session ?? null, new Date(Date.now() - DISMISS_MEMORY_DAYS * 86_400_000).toISOString());
     if (dup) return null;
     const id = "t-" + crypto.randomUUID().slice(0, 8);
     db.query(`INSERT INTO todos (id, title, why, evidence, project, source, source_session, dedupe_key, created_at) VALUES (?,?,?,?,?,?,?,?,?)`)
-      .run(id, title, t.why?.slice(0, 500) ?? null, t.evidence?.slice(0, 500) ?? null, t.project ?? null, t.source, t.session ?? null, key, new Date().toISOString());
+      .run(id, title, flat(t.why, 500) ?? null, flat(t.evidence, 500) ?? null, t.project ?? null, t.source, t.session ?? null, key, new Date().toISOString());
     return id;
-  })();
+  }).immediate(); // take the write lock up front: a read-to-write upgrade skips busy_timeout
 }
 
 export function reopenTodo(db: Database, id: string): boolean {
@@ -73,14 +78,17 @@ export function closeTodo(db: Database, id: string, status: "done" | "dismissed"
   return db.query(`UPDATE todos SET status = ?, closed_at = ?, closed_by = ? WHERE id = ? AND status = 'open'`).run(status, new Date().toISOString(), by, id).changes > 0;
 }
 
+/** Main checkout of the repo, so a worktree and its repo share one ledger key. */
 export function gitRoot(dir: string): string {
-  const r = Bun.spawnSync(["git", "-C", dir, "rev-parse", "--show-toplevel"]);
-  return r.exitCode === 0 ? r.stdout.toString().trim() : dir;
+  const r = Bun.spawnSync(["git", "-C", dir, "rev-parse", "--path-format=absolute", "--git-common-dir"]);
+  const common = r.exitCode === 0 ? r.stdout.toString().trim() : "";
+  return common.endsWith("/.git") ? common.slice(0, -5) : dir;
 }
 
 if (import.meta.main) {
   const [cmd, ...rest] = process.argv.slice(2);
   const opt = (n: string) => { const i = rest.indexOf(n); return i === -1 ? undefined : rest[i + 1]; };
+  try {
   const db = openDb();
   if (cmd === "add") {
     const title = opt("--title");
@@ -100,6 +108,10 @@ if (import.meta.main) {
     console.log(reopenTodo(db, rest[0]) ? `todo: reopened ${rest[0]}` : `todo: ${rest[0]} already open or unknown`);
   } else {
     console.error("usage: todo.ts add --title <t> [--why] [--evidence] [--project] [--session] | list [--project] [--all] [--json] | close <id> [--by] | dismiss <id> | reopen <id>");
+    process.exit(1);
+  }
+  } catch (e) {
+    console.error(`todo: ledger unavailable (${String(e).slice(0, 120)}); retry in a minute`);
     process.exit(1);
   }
 }

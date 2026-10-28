@@ -17,7 +17,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
-import { TODO_DDL, addTodo, closeTodo, gitRoot, openTodos } from "./todo.ts";
+import { TODO_DDL, addTodo, closeTodo, flat, gitRoot, openTodos } from "./todo.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -106,7 +106,7 @@ const db = new Database(DB_PATH);
 const projectOf = (cwd: string | null) => (cwd && existsSync(cwd) ? gitRoot(cwd) : cwd);
 function todoList(cwd: string | null): string {
   const rows = openTodos(db, projectOf(cwd));
-  return rows.length ? rows.map((r) => `${r.id} | ${r.title}${r.evidence ? ` | ${r.evidence}` : ""}`).join("\n") : "（无）";
+  return rows.length ? rows.map((r) => `${r.id} | ${flat(r.title, 200)}${r.evidence ? ` | ${flat(r.evidence, 200)}` : ""}`).join("\n") : "（无）";
 }
 // New findings go in; items this session resolved close themselves. Closing is
 // passive on purpose: the user only reopens a wrong close (`todo.ts reopen`).
@@ -114,7 +114,9 @@ function applyTodos(s: { session_id: string; cwd: string | null }, j: any): void
   const project = projectOf(s.cwd);
   const open = new Set(openTodos(db, project, 200).map((t) => t.id));
   for (const r of Array.isArray(j.todos_resolved) ? j.todos_resolved : []) {
-    if (r && open.has(String(r.id))) closeTodo(db, String(r.id), "done", `auto:${s.session_id}${r.evidence ? `:${String(r.evidence).slice(0, 120)}` : ""}`);
+    // No evidence, no close: "probably done" stays open for the user to see.
+    const evidence = flat(r?.evidence ? String(r.evidence) : undefined, 120);
+    if (evidence && open.has(String(r.id))) closeTodo(db, String(r.id), "done", `auto:${s.session_id}:${evidence}`);
   }
   for (const t of (Array.isArray(j.todo_candidates) ? j.todo_candidates : []).slice(0, 5)) {
     if (t?.title) addTodo(db, { title: String(t.title), why: t.why ? String(t.why) : undefined, evidence: t.evidence ? String(t.evidence) : undefined, project, source: "distill", session: s.session_id });
