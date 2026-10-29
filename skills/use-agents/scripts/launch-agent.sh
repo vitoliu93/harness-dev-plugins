@@ -17,6 +17,8 @@ name=$1; kind=$2; label=$3; prompt_file=$4; shift 4
 python3 -c 'import sys;open(sys.argv[1],"rb").read().decode("utf-8")' "$prompt_file" 2>/dev/null \
   || { echo "prompt file is not valid UTF-8: $prompt_file" >&2; exit 2; }
 command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
+# herdr 的命名规则；放在建 tab 之前，免得名字不合法却留下空 tab。
+[[ $name =~ ^[a-z][a-z0-9_-]{0,31}$ ]] || { echo "agent name '$name' invalid: must start with a lowercase letter, only [a-z0-9_-], 1-32 chars" >&2; exit 1; }
 
 ws=(); [ -n "${HERDR_WORKSPACE_ID:-}" ] && ws=(--workspace "$HERDR_WORKSPACE_ID")
 # DEVKIT_DELEGATED marks the agent as dispatched: dev-kit hooks meant for the user stay out of its context.
@@ -26,11 +28,11 @@ tab=$(printf '%s' "$tab_json" | python3 -c 'import sys,json; print(json.load(sys
 sleep 3   # start in the same second as tab create can register nothing (herdr.md)
 
 for _ in 1 2; do
-  herdr agent start "$name" --kind "$kind" --pane "$pane" -- "$@" >/dev/null 2>&1 || true
+  err=$(herdr agent start "$name" --kind "$kind" --pane "$pane" -- "$@" 2>&1 >/dev/null) || true
   sleep 4
   herdr agent get "$name" >/dev/null 2>&1 && break
 done
-herdr agent get "$name" >/dev/null 2>&1 || { echo "agent $name not registered on pane $pane (tab $tab)" >&2; exit 2; }
+herdr agent get "$name" >/dev/null 2>&1 || { echo "agent $name not registered on pane $pane (tab $tab): ${err:-no error from herdr}" >&2; exit 2; }
 
 herdr agent prompt "$name" "$(cat "$prompt_file")" >/dev/null || {
   echo "prompt failed; tab $tab and agent $name are already created. Clean up: herdr tab close $tab" >&2
