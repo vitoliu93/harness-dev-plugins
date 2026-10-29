@@ -44,6 +44,11 @@ while [ $SECONDS -lt $end ]; do
   if [ -f "$file" ]; then
     last_line=$(grep -v '^[[:space:]]*$' "$file" 2>/dev/null | tail -n 1 | tr -d '\r')
     trimmed_line=$(echo "$last_line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    # 「READY：公共层见…」这类「标记 + 冒号/空格 + 说明」也算：卡片常让 agent 在标记后补一句，
+    # 只认整行相等时 10-29 博豪片等 READY 等了一小时没触发。「DONE-1」不算 DONE（后面不是分隔符）。
+    case "$trimmed_line" in
+      "$marker"：*|"$marker":*|"$marker"" "*) trimmed_line=$marker ;;
+    esac
     if [ "$last_line" = "$marker" ] || [ "$trimmed_line" = "$marker" ]; then
       cur_mtime=$(get_mtime "$file"); : "${cur_mtime:=0}"
       # 两种都算数：等待期间被改写过；或者刚写完没多久（agent 比哨兵先跑完的情况）。
