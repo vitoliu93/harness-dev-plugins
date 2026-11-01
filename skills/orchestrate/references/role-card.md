@@ -56,6 +56,21 @@ Rules:
   When a card's completion is watched with a sentinel, the done marker must
   occupy the result file's last non-empty line alone (ignoring leading or trailing
   whitespace and CRLF).
+- At least one test in a fix crosses the real adapter: the IPC wrapper, the
+  RPC error mapping, the CAS or lock. A fixture that throws the bare error or
+  skips the lock proves nothing about the real path (an Electron invoke error
+  carries a prefix; PostgREST maps a missing function to 503 before the app
+  sees it).
+- A card that may write test data lists the allowed objects, the most POSTs or
+  paid runs, and the allowed entry points. A wait starts from the new request
+  or id, and stops when none appears in a few minutes. An agent that finds the
+  listed entry blocked comes back for a ruling; it does not swap in another.
+- The done marker is written last, after every check exits and no placeholder
+  is left. A verdict changed after DONE is a new versioned report; later cards
+  cite the report hash and verdict, never "last round PASS".
+- A reviewer makes no git write in any checkout, `fetch` included, and runs
+  probes with their own userData and HOME. A frozen worktree gets no new fix
+  card until its review reports.
 - A card that writes to a shared live service (a CLI login, a database, an
   API) states the account it must run as, forbids switching it, and orders a
   `dry-run → small batch → review → full run` gate. The small batch is a fixed

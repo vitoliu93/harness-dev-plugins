@@ -51,6 +51,16 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
   changes once review starts; to change it, stop review or await its report,
   record the new commit or diff summary, and re-review. Review cards state the
   baseline (commit or `git diff` sha256).
+- Any diff after a PASS voids it, the host's own edits included: a one-line
+  fix, a rebase conflict, a reviewer's suggested change. Push only after that
+  diff passes review; there is no size exemption.
+- Launch and wait with use-agents `scripts/launch-agent.sh` and
+  `scripts/wait-result.sh`, never a hand-written marker loop: the script sees a
+  stuck or dead agent, the loop waits blind. Resend a prompt only when the
+  agent's status shows it was not received, never because the pane looks quiet.
+- Before a card relies on a state (a todo still reproduces, a failure can be
+  produced, a deployed response shape), a read-only preflight proves it. An
+  unreachable state comes back as NEED-DECISION, not as a long wait or a fix.
 - The host runs each completion check and the final integrated check.
 - Quota failure: keep the tab and partial output, then choose another available route.
 
@@ -58,5 +68,7 @@ Full lifecycle: [lifecycle.md](references/lifecycle.md).
 
 ## Close
 
+Keep the acceptance environment (running app, its worktree, a tester tab)
+until every real-environment check is done or the user drops it.
 After every role and the integrated check pass, close only this run's tabs. On
 cancellation or unresolved block, leave them open and report their IDs.
