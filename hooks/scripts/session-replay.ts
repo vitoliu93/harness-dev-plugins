@@ -28,7 +28,8 @@ const MAX_TODOS = 5;
 // Printed on compaction too: long sessions are where problems get found.
 const TODO_CONVENTION =
   "Problems you find while working: fix it yourself if the fix keeps existing behavior (bug fixes count) and say so " +
-  `when you wrap up; otherwise, if an agent could finish it without the user (no logins, approvals, manual checks or user decisions), record it: \`bun "${TODO_CLI}" add --title "<一句话>" --why "<为什么>" --evidence "<文件:行/日志>"\`. ` +
+  `when you wrap up; otherwise, if a later session could pick it up alone and verify the fix (no logins, approvals, manual checks or user decisions; ` +
+  `not this task's own review notes, not a violation that already happened, not blocked by missing access or data, not tied to a one-off release), record it: \`bun "${TODO_CLI}" add --title "<一句话>" --why "<为什么>" --evidence "<文件:行/日志>"\`. ` +
   `No evidence, no record; irreversible steps, ask first. Resolved an open item: \`bun "${TODO_CLI}" close <id> --by "<commit>"\`.`;
 
 function printTodos(cwd: string): void {
