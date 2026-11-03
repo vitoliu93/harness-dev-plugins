@@ -17,7 +17,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
-import { TODO_DDL, addTodo, closeTodo, flat, gitRoot, openTodos } from "./todo.ts";
+import { TODO_DDL, addTodo, closeTodo, flat, openTodos, projectFor } from "./todo.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -103,7 +103,7 @@ function readItYourself(filePath: string): string {
 }
 
 const db = new Database(DB_PATH);
-const projectOf = (cwd: string | null) => (cwd && existsSync(cwd) ? gitRoot(cwd) : cwd);
+const projectOf = (cwd: string | null) => projectFor(db, cwd);
 function todoList(cwd: string | null): string {
   const rows = openTodos(db, projectOf(cwd));
   return rows.length ? rows.map((r) => `${r.id} | ${flat(r.title, 200)}${r.evidence ? ` | ${flat(r.evidence, 200)}` : ""}`).join("\n") : "（无）";

@@ -17,6 +17,7 @@
 // only reopens what was closed wrongly.
 
 import { Database } from "bun:sqlite";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { OBS_DIR } from "./rules-digest.ts";
 
@@ -35,7 +36,8 @@ export const TODO_DDL = `CREATE TABLE IF NOT EXISTS todos (
   closed_by TEXT                 -- user | evidence:<...> | merge:<id>
 );
 CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status, project);
-CREATE INDEX IF NOT EXISTS idx_todos_key ON todos(dedupe_key);`;
+CREATE INDEX IF NOT EXISTS idx_todos_key ON todos(dedupe_key);
+CREATE TABLE IF NOT EXISTS cwd_roots (cwd TEXT PRIMARY KEY, root TEXT NOT NULL); -- worktree → main checkout, seen while it existed`;
 
 export type Todo = { title: string; why?: string; evidence?: string; project?: string | null; source: "inline" | "distill"; session?: string | null };
 
@@ -112,6 +114,19 @@ export function gitRoot(dir: string): string {
   const r = Bun.spawnSync(["git", "-C", dir, "rev-parse", "--path-format=absolute", "--git-common-dir"]);
   const common = r.exitCode === 0 ? r.stdout.toString().trim() : "";
   return common.endsWith("/.git") ? common.slice(0, -5) : dir;
+}
+
+/** Stop hook: remember where a worktree belongs while it still exists. Distill runs after it may be gone. */
+export function rememberRoot(db: Database, cwd: string): void {
+  const root = gitRoot(cwd);
+  if (root !== cwd) db.query(`INSERT OR REPLACE INTO cwd_roots (cwd, root) VALUES (?, ?)`).run(cwd, root);
+}
+
+/** Ledger key for a session's cwd: the main checkout, even after the worktree was removed. */
+export function projectFor(db: Database, cwd: string | null): string | null {
+  if (!cwd) return cwd;
+  const seen = db.query(`SELECT root FROM cwd_roots WHERE cwd = ?`).get(cwd) as { root: string } | null;
+  return seen ? seen.root : existsSync(cwd) ? gitRoot(cwd) : cwd;
 }
 
 if (import.meta.main) {

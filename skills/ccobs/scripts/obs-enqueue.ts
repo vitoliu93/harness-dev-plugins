@@ -19,4 +19,6 @@ try {
       ts: new Date().toISOString(),
     }) + "\n",
   );
+  // A worktree is gone by the time distill files its todos; record its main checkout now.
+  if (payload.cwd) { const { openDb, rememberRoot } = await import("./todo.ts"); const db = openDb(); rememberRoot(db, payload.cwd); db.close(); }
 } catch {}

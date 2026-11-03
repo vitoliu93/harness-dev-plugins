@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, reopenTodo } from "./todo.ts";
-import { mkdtempSync } from "node:fs";
+import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo } from "./todo.ts";
+import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -69,4 +69,18 @@ test("merge keeps dropped titles and evidence, retitles, and skips other project
   expect(countOpen(db, "/p")).toBe(1);
   expect(countOpen(db, "/q")).toBe(1);
   expect(addTodo(db, { title: "上传缺重试和超时", project: "/p", source: "inline" })).toBeNull();
+});
+
+test("a removed worktree still files under its main checkout", () => {
+  const base = realpathSync(mkdtempSync(join(tmpdir(), "wt-")));
+  const main = join(base, "repo"), wt = join(base, "repo-wt");
+  const git = (...a: string[]) => expect(Bun.spawnSync(["git", ...a]).exitCode).toBe(0);
+  git("init", "-q", main);
+  git("-C", main, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "x");
+  git("-C", main, "worktree", "add", "-q", wt);
+  const db = openDb(":memory:");
+  rememberRoot(db, wt);
+  git("-C", main, "worktree", "remove", wt);
+  expect(projectFor(db, wt)).toBe(main);
+  expect(projectFor(db, main)).toBe(main);
 });
