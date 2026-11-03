@@ -10,7 +10,8 @@
     {"text": "researcher 查资料，reviewer 定验收，再交给 programmer", "family": "dependencies"},
     {"text": "功能改完后派一个没写代码的 reviewer 独立复核，PASS 才交付", "family": "independent_review"},
     {"text": "所有 agent 完成后统一验收并关闭 herdr tabs", "family": "lifecycle"},
-    {"text": "fan out this work and coordinate the handoffs", "family": "fanout"}
+    {"text": "fan out this work and coordinate the handoffs", "family": "fanout"},
+    {"text": "这个需求能拆成几块互不依赖的子任务，分头并行做", "family": "split_parallel"}
   ],
   "should_not_trigger": [
     {"text": "只改文档里的一个错字", "family": "docs_only"},

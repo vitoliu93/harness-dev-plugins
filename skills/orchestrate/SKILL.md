@@ -2,7 +2,7 @@
 name: orchestrate
 description: >-
   Pick the scene team from the user's teams directory, compose its roles, and coordinate their work through completion.
-  Use when one task needs several roles or a runtime behavior change needs independent review.
+  Use when one task needs several roles, splits into independent parts that can run in parallel, or a runtime behavior change needs independent review.
 argument-hint: "[task to split into roles]"
 metadata:
   kind: sop
