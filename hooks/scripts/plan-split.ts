@@ -12,8 +12,8 @@
  * should have been split went from 0/10 to 7/10 and 6/10 split (two runs);
  * sequential turns from 0/40 to 3/40 and 1/40. Before reading code only 3/10:
  * the model says it will decide after reading, so the first plan write is too
- * early. Without a plan shown (same probe): should-split 0/10 -> 5/10, sequential
- * 0/40 -> 2/40, small tasks with no plan 0/24 -> 0/24.
+ * early. Without a plan shown (same probe, plan-less wording): should-split 0/10 ->
+ * 8/10 and 8/10, sequential 0/40 -> 3/40, small tasks with no plan 0/24 -> 2/24.
  * Data and scripts: ~/.claude/observability/jev-eval/.
  *
  * Skips dispatched agents (DEVKIT_DELEGATED). Zero model calls.
@@ -29,8 +29,11 @@ const MIN_ITEMS = 3;
 const MIN_LOOKS = 3; // other tool calls this turn before the hint can help
 const TAIL_BYTES = 4 * 1024 * 1024;
 
-export const hint = (n: number) =>
-  `${n ? `计划有 ${n} 项。` : ""}写一行 \`拆分：\`，列出${n ? "" : "这个任务里"}互相独立、各自超过十分钟、不改同一批文件的${n ? "项" : "部分"}；≥2 项就用 orchestrate 并行，否则写明串行的原因。一个脚本能循环完成的重复项不算。`;
+// Each wording won its own probe: the planned one ties the items to the written plan; the
+// plan-less one lists the deliverables first and leans to parallel when unsure (5/10 -> 8/10).
+export const hint = (n: number) => n
+  ? `计划有 ${n} 项。写一行 \`拆分：\`，列出互相独立、各自超过十分钟、不改同一批文件的项；≥2 项就用 orchestrate 并行，否则写明串行的原因。一个脚本能循环完成的重复项不算。`
+  : "写一行 `拆分：`。先按交付物（不同的仓库、页面、工单、模块、文档）列出这个任务的各部分，再标出谁依赖谁。有 ≥2 个互不依赖、各自要改动并验证的部分，就用 orchestrate 并行，每个 agent 一个 worktree；否则写明哪一部分依赖哪一部分。没核实过的“可能改同一批文件”不算串行理由；只有纯查询或机械替换能一个脚本跑完，每处要单独改代码、测试的不算重复项。拿不准时并行：并行做错的代价是合并时多看一眼，串行做的代价是多等一倍时间。";
 
 function tailLines(path: string): any[] {
   if (!path || !existsSync(path)) return [];

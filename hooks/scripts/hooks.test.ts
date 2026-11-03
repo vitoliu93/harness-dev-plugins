@@ -233,6 +233,7 @@ test("plan-split: once per user turn, after 3+ other tool calls, 3+ plan items o
     const np = await run("plan-split.ts", call({}, "Bash"), env);
     expect(np).toContain("拆分：");
     expect(np).not.toContain("计划有");
+    expect(np).toContain("交付物");
     expect(await run("plan-split.ts", call({}, "Grep"), env)).toBe(""); // once per turn
   } finally { rmSync(obs, { recursive: true, force: true }); }
 }, TIMEOUT);
