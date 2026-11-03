@@ -150,7 +150,7 @@ if (import.meta.main) {
     else for (const r of rows) console.log(`${r.id} [${r.status}] ${r.title}${r.evidence ? `  ← ${r.evidence}` : ""}`);
   } else if ((cmd === "close" || cmd === "dismiss") && rest[0]) {
     const ok = closeTodo(db, rest[0], cmd === "close" ? "done" : "dismissed", opt("--by") ? `evidence:${opt("--by")}` : "user");
-    console.log(ok ? `todo: ${cmd}d ${rest[0]}` : `todo: ${rest[0]} not open`);
+    console.log(ok ? `todo: ${cmd === "close" ? "closed" : "dismissed"} ${rest[0]}` : `todo: ${rest[0]} not open`);
   } else if (cmd === "reopen" && rest[0]) {
     console.log(reopenTodo(db, rest[0]) ? `todo: reopened ${rest[0]}` : `todo: ${rest[0]} already open or unknown`);
   } else {
