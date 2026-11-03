@@ -200,3 +200,30 @@ test("learn-capture only captures a [LEARN] that starts its line", async () => {
     rmSync(d, { recursive: true, force: true });
   }
 }, TIMEOUT);
+
+test("plan-split: once per user turn, after 3+ other tool calls, 3+ items, never for dispatched agents", async () => {
+  const obs = mkdtempSync(join(tmpdir(), "split-"));
+  const tp = join(obs, "t.jsonl");
+  const line = (o: unknown) => JSON.stringify(o) + "\n";
+  const prompt = (uuid: string, text: string) => line({ type: "user", userType: "external", uuid, message: { role: "user", content: text } });
+  const use = (name: string, input: unknown = {}) => line({ type: "assistant", message: { content: [{ type: "tool_use", name, input }] } });
+  const items = (n: number) => ({ items: Array.from({ length: n }, (_, i) => ({ content: `step ${i}` })) });
+  const call = (tool_input: unknown, tool_name = "mcp__ccd_turn__update_plan", session_id = "s1") => ({ session_id, transcript_path: tp, tool_name, tool_input });
+  const env = { CCOBS_DIR: obs };
+  try {
+    writeFileSync(tp, prompt("u1", "修三张单") + line({ type: "user", userType: "external", uuid: "h", message: { content: "<system-reminder>x</system-reminder>" } }) + use("mcp__ccd_turn__update_plan", items(4)));
+    expect(await run("plan-split.ts", call(items(4)), env)).toBe(""); // first plan write: nothing read yet
+    writeFileSync(tp, readFileSync(tp, "utf8") + use("Read") + use("Grep") + use("Bash"));
+    const out = JSON.parse(await run("plan-split.ts", call({ advance: true }), env)); // first advance after reading
+    expect(out.hookSpecificOutput.hookEventName).toBe("PostToolUse");
+    expect(out.hookSpecificOutput.additionalContext).toContain("计划有 4 项");
+    expect(await run("plan-split.ts", call({ advance: true }), env)).toBe(""); // once per turn
+    writeFileSync(tp, readFileSync(tp, "utf8") + prompt("u2", "改个错字") + use("mcp__ccd_turn__update_plan", items(2)) + use("Read") + use("Edit") + use("Bash"));
+    expect(await run("plan-split.ts", call({ advance: true }), env)).toBe(""); // 2 items: too small
+    expect(await run("plan-split.ts", call({ advance: true }), { ...env, DEVKIT_DELEGATED: "1" })).toBe("");
+    expect(await run("plan-split.ts", call({}, "Read"), env)).toBe(""); // not a plan tool
+    // CLI: TaskCreate one task each, TaskUpdate after reading
+    writeFileSync(tp, readFileSync(tp, "utf8") + prompt("u3", "三个仓库升级 Node") + use("TaskCreate") + use("TaskCreate") + use("TaskCreate") + use("Read") + use("Grep") + use("Read"));
+    expect(await run("plan-split.ts", call({ taskId: "1", status: "completed" }, "TaskUpdate"), env)).toContain("计划有 3 项");
+  } finally { rmSync(obs, { recursive: true, force: true }); }
+}, TIMEOUT);
