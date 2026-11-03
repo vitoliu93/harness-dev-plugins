@@ -55,9 +55,11 @@ bun "$CCOBS_SKILL_DIR/scripts/rollup.ts" --dry-run
 `scripts/todo.ts` keeps problems found but not handled (`todos` in obs.db).
 Agents add with `add --title --why --evidence`; distill files `todo_candidates`
 and closes items a session resolved (evidence required); `scripts/todo-review.ts`
-runs daily at the end of the launchd chain: merges rewordings, then pushes the
-top 3, stale items and yesterday's automatic closes to Feishu
-(`${CCOBS_DIR}/notify.json`). `reopen <id>` undoes a wrong close.
+runs daily at the end of the launchd chain: merges items one change fixes,
+dismisses steps only the user can do, then pushes the top 3, projects over
+`TODO_CAP` open items, stale items and automatic closes to Feishu
+(`${CCOBS_DIR}/notify.json`). Only work an agent can finish alone is recorded.
+`reopen <id>` undoes a wrong close.
 
 ## Read on demand
 

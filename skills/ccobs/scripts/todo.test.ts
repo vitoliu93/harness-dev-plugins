@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { addTodo, closeTodo, openDb, openTodos, reopenTodo } from "./todo.ts";
+import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, reopenTodo } from "./todo.ts";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -55,4 +55,18 @@ test("add waits for a writer instead of failing", async () => {
   await Bun.sleep(300);
   expect(addTodo(openDb(path), { title: "并发写", project: "/p", source: "inline" })).not.toBeNull();
   await holder.exited;
+});
+
+test("merge keeps dropped titles and evidence, retitles, and skips other projects", () => {
+  const db = openDb(":memory:");
+  const a = addTodo(db, { title: "上传没重试", evidence: "up.ts:10", project: "/p", source: "inline" })!;
+  const b = addTodo(db, { title: "上传没超时", evidence: "up.ts:20", project: "/p", source: "inline" })!;
+  const c = addTodo(db, { title: "别处的事", project: "/q", source: "inline" })!;
+  expect(mergeTodos(db, a, [b, c], "上传缺重试和超时")).toEqual([b]);
+  const [r] = openTodos(db, "/p");
+  expect(r.title).toBe("上传缺重试和超时");
+  expect(r.evidence).toBe("up.ts:10；上传没超时 ← up.ts:20");
+  expect(countOpen(db, "/p")).toBe(1);
+  expect(countOpen(db, "/q")).toBe(1);
+  expect(addTodo(db, { title: "上传缺重试和超时", project: "/p", source: "inline" })).toBeNull();
 });

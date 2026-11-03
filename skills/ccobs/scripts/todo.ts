@@ -3,6 +3,9 @@
 // Two writers share one table: an agent mid-task (`add`, source=inline) and the
 // hourly distill (todo_candidates, source=distill). The daily todo-review reads it.
 //
+// Only work an agent can finish alone goes in; steps that need the user's hands,
+// accounts or decision do not.
+//
 //   bun todo.ts add --title "<一句话>" --why "<为什么是问题>" --evidence "<文件:行/日志/issue>" [--project <dir>] [--session <id>]
 //   bun todo.ts list [--project <dir>] [--all] [--json]
 //   bun todo.ts close <id> [--by <commit/issue/说明>]
@@ -46,6 +49,8 @@ export function openDb(path = join(OBS_DIR, "obs.db")): Database {
 // One line, no angle brackets: titles come from models and get injected back into context.
 export const flat = (s: string | undefined, max: number) => s ? s.replace(/\s+/g, " ").replace(/[<>]/g, "").trim().slice(0, max) : undefined;
 const DISMISS_MEMORY_DAYS = 30;
+/** Open items per project before every surface warns. Warn, never refuse: a refused finding is lost. */
+export const TODO_CAP = 20;
 const norm = (s: string) => s.toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, "");
 export const dedupeKey = (project: string | null | undefined, title: string) => `${project ?? ""}|${norm(title)}`;
 
@@ -74,6 +79,30 @@ export function openTodos(db: Database, project: string | null, limit = 30): { i
   return db.query(`SELECT id, title, evidence, created_at FROM todos WHERE status = 'open' AND project IS ? ORDER BY created_at DESC LIMIT ?`).all(project, limit) as any[];
 }
 
+export function countOpen(db: Database, project: string | null): number {
+  return (db.query(`SELECT COUNT(*) n FROM todos WHERE status = 'open' AND project IS ?`).get(project) as { n: number }).n;
+}
+
+/** Folds `drop` into `keep`: dropped titles and evidence survive in keep's evidence, so a merge loses no specifics. */
+export function mergeTodos(db: Database, keep: string, drop: string[], title?: string): string[] {
+  return db.transaction(() => {
+    const k = db.query(`SELECT project, evidence FROM todos WHERE id = ? AND status = 'open'`).get(keep) as { project: string | null; evidence: string | null } | null;
+    if (!k) return [];
+    const done: string[] = [];
+    const parts = k.evidence ? [k.evidence] : [];
+    for (const d of drop) {
+      const r = db.query(`SELECT title, evidence FROM todos WHERE id = ? AND status = 'open' AND project IS ?`).get(d, k.project) as { title: string; evidence: string | null } | null;
+      if (!r || d === keep || !closeTodo(db, d, "superseded", `merge:${keep}`)) continue;
+      parts.push(`${r.title}${r.evidence ? ` ← ${r.evidence}` : ""}`);
+      done.push(d);
+    }
+    const t = flat(title, 200);
+    if (done.length) db.query(`UPDATE todos SET evidence = ?, title = COALESCE(?, title), dedupe_key = COALESCE(?, dedupe_key) WHERE id = ?`)
+      .run(flat(parts.join("；"), 1000) ?? null, t ?? null, t ? dedupeKey(k.project, t) : null, keep);
+    return done;
+  }).immediate();
+}
+
 export function closeTodo(db: Database, id: string, status: "done" | "dismissed" | "superseded", by: string): boolean {
   return db.query(`UPDATE todos SET status = ?, closed_at = ?, closed_by = ? WHERE id = ? AND status = 'open'`).run(status, new Date().toISOString(), by, id).changes > 0;
 }
@@ -93,8 +122,11 @@ if (import.meta.main) {
   if (cmd === "add") {
     const title = opt("--title");
     if (!title) { console.error("todo add: --title is required"); process.exit(1); }
-    const id = addTodo(db, { title, why: opt("--why"), evidence: opt("--evidence"), project: opt("--project") ?? gitRoot(process.cwd()), source: "inline", session: opt("--session") ?? null });
+    const project = opt("--project") ?? gitRoot(process.cwd());
+    const id = addTodo(db, { title, why: opt("--why"), evidence: opt("--evidence"), project, source: "inline", session: opt("--session") ?? null });
     console.log(id ? `todo: added ${id}` : "todo: already open, skipped");
+    const n = countOpen(db, project);
+    if (n > TODO_CAP) console.log(`todo: ${n} open, over the cap of ${TODO_CAP}; close what is resolved before adding more`);
   } else if (cmd === "list") {
     const project = opt("--project");
     const rows = db.query(`SELECT id, status, title, why, evidence, project, created_at FROM todos WHERE (?1 IS NULL OR project = ?1) AND (?2 OR status = 'open') ORDER BY created_at DESC LIMIT 200`)
