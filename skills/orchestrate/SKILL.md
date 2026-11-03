@@ -1,8 +1,8 @@
 ---
 name: orchestrate
 description: >-
-  Pick the scene team from the user's teams directory, compose its roles, and coordinate their work through completion.
-  Use when one task needs several roles, splits into independent parts that can run in parallel, or a runtime behavior change needs independent review.
+  Split work into independent parts, run them on parallel agents, and coordinate to completion.
+  Use when the user says 并行/拆分/委派 agents/fan out/swarm, or a task needs several roles or independent review.
 argument-hint: "[task to split into roles]"
 metadata:
   kind: sop

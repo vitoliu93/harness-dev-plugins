@@ -11,7 +11,9 @@
     {"text": "功能改完后派一个没写代码的 reviewer 独立复核，PASS 才交付", "family": "independent_review"},
     {"text": "所有 agent 完成后统一验收并关闭 herdr tabs", "family": "lifecycle"},
     {"text": "fan out this work and coordinate the handoffs", "family": "fanout"},
-    {"text": "这个需求能拆成几块互不依赖的子任务，分头并行做", "family": "split_parallel"}
+    {"text": "这个需求能拆成几块互不依赖的子任务，分头并行做", "family": "split_parallel"},
+    {"text": "并行 agents 修完这几张单，不用走 PR", "family": "parallel_fix"},
+    {"text": "swarm out agents 并行处理剩下的 9 个城市", "family": "swarm"}
   ],
   "should_not_trigger": [
     {"text": "只改文档里的一个错字", "family": "docs_only"},

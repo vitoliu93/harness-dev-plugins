@@ -44,6 +44,7 @@ const cases: Case[] = [
   { name: "hneg-translate", prompt: "把 hello world 翻译成中文", want: [] },
   // D. more than one dev-kit skill at once
   { name: "multi-grill-plan", prompt: "先盘问我把方向问清楚，然后立项写一份带验收的计划", want: ["grill-me", "advanced-plan"] },
+  { name: "parallel-fix", prompt: "那几张单并行 agents 修完，用 opus 审，不走 PR", want: ["orchestrate"], ok: ["use-agents", "ceo-mode"] },
   { name: "multi-agents-orchestrate", prompt: "起两个独立 agent 并行跑，一个调研一个写测试，你来分工协调收口", want: ["orchestrate"], ok: ["use-agents"] },
 ];
 const t0 = performance.now(); let hits = 0, wants = 0, fps = 0; const rows: any[] = []; let low = 1, high = 0;
