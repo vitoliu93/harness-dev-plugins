@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 /**
- * PostToolUse(plan tools) hook: once per user turn, at the first plan update after
- * the model has looked around (3+ other tool calls), when the plan has 3+ items,
- * ask for one `拆分：` line: which items are independent and big enough to run on
- * parallel agents, or why it stays serial.
+ * PostToolUse(plan and look tools) hook: once per user turn, after the model has
+ * looked around (3+ other tool calls), ask for one `拆分：` line: which parts are
+ * independent and big enough to run on parallel agents, or why it stays serial.
+ * With a plan this turn it waits for a plan update and needs 3+ items; without one
+ * (Claude Code leaves the task tools out on newer models) it fires on a look tool.
  *
  * The model already lists the independent parts in its own plan (three tickets as
  * three items) and then does them one by one; nothing makes it decide. Replaying
@@ -11,7 +12,9 @@
  * should have been split went from 0/10 to 7/10 and 6/10 split (two runs);
  * sequential turns from 0/40 to 3/40 and 1/40. Before reading code only 3/10:
  * the model says it will decide after reading, so the first plan write is too
- * early. Data and scripts: ~/.claude/observability/jev-eval/.
+ * early. Without a plan shown (same probe): should-split 0/10 -> 5/10, sequential
+ * 0/40 -> 2/40, small tasks with no plan 0/24 -> 0/24.
+ * Data and scripts: ~/.claude/observability/jev-eval/.
  *
  * Skips dispatched agents (DEVKIT_DELEGATED). Zero model calls.
  */
@@ -27,7 +30,7 @@ const MIN_LOOKS = 3; // other tool calls this turn before the hint can help
 const TAIL_BYTES = 4 * 1024 * 1024;
 
 export const hint = (n: number) =>
-  `计划有 ${n} 项。写一行 \`拆分：\`，列出互相独立、各自超过十分钟、不改同一批文件的项；≥2 项就用 orchestrate 并行，否则写明串行的原因。一个脚本能循环完成的重复项不算。`;
+  `${n ? `计划有 ${n} 项。` : ""}写一行 \`拆分：\`，列出${n ? "" : "这个任务里"}互相独立、各自超过十分钟、不改同一批文件的${n ? "项" : "部分"}；≥2 项就用 orchestrate 并行，否则写明串行的原因。一个脚本能循环完成的重复项不算。`;
 
 function tailLines(path: string): any[] {
   if (!path || !existsSync(path)) return [];
@@ -49,6 +52,7 @@ const promptText = (j: any): string | null => {
 };
 
 const PLAN = new Set(["mcp__ccd_turn__update_plan", "TodoWrite", "TaskCreate", "TaskUpdate", "update_plan"]);
+const LOOK = new Set(["Read", "Grep", "Glob", "Bash"]);
 
 /** Items in a plan write; 0 for an update that writes none (`advance`, TaskUpdate). */
 function written(tool: string, input: any): number {
@@ -58,21 +62,22 @@ function written(tool: string, input: any): number {
   return 0;
 }
 
-/** This user turn: its prompt's uuid, the latest plan size (TaskCreate counts one each), and other tool calls. */
-export function turnOf(lines: any[]): { key: string; items: number; looks: number } {
+/** This user turn: its prompt's uuid, the latest plan size (TaskCreate counts one each), whether a plan tool ran, and other tool calls. */
+export function turnOf(lines: any[]): { key: string; items: number; planned: boolean; looks: number } {
   let start = -1;
   for (let i = lines.length - 1; i >= 0; i--) if (promptText(lines[i]) !== null) { start = i; break; }
-  let items = 0, tasks = 0, looks = 0;
+  let items = 0, tasks = 0, looks = 0, planned = false;
   for (const j of lines.slice(start + 1)) {
     if (j.type !== "assistant" || !Array.isArray(j.message?.content)) continue;
     for (const c of j.message.content) {
       if (c.type !== "tool_use") continue;
-      if (!PLAN.has(c.name)) looks++;
-      else if (c.name === "TaskCreate") items = ++tasks;
+      if (!PLAN.has(c.name)) { looks++; continue; }
+      planned = true;
+      if (c.name === "TaskCreate") items = ++tasks;
       else items = written(c.name, c.input) || items;
     }
   }
-  return { key: start < 0 ? "" : String(lines[start].uuid ?? lines[start].timestamp ?? start), items, looks };
+  return { key: start < 0 ? "" : String(lines[start].uuid ?? lines[start].timestamp ?? start), items, planned, looks };
 }
 
 export function run(payload: Record<string, any>): string | null {
@@ -80,11 +85,13 @@ export function run(payload: Record<string, any>): string | null {
   if (process.env.DEVKIT_DELEGATED || !sid) return null;
   const lines = tailLines(String(payload.transcript_path ?? ""));
   const tool = String(payload.tool_name ?? "");
-  if (!PLAN.has(tool)) return null;
-  const { key, items, looks } = turnOf(lines);
+  const plan = PLAN.has(tool);
+  if (!plan && !LOOK.has(tool)) return null;
+  const { key, items, planned, looks } = turnOf(lines);
+  if (looks < MIN_LOOKS) return null;
   // The transcript can lag this very call; its own plan write counts first.
-  const n = written(tool, payload.tool_input) || items;
-  if (n < MIN_ITEMS || looks < MIN_LOOKS) return null;
+  const n = plan || planned ? written(tool, payload.tool_input) || items : 0;
+  if ((plan || planned) && (!plan || n < MIN_ITEMS)) return null; // a planned turn waits for a plan update
   mkdirSync(MARK_DIR, { recursive: true });
   const mark = join(MARK_DIR, sid.replaceAll("/", "_"));
   const turn = key || "no-transcript";

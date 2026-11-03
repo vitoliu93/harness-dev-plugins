@@ -201,7 +201,7 @@ test("learn-capture only captures a [LEARN] that starts its line", async () => {
   }
 }, TIMEOUT);
 
-test("plan-split: once per user turn, after 3+ other tool calls, 3+ items, never for dispatched agents", async () => {
+test("plan-split: once per user turn, after 3+ other tool calls, 3+ plan items or no plan, never for dispatched agents", async () => {
   const obs = mkdtempSync(join(tmpdir(), "split-"));
   const tp = join(obs, "t.jsonl");
   const line = (o: unknown) => JSON.stringify(o) + "\n";
@@ -221,9 +221,18 @@ test("plan-split: once per user turn, after 3+ other tool calls, 3+ items, never
     writeFileSync(tp, readFileSync(tp, "utf8") + prompt("u2", "改个错字") + use("mcp__ccd_turn__update_plan", items(2)) + use("Read") + use("Edit") + use("Bash"));
     expect(await run("plan-split.ts", call({ advance: true }), env)).toBe(""); // 2 items: too small
     expect(await run("plan-split.ts", call({ advance: true }), { ...env, DEVKIT_DELEGATED: "1" })).toBe("");
-    expect(await run("plan-split.ts", call({}, "Read"), env)).toBe(""); // not a plan tool
+    expect(await run("plan-split.ts", call({}, "Read"), env)).toBe(""); // planned turn: a look tool waits for the plan
+    expect(await run("plan-split.ts", call({}, "Edit"), env)).toBe(""); // neither plan nor look tool
     // CLI: TaskCreate one task each, TaskUpdate after reading
     writeFileSync(tp, readFileSync(tp, "utf8") + prompt("u3", "三个仓库升级 Node") + use("TaskCreate") + use("TaskCreate") + use("TaskCreate") + use("Read") + use("Grep") + use("Read"));
     expect(await run("plan-split.ts", call({ taskId: "1", status: "completed" }, "TaskUpdate"), env)).toContain("计划有 3 项");
+    // no plan tools (newer models): fires on a look tool after 3 looks, without the item count
+    writeFileSync(tp, readFileSync(tp, "utf8") + prompt("u4", "两个仓库各修一个 bug") + use("Read") + use("Grep"));
+    expect(await run("plan-split.ts", call({}, "Read"), env)).toBe(""); // 2 looks
+    writeFileSync(tp, readFileSync(tp, "utf8") + use("Bash"));
+    const np = await run("plan-split.ts", call({}, "Bash"), env);
+    expect(np).toContain("拆分：");
+    expect(np).not.toContain("计划有");
+    expect(await run("plan-split.ts", call({}, "Grep"), env)).toBe(""); // once per turn
   } finally { rmSync(obs, { recursive: true, force: true }); }
 }, TIMEOUT);
