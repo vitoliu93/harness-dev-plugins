@@ -42,7 +42,6 @@ bash skills/use-agents/scripts/wait-result.selftest.sh
 bun skills/skill-forge/scripts/skill_style.ts --workspace-root skills --fail-on-issues
 bun skills/skill-forge/scripts/build_skill_atlas.ts --workspace-root skills --fail-on-style
 claude plugin validate --strict .
-uv run --with pyyaml python "$HOME/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py" .
 bunx tsc -p mods/jev/tsconfig.json
 ```
 

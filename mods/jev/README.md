@@ -117,6 +117,9 @@ Look for `hooks module dev-kit-jev@inline loaded ... events: prompt.submit`
 (loaded), `dev-kit-jev: 2 skill suggestion(s), 1 reference(s)` (a decision
 came back) and `prompt.submit settled in ...ms` (what it cost you).
 
+`/plugin` can list this Mod as "not used": it has no skills or commands to
+count. Judge it by the debug log above, not by that number.
+
 ## Live check against the real API
 
 ```bash
