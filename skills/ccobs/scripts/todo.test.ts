@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo } from "./todo.ts";
+import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo, isTempProject } from "./todo.ts";
 import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -83,4 +83,9 @@ test("a removed worktree still files under its main checkout", () => {
   git("-C", main, "worktree", "remove", wt);
   expect(projectFor(db, wt)).toBe(main);
   expect(projectFor(db, main)).toBe(main);
+});
+
+test("isTempProject: scratch dirs only", () => {
+  for (const p of ["/tmp", "/tmp/x", "/private/tmp/claude-501/a", "/var/folders/ab/T/x"]) expect(isTempProject(p)).toBe(true);
+  for (const p of [null, "", "/Users/me/tmp", "/tmpfoo", "/Users/me/codebase/icc/kox-base"]) expect(isTempProject(p)).toBe(false);
 });

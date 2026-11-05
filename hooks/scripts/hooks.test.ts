@@ -237,3 +237,17 @@ test("plan-split: once per user turn, after 3+ other tool calls, 3+ plan items o
     expect(await run("plan-split.ts", call({}, "Grep"), env)).toBe(""); // once per turn
   } finally { rmSync(obs, { recursive: true, force: true }); }
 }, TIMEOUT);
+
+test("skill-path-fallback: deny bare placeholder, allow single-quoted and quoted-heredoc bodies", async () => {
+  const run = (command: string) =>
+    spawnHook(["bash", join(HERE, "skill-path-fallback.sh")], JSON.stringify({ tool_input: { command } }));
+  const P = "${CLAUDE_PLUGIN_ROOT}";
+  const denied = async (c: string) => (await run(c)).stdout.includes('"deny"');
+  expect(await denied(`bun ${P}/x.ts`)).toBe(true);
+  expect(await denied(`bun "${P}/x.ts"`)).toBe(true);
+  expect(await denied(`cat <<EOF\n${P}\nEOF`)).toBe(true); // unquoted heredoc expands
+  expect(await denied(`git commit -m '${P}'`)).toBe(false);
+  expect(await denied(`python3 - <<'EOF'\nd = {"c": "\\"${P}\\""}\nEOF`)).toBe(false);
+  expect(await denied(`cat <<"X" > f\n${P}\nX\necho ok`)).toBe(false);
+  expect(await denied(`cat <<-\\X\n\t${P}\n\tX\nbun ${P}/y.ts`)).toBe(true); // body stripped, line after it still checked
+}, TIMEOUT);

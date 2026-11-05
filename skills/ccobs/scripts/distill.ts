@@ -17,7 +17,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
-import { TODO_DDL, addTodo, closeTodo, flat, openTodos, projectFor } from "./todo.ts";
+import { TODO_DDL, addTodo, closeTodo, flat, isTempProject, openTodos, projectFor } from "./todo.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -118,6 +118,7 @@ function applyTodos(s: { session_id: string; cwd: string | null }, j: any): void
     const evidence = flat(r?.evidence ? String(r.evidence) : undefined, 120);
     if (evidence && open.has(String(r.id))) closeTodo(db, String(r.id), "done", `auto:${s.session_id}:${evidence}`);
   }
+  if (isTempProject(project)) return;
   for (const t of (Array.isArray(j.todo_candidates) ? j.todo_candidates : []).slice(0, 5)) {
     if (t?.title) addTodo(db, { title: String(t.title), why: t.why ? String(t.why) : undefined, evidence: t.evidence ? String(t.evidence) : undefined, project, source: "distill", session: s.session_id });
   }

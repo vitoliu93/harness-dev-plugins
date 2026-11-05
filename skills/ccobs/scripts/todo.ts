@@ -123,6 +123,9 @@ export function rememberRoot(db: Database, cwd: string): void {
 }
 
 /** Ledger key for a session's cwd: the main checkout, even after the worktree was removed. */
+/** Scratch dirs (/tmp, /private/tmp, /var/folders): nobody comes back to fix what was found there, so distill files nothing. */
+export const isTempProject = (p: string | null | undefined) => !!p && /^(\/private)?\/(tmp|var\/folders)(\/|$)/.test(p);
+
 export function projectFor(db: Database, cwd: string | null): string | null {
   if (!cwd) return cwd;
   const seen = db.query(`SELECT root FROM cwd_roots WHERE cwd = ?`).get(cwd) as { root: string } | null;

@@ -12,14 +12,24 @@
 # Single-quoted segments are stripped before matching: inside single quotes the
 # shell never expands ${...}, so the placeholder stays literal text (commit -m
 # messages, sed/echo bodies) and can't collapse into a broken path — those were
-# the observed false positives. Bare or double-quoted occurrences still deny.
+# the observed false positives. Bodies of quoted heredocs (<<'EOF', <<"EOF",
+# <<\EOF) are stripped too: the shell never expands them, and that is how
+# scripts write the placeholder into hooks.json. Bare, double-quoted or
+# unquoted-heredoc occurrences still deny.
 # Anything unparseable → allow (exit 0). Fail-open by design.
 set -uo pipefail
 
 input=$(cat)
 command=$(jq -r '.tool_input.command // empty' <<<"$input") || exit 0
 
-executable=$(sed "s/'[^']*'//g" <<<"$command")
+# ponytail: one heredoc delimiter per line; nested/multiple heredocs on one line only strip the first
+executable=$(awk '
+  delim != "" { t = $0; if (strip_tabs) sub(/^\t+/, "", t); if (t == delim) delim = ""; next }
+  match($0, /<<-?[ \t]*(\x27[A-Za-z_0-9]+\x27|"[A-Za-z_0-9]+"|\\[A-Za-z_0-9]+)/) {
+    h = substr($0, RSTART, RLENGTH); strip_tabs = (h ~ /^<<-/)
+    sub(/^<<-?[ \t]*/, "", h); gsub(/[\x27"\\]/, "", h); delim = h
+  }
+  { print }' <<<"$command" | sed "s/'[^']*'//g")
 [[ "$executable" == *'${CLAUDE_SKILL_DIR}'* || "$executable" == *'${CLAUDE_PLUGIN_ROOT}'* ]] || exit 0
 
 jq -n --arg r '命令里的 ${CLAUDE_SKILL_DIR} / ${CLAUDE_PLUGIN_ROOT} 没被展开(在 Bash 里为空)——这俩占位符只在 Skill 工具载入 SKILL.md 时做文本替换,不是环境变量。两条出路:①用 Skill 工具正式载入该 skill,占位符会变成字面绝对路径,再跑;②直接 glob 定位脚本:`ls ~/.claude/plugins/cache/*/*/*/skills/<skill>/scripts/`(取最新版本目录),用解析出的真实路径重跑。' \
