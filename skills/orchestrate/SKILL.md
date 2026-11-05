@@ -47,6 +47,8 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
 - Runtime-changing delivery always gets a reviewer for correctness, project fit
   and simplification, and algorithm and performance. Blocking findings cite
   exact code and evidence; no PASS, no delivery.
+- Review roles run at effort medium or higher on any agent; pass the level
+  for the run when the alias default is lower or empty.
 - Freeze reviewed targets during review: the reviewed directory accepts no
   changes once review starts; to change it, stop review or await its report,
   record the new commit or diff summary, and re-review. Review cards state the
