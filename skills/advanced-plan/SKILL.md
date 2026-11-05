@@ -11,12 +11,12 @@ metadata:
 # advanced-plan
 
 Turn a dev task into a tracked mini-project under `$ROOT/docs/advanced-plans/<date>-<slug>/`.
-Seven files, lazy by tier — see [file-semantics.md](references/file-semantics.md).
+Six files, lazy by tier — see [file-semantics.md](references/file-semantics.md).
 
 | Tier | files |
 |---|---|
 | light | goal + spec + todo |
-| full | + preflight / exploration / review / prototype.html when applicable |
+| full | + preflight / exploration / review when applicable |
 
 ## Hard gates
 
@@ -49,4 +49,4 @@ Full flows: [commands.md](references/commands.md). Planning discipline: [plannin
 
 ## Neighbours
 
-`grill-me` · `use-html` prototype · `orchestrate` · `debrief` · `take-over`
+`grill-me` · `orchestrate` · `debrief` · `take-over`

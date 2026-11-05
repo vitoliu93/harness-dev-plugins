@@ -87,5 +87,5 @@ test("a removed worktree still files under its main checkout", () => {
 
 test("isTempProject: scratch dirs only", () => {
   for (const p of ["/tmp", "/tmp/x", "/private/tmp/claude-501/a", "/var/folders/ab/T/x"]) expect(isTempProject(p)).toBe(true);
-  for (const p of [null, "", "/Users/me/tmp", "/tmpfoo", "/Users/me/codebase/icc/kox-base"]) expect(isTempProject(p)).toBe(false);
+  for (const p of [null, "", "/srv/me/tmp", "/tmpfoo", "/srv/app"]) expect(isTempProject(p)).toBe(false);
 });

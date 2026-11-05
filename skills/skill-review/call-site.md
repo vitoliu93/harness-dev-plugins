@@ -21,7 +21,7 @@
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
 | resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | teach-me | atom | "teach me/教我/讲讲 <topic>" · 看文档卡在某概念 | ③ |
-| use-html | atom | 可视化 · 原型:advanced-plan/ship(kox) · kox ship checkpoint · 批阅页（导出给 agent） | ①③ |
+| use-html | atom | 看懂概念/仓库/流程/文档 · 复盘/汇报 · 模型主动(图比文字讲得清时) | ①③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
@@ -33,7 +33,6 @@
 - **orchestrate** — 观察角色卡、Herdr tab 收尾和 agent 交接是否稳定
 - **use-agents** — 观察个人渠道配置与配额记录是否足够简单
 - **recall** — 仅触发词;观察"以前查过吗"是否长成肌肉记忆
-- **use-html 原型模式** — 非 S 的 UI 任务走完计划却没有 prototype.html → 闸门位置错
 - **cto-audit** — debrief 提醒是否真触发
 - **ceo-mode** — 仅触发词;观察全权授权后是否真的零自己动手、汇报是否稳定收敛到三段
 - **resume-learning vs take-over/advanced-plan** — 裸"继续"争路由;收紧到"读档"

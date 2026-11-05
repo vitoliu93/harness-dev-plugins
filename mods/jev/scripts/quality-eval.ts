@@ -15,7 +15,7 @@ const cases: Case[] = [
   { name: "visual-evidence", prompt: "验收一下画布上选中态的描边对不对，用 DOM 事实给我一份 PASS/FAIL 证据包", want: ["visual-evidence"] },
   { name: "skill-review", prompt: "给整个技能集做一次健康检查：风格、重叠、过期、触发评测都跑一遍", want: ["skill-review"], ok: ["skill-forge"] },
   { name: "teach-me", prompt: "教我 Raft 一致性算法，我只有十分钟", want: ["teach-me"], ok: ["eli5:eli5"] },
-  { name: "use-html", prompt: "做一个单文件 HTML 的可点击原型，PRD 评审前给产品确认交互", want: ["use-html"] },
+  { name: "use-html", prompt: "用一页 HTML 帮我看懂这个仓库的模块怎么互相调用", want: ["use-html"] },
   { name: "rate-limit-watcher", prompt: "守林员：我今晚让几个 agent 跑通宵，限额了帮我盯着，恢复后叫醒它们", want: ["rate-limit-watcher"] },
   { name: "recall", prompt: "之前有没有查过并发跑 eval 共享登录会 401 的问题？翻翻过去的会话", want: ["recall"], ok: ["ccobs"] },
   { name: "use-agents", prompt: "起一个独立的 opus agent 去跑测试，给我启动命令，顺便告诉我它的定义文件在哪", want: ["use-agents"], ok: ["orchestrate", "herdr"] },

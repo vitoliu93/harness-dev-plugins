@@ -10,10 +10,9 @@
    `$ADVANCED_PLAN_SKILL_DIR/assets/templates` into
    `$ROOT/docs/advanced-plans/<date>-<slug>/` in the same shell command.
 5. Lock `goal.md`; fill `spec.md`.
-6. Full tier or UI change → `use-html` prototype mode; user approves `prototype.html`.
-7. Infra/deploy → fill and run `preflight.md` now.
-8. Fill `todo.md` with branch in `Current State` + phases with acceptance + verification.
-9. Commit plan dir; tell user branch + first phase.
+6. Infra/deploy → fill and run `preflight.md` now.
+7. Fill `todo.md` with branch in `Current State` + phases with acceptance + verification.
+8. Commit plan dir; tell user branch + first phase.
 
 ## `execute`
 
