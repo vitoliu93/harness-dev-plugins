@@ -31,6 +31,11 @@ This is personal machine state. Do not commit it and do not put API keys in it.
 }
 ```
 
+Optional route field `args`: native flags the route always needs. Pass them on
+every launch, after `--` in `launch-agent.sh`, before any per-run flags.
+Codex routes carry `--dangerously-bypass-hook-trust`; without it the hooks
+review dialog takes the input box and the first prompt is lost.
+
 ## Adding an agent
 
 Search the web for the model first — release notes, price per million tokens,
