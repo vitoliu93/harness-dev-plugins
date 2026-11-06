@@ -43,6 +43,9 @@ chmod +x "$TMP_DIR/bin/herdr"
 export PATH="$TMP_DIR/bin:$PATH"
 export WAIT_RESULT_INTERVAL=0.05
 
+# Ready cases need a stopped agent: wait-result only exits 0 once the agent is idle/done.
+ready_stub() { echo "done" > "$TMP_DIR/agent_status"; echo "finished" > "$TMP_DIR/pane_text"; }
+
 reset_stub() {
   echo "running" > "$TMP_DIR/agent_status"
   echo "working on task..." > "$TMP_DIR/pane_text"
@@ -93,18 +96,22 @@ if ! echo "$WAIT_OUT" | grep -q "step 2: processing items"; then
   exit 1
 fi
 
+
 # --- 4. Legacy 4-argument call (no progress file given) ---
 # 4a: marker ready on last line -> 0
+ready_stub
 printf "header\nDONE\n" > "$TMP_DIR/res4a.md"
 run_wait agent-4a "$TMP_DIR/res4a.md" DONE 2
 assert_rc 0 "4a. Legacy 4-arg call with marker -> 0"
 
 # 4b: no marker -> times out 4, never 5
+reset_stub
 printf "header\nworking\n" > "$TMP_DIR/res4b.md"
 run_wait agent-4b "$TMP_DIR/res4b.md" DONE 1
 assert_rc 4 "4b. Legacy 4-arg call without marker -> timeout 4 (never 5)"
 
 # --- 5. Legacy 3-argument call (default timeout) ---
+ready_stub
 printf "DONE\n" > "$TMP_DIR/res5.md"
 run_wait agent-5 "$TMP_DIR/res5.md" DONE
 assert_rc 0 "5. Legacy 3-arg call -> 0"
@@ -132,6 +139,7 @@ assert_rc 4 "7. Missing result file -> timeout 4"
 
 # --- 8. Marker format & line position checks ---
 # 8a: marker only in the middle -> not complete (timeout 4)
+reset_stub
 printf "DONE\nstill running\n" > "$TMP_DIR/res8a.md"
 run_wait agent-8a "$TMP_DIR/res8a.md" DONE 1
 assert_rc 4 "8a. Marker in middle only -> timeout 4"
@@ -142,6 +150,7 @@ run_wait agent-8b "$TMP_DIR/res8b.md" DONE 1
 assert_rc 4 "8b. Marker as substring of last line -> timeout 4"
 
 # 8c: marker with trailing whitespace & trailing blank lines -> complete (0)
+ready_stub
 printf "work\nDONE   \n\n   \n" > "$TMP_DIR/res8c.md"
 run_wait agent-8c "$TMP_DIR/res8c.md" DONE 2
 assert_rc 0 "8c. Marker with trailing whitespace and blank lines -> 0"
@@ -152,7 +161,7 @@ run_wait agent-8d "$TMP_DIR/res8d.md" DONE 2
 assert_rc 0 "8d. Marker with CRLF -> 0"
 
 # --- 9. Result ready beats stale progress file -> 0 ---
-reset_stub
+ready_stub
 printf "log\nDONE\n" > "$TMP_DIR/res9.md"
 PROG_9="$TMP_DIR/prog9.txt"
 printf "old progress\n" > "$PROG_9"
@@ -192,5 +201,21 @@ echo "idle" > "$TMP_DIR/agent_status"
 echo "1 shell still running" > "$TMP_DIR/pane_text"
 run_wait agent-11d "$TMP_DIR/res10.md" DONE 1
 assert_rc 4 "11d. Idle with running background shell -> not 3, timeout 4"
+
+# --- 12. Marker written while agent still working ---
+# 12a: never stops -> exits 0 with WARN only after settle
+reset_stub
+printf "report\nDONE\n" > "$TMP_DIR/res12.md"
+WAIT_RESULT_SETTLE=0 run_wait agent-12a "$TMP_DIR/res12.md" DONE 3
+assert_rc 0 "12a. Marker + agent still working -> 0 after settle"
+echo "$WAIT_OUT" | grep -q "WARN: agent still running" || { echo "FAIL: 12a should warn agent still running, got: $WAIT_OUT" >&2; exit 1; }
+# 12b: stops partway -> plain RESULT before settle
+reset_stub
+( sleep 0.4; echo "done" > "$TMP_DIR/agent_status" ) &
+flip_pid=$!
+WAIT_RESULT_SETTLE=30 run_wait agent-12b "$TMP_DIR/res12.md" DONE 5
+wait "$flip_pid" 2>/dev/null || true
+assert_rc 0 "12b. Marker + agent stops later -> 0"
+echo "$WAIT_OUT" | grep -q "WARN" && { echo "FAIL: 12b should not warn, got: $WAIT_OUT" >&2; exit 1; }
 
 echo "ALL $passed_count TESTS PASSED"

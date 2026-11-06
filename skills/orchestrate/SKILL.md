@@ -52,10 +52,11 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
 - Freeze reviewed targets during review: the reviewed directory accepts no
   changes once review starts; to change it, stop review or await its report,
   record the new commit or diff summary, and re-review. Review cards state the
-  baseline (commit or `git diff` sha256).
+  baseline (commit, or use-agents `scripts/fingerprint.sh` for uncommitted work).
 - Any diff after a PASS voids it, the host's own edits included: a one-line
   fix, a rebase conflict, a reviewer's suggested change. Push only after that
-  diff passes review; there is no size exemption.
+  diff passes review; there is no size exemption. Non-blocking findings go to
+  the next phase's card by default instead of a fix-and-re-review loop.
 - Launch and wait with use-agents `scripts/launch-agent.sh` and
   `scripts/wait-result.sh`, never a hand-written marker loop: the script sees a
   stuck or dead agent, the loop waits blind. Resend a prompt only when the

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Wait for an agent's result file. Run with run_in_background.
 # usage: wait-result.sh <agent-name> <result-file> <done-marker> [timeout-sec] [progress-file] [stall-seconds]
-# exit 0 ready · 2 stuck · 3 idle · 4 timeout · 5 stalled
+# exit 0 ready (marker written and agent stopped) · 2 stuck · 3 idle · 4 timeout · 5 stalled
 set -u
 SECONDS=0
 
@@ -38,6 +38,9 @@ base_mtime=0
 : "${base_mtime:=0}"
 fresh_window=${WAIT_RESULT_FRESH_WINDOW:-180}
 
+settle=${WAIT_RESULT_SETTLE:-600}; marker_seen=
+agent_status() { herdr agent get "$name" 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"]["agent"]["agent_status"])' 2>/dev/null; }
+
 end=$((SECONDS+limit)); quiet=0; mtime_warned=0; stale_warned=0
 while [ $SECONDS -lt $end ]; do
   sleep "$interval"
@@ -55,8 +58,19 @@ while [ $SECONDS -lt $end ]; do
       # 上一轮留下的结果文件通常是几十分钟前的，落不进这个窗口。
       age=$(( $(date +%s) - cur_mtime )); [ "$age" -lt 0 ] && age=0
       if [ "$cur_mtime" -gt "$base_mtime" ] || [ "$age" -le "$fresh_window" ]; then
-        echo "RESULT: $file has $marker"
-        exit 0
+        # 标记写完不等于 agent 停手：它常在写完报告后还在改代码或问 advisor，此时冻结基线会对不上。
+        # 等它 idle/done（且没有后台 shell）再退；拿不到状态（herdr 不可用）就直接退；最多再等 settle 秒。
+        st=$(agent_status); pane=$(herdr agent read "$name" --lines 6 2>/dev/null)
+        if [ -z "$st" ] || { { [ "$st" = "idle" ] || [ "$st" = "done" ]; } && ! echo "$pane" | grep -qE '[0-9]+ shells?( still running)?'; }; then
+          echo "RESULT: $file has $marker"
+          exit 0
+        fi
+        [ -z "$marker_seen" ] && { marker_seen=$SECONDS; echo "WAIT: $marker present but agent is $st; waiting for it to stop" >&2; }
+        if [ $((SECONDS-marker_seen)) -ge "$settle" ]; then
+          echo "RESULT: $file has $marker (WARN: agent still $st after ${settle}s)"
+          exit 0
+        fi
+        continue
       elif [ "$stale_warned" -eq 0 ]; then
         echo "WARN: $marker already present in a file untouched since we started; treating as stale" >&2
         stale_warned=1
@@ -84,7 +98,7 @@ while [ $SECONDS -lt $end ]; do
     fi
   fi
   tail=$(herdr agent read "$name" --lines 6 2>/dev/null)
-  st=$(herdr agent get "$name" 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"]["agent"]["agent_status"])' 2>/dev/null)
+  st=$(agent_status)
   echo "$tail" | grep -qE "Interrupted|Do you want to proceed|\(y/n\)|API Error: Connection lost" && { echo "STUCK: prompt/permission box/connection lost"; echo "$tail"; exit 2; }
   [ "$st" = "blocked" ] && { echo "STUCK: blocked"; echo "$tail"; exit 2; }
   # idle with a background shell still running is working, not stopped
