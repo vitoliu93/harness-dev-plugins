@@ -18,6 +18,22 @@ stop_when:
   - requested work crosses the write boundary
 ```
 
+Reviewer and acceptance cards add five required fields. A card with any of
+them empty does not launch.
+
+```yaml
+role: reviewer-api
+baseline: commit sha, or use-agents `scripts/fingerprint.sh` output
+reverse_injection:          # one per completion check; each must turn its test red
+  - check: refresh token expired returns 401
+    inject: remove the expiry branch in auth.ts
+result_file: /tmp/<slug>/review.md   # the file the sentinel watches
+done_marker: DONE-REVIEW              # last non-empty line of result_file, alone
+evidence_rules:
+  - no placeholder (TODO, TESTLINE, <…>) left in the report
+  - every screenshot listed with its sha256; a repeated sha is not evidence
+```
+
 Rules:
 
 - Use paths and source material, not a retelling when the source exists.
