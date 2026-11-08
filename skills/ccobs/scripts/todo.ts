@@ -11,6 +11,7 @@
 //   bun todo.ts close <id> [--by <commit/issue/说明>]
 //   bun todo.ts dismiss <id>
 //   bun todo.ts reopen <id>          # undo an automatic close
+//   bun todo.ts check                # open items whose named files were committed to since they were found
 //
 // Closing is meant to be passive: distill closes items a later session resolved,
 // todo-review expires stale ones, an agent that fixes one closes it. The user
@@ -77,8 +78,13 @@ export function reopenTodo(db: Database, id: string): boolean {
   return db.query(`UPDATE todos SET status = 'open', closed_at = NULL, closed_by = NULL WHERE id = ? AND status != 'open'`).run(id).changes > 0;
 }
 
+// Same project, or one nested in the other: a non-git workspace, its sub-repos and the plan dirs
+// under it share findings, because a fix lands wherever the work happened, not where it was filed.
+const related = (p: string) => `(project IS ${p} OR ${p} LIKE project || '/%' OR project LIKE ${p} || '/%')`;
+export const isRelated = (a: string | null, b: string | null) => a === b || (!!a && !!b && (a.startsWith(b + "/") || b.startsWith(a + "/")));
+
 export function openTodos(db: Database, project: string | null, limit = 30): { id: string; title: string; evidence: string | null; created_at: string }[] {
-  return db.query(`SELECT id, title, evidence, created_at FROM todos WHERE status = 'open' AND project IS ? ORDER BY created_at DESC LIMIT ?`).all(project, limit) as any[];
+  return db.query(`SELECT id, title, evidence, created_at FROM todos WHERE status = 'open' AND ${related("?1")} ORDER BY created_at DESC LIMIT ?2`).all(project, limit) as any[];
 }
 
 export function countOpen(db: Database, project: string | null): number {
@@ -93,7 +99,7 @@ export function mergeTodos(db: Database, keep: string, drop: string[], title?: s
     const done: string[] = [];
     const parts = k.evidence ? [k.evidence] : [];
     for (const d of drop) {
-      const r = db.query(`SELECT title, evidence FROM todos WHERE id = ? AND status = 'open' AND project IS ?`).get(d, k.project) as { title: string; evidence: string | null } | null;
+      const r = db.query(`SELECT title, evidence FROM todos WHERE id = ?2 AND status = 'open' AND ${related("?1")}`).get(k.project, d) as { title: string; evidence: string | null } | null;
       if (!r || d === keep || !closeTodo(db, d, "superseded", `merge:${keep}`)) continue;
       parts.push(`${r.title}${r.evidence ? ` ← ${r.evidence}` : ""}`);
       done.push(d);
@@ -132,6 +138,54 @@ export function projectFor(db: Database, cwd: string | null): string | null {
   return seen ? seen.root : existsSync(cwd) ? gitRoot(cwd) : cwd;
 }
 
+const FILE_RE = /[\w.-]+\.(?:tsx?|jsx?|mjs|cjs|py|sh|sql|json|ya?ml|toml|go|rs|md)\b/g;
+const GENERIC = new Set(["README.md", "SKILL.md", "AGENTS.md", "CLAUDE.md", "package.json", "package-lock.json", "index.ts", "spec.md", "goal.md", "todo.md"]);
+export const namedFiles = (s: string) => [...new Set(s.match(FILE_RE) ?? [])].filter((f) => !GENERIC.has(f));
+type Commit = { hash: string; at: string; subject: string; files: Set<string> };
+
+/** Repos worked in lately: where fixes for open items would land. */
+export function recentRepos(db: Database, sinceIso: string): string[] {
+  const cwds = db.query(`SELECT DISTINCT cwd FROM sessions WHERE cwd IS NOT NULL AND started_at >= ?`).all(sinceIso) as { cwd: string }[];
+  return [...new Set(cwds.map((c) => projectFor(db, c.cwd)!))].filter((r) => r && existsSync(join(r, ".git")));
+}
+
+/**
+ * Commits after an item was found that touch a file it names. Distill only closes what the user's own
+ * later sessions show; this also sees teammates' commits, other clients' work, and fixes that landed
+ * before distill filed the item. Candidates for a human check, never a close: a touched file is not a fix.
+ * Oldest first: a fix tends to follow the finding. `--all` reads remote branches as of the last fetch.
+ */
+export function touchedSince(rows: { id: string; title: string; evidence: string | null; since: string }[], repos: string[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  const want = rows.map((r) => ({ ...r, files: namedFiles(`${r.title} ${r.evidence ?? ""}`) })).filter((r) => r.files.length);
+  if (!want.length) return out;
+  const oldest = want.reduce((m, r) => (r.since < m ? r.since : m), want[0].since);
+  for (const repo of repos) {
+    const log = Bun.spawnSync(["git", "-C", repo, "log", "--all", `--since=${oldest}`, "--reverse", "--name-only", "--format=%x00%h%x09%cI%x09%s"]);
+    if (log.exitCode !== 0) continue;
+    const commits: Commit[] = log.stdout.toString().split("\0").slice(1).map((chunk) => {
+      const [head, ...paths] = chunk.split("\n");
+      const [hash, at, subject] = head.split("\t");
+      return { hash, at: new Date(at).toISOString(), subject, files: new Set(paths.filter(Boolean).map((p) => p.split("/").pop()!)) };
+    });
+    const name = repo.split("/").pop();
+    for (const r of want) {
+      for (const c of commits) {
+        if (c.at < r.since || !r.files.some((f) => c.files.has(f))) continue;
+        const hits = out.get(r.id) ?? [];
+        if (hits.length < 3) out.set(r.id, [...hits, `${name} ${c.hash} ${flat(c.subject, 60)}`]);
+      }
+    }
+  }
+  return out;
+}
+
+/** When an item was found: the end of the session it came from (fixes can land before distill files it), else its filing time. */
+export function foundAt(db: Database): { id: string; title: string; evidence: string | null; project: string | null; since: string }[] {
+  return db.query(`SELECT t.id, t.title, t.evidence, t.project, COALESCE(s.ended_at, t.created_at) since
+    FROM todos t LEFT JOIN sessions s ON s.session_id = t.source_session WHERE t.status = 'open'`).all() as any[];
+}
+
 if (import.meta.main) {
   const [cmd, ...rest] = process.argv.slice(2);
   const opt = (n: string) => { const i = rest.indexOf(n); return i === -1 ? undefined : rest[i + 1]; };
@@ -154,10 +208,15 @@ if (import.meta.main) {
   } else if ((cmd === "close" || cmd === "dismiss") && rest[0]) {
     const ok = closeTodo(db, rest[0], cmd === "close" ? "done" : "dismissed", opt("--by") ? `evidence:${opt("--by")}` : "user");
     console.log(ok ? `todo: ${cmd === "close" ? "closed" : "dismissed"} ${rest[0]}` : `todo: ${rest[0]} not open`);
+  } else if (cmd === "check") {
+    const rows = foundAt(db);
+    const hits = touchedSince(rows, recentRepos(db, new Date(Date.now() - 60 * 86_400_000).toISOString()));
+    for (const r of rows) if (hits.has(r.id)) console.log(`${r.id} ${r.title}\n  ${hits.get(r.id)!.join("\n  ")}`);
+    console.log(`todo: ${hits.size} of ${rows.length} open items have commits touching their files since found`);
   } else if (cmd === "reopen" && rest[0]) {
     console.log(reopenTodo(db, rest[0]) ? `todo: reopened ${rest[0]}` : `todo: ${rest[0]} already open or unknown`);
   } else {
-    console.error("usage: todo.ts add --title <t> [--why] [--evidence] [--project] [--session] | list [--project] [--all] [--json] | close <id> [--by] | dismiss <id> | reopen <id>");
+    console.error("usage: todo.ts add --title <t> [--why] [--evidence] [--project] [--session] | list [--project] [--all] [--json] | close <id> [--by] | dismiss <id> | reopen <id> | check");
     process.exit(1);
   }
   } catch (e) {

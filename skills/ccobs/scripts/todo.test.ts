@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo, isTempProject } from "./todo.ts";
+import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo, isTempProject, touchedSince } from "./todo.ts";
 import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -88,4 +88,35 @@ test("a removed worktree still files under its main checkout", () => {
 test("isTempProject: scratch dirs only", () => {
   for (const p of ["/tmp", "/tmp/x", "/private/tmp/claude-501/a", "/var/folders/ab/T/x"]) expect(isTempProject(p)).toBe(true);
   for (const p of [null, "", "/srv/me/tmp", "/tmpfoo", "/srv/app"]) expect(isTempProject(p)).toBe(false);
+});
+
+test("a workspace and its sub-repos see and merge each other's items, siblings by name prefix do not", () => {
+  const db = openDb(":memory:");
+  const ws = addTodo(db, { title: "退出后残留孤儿进程", project: "/w", source: "inline" })!;
+  const sub = addTodo(db, { title: "Quit 后 host 进程没回收", project: "/w/app", source: "inline" })!;
+  addTodo(db, { title: "别的仓", project: "/w/app2", source: "inline" });
+  addTodo(db, { title: "名字前缀相同", project: "/wx", source: "inline" });
+  expect(openTodos(db, "/w/app").map(t => t.id).sort()).toEqual([ws, sub].sort());
+  expect(openTodos(db, "/w")).toHaveLength(3);
+  expect(mergeTodos(db, sub, [ws])).toEqual([ws]);
+});
+
+test("touchedSince lists commits after the finding that touch a named file, oldest first", () => {
+  const repo = realpathSync(mkdtempSync(join(tmpdir(), "todo-git-")));
+  Bun.spawnSync(["git", "init", "-q", repo]);
+  const commit = (file: string, msg: string, date: string) => {
+    Bun.write(join(repo, "src", file), msg);
+    Bun.spawnSync(["git", "-C", repo, "add", "."]);
+    Bun.spawnSync(["git", "-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", msg], { env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date } });
+  };
+  commit("team.ts", "before", "2026-01-01T00:00:00Z");
+  commit("team.ts", "fix soft delete", "2026-01-03T00:00:00Z");
+  commit("other.ts", "unrelated", "2026-01-04T00:00:00Z");
+  commit("team.ts", "later touch", "2026-01-05T00:00:00Z");
+  const hits = touchedSince([
+    { id: "a", title: "软删后不可用", evidence: "packages/core/team.ts:99", since: "2026-01-02T00:00:00.000Z" },
+    { id: "b", title: "README.md 写错", evidence: null, since: "2026-01-02T00:00:00.000Z" },
+  ], [repo]);
+  expect(hits.get("a")!.map(h => h.split(" ").slice(2).join(" "))).toEqual(["fix soft delete", "later touch"]);
+  expect(hits.has("b")).toBe(false);
 });
