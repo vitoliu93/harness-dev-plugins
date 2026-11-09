@@ -77,7 +77,7 @@ or a Desktop release.
 - Results: `${CCOBS_DIR}/autopilot/<date>/run.json` and receipts; the HTML report
   goes out with `todo-review.ts`.
 - User decisions: `todo.ts decisions`, `todo.ts decide <id> <n|dismiss>`.
-- Roles run in `~/codebase/.autopilot/<date>/`. Claude roles run headless, because
+- Roles run in `$AUTOPILOT_WT_ROOT/<date>/`. Claude roles run headless, because
   each new worktree stops an interactive claude at the trust dialog; pi roles run
   in Herdr. launchd PATH comes from `install.sh`.
 

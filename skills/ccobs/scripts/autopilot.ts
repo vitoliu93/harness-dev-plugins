@@ -17,7 +17,7 @@ import { OBS_DIR } from "./rules-digest.ts";
 import { type Decision, askDecision, checkEvidence, closeTodo, expireDecisions, openDb, resolveRepo } from "./todo.ts";
 
 const ROOT = join(OBS_DIR, "autopilot");
-const CARDS = resolve(import.meta.dir, "../autopilot-cards");
+const CARDS = resolve(import.meta.dir, "../references/autopilot-cards");
 const MARKER = "AUTOPILOT_DONE";
 const WT_ROOT = process.env.AUTOPILOT_WT_ROOT ?? join(homedir(), "codebase/.autopilot"); // path must contain todo.ts AUTOPILOT_DIR
 const KEEP_FAILED_DAYS = 14;

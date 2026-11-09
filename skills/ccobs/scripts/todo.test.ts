@@ -153,7 +153,7 @@ test("evidence: temp paths stripped, anchors checked against the repo", () => {
   expect(ok("demo/src/deep/a.ts")).toBe(true);
   expect(ok(`提交 ${head.slice(0, 8)}`)).toBe(true);
   expect(ok("IKTAPG")).toBe(true);
-  expect(ok("/Users/x/repo-wt/src/deep/a.ts:3")).toBe(true);
+  expect(ok("/work/x/repo-wt/src/deep/a.ts:3")).toBe(true);
   expect(ok("deadbeef0")).toBe(false);
   expect(ok("missing/file.ts")).toBe(false);
   expect(ok("TypeError: x is not a function")).toBe(false);
