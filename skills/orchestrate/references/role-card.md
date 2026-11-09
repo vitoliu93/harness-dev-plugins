@@ -77,6 +77,13 @@ Rules:
   skips the lock proves nothing about the real path (an Electron invoke error
   carries a prefix; PostgREST maps a missing function to 503 before the app
   sees it).
+- A maker hands in a guard only after deleting it once and seeing its test go
+  red, then restoring it. A fixture whose data cannot reach the guarded branch
+  stays green and costs a review round.
+- A UI card with a design reference lists one completion check before user
+  testing: read the running UI and compare it to the reference item by item
+  (sizes, hover, keyboard focus, menu contents, data that arrives late). The
+  user's acceptance is the last step, not where differences are first found.
 - A card that may write test data lists the allowed objects, the most POSTs or
   paid runs, and the allowed entry points. A wait starts from the new request
   or id, and stops when none appears in a few minutes. An agent that finds the
