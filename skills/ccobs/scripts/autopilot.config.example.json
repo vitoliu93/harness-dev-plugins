@@ -12,7 +12,7 @@
     "kox-agent-plugins": { "path": "~/codebase/icc/kox-base/kox-agent-plugins", "branch": "main", "bump": true,
       "listTests": "true", "runTest": "true" },
     "musemine-cli": { "path": "~/codebase/icc/kox-base/musemine-cli", "branch": "dev", "issue": true, "cloneDeps": true,
-      "install": "bun install --frozen-lockfile", "prepare": "bun run build",
+      "install": "bun install --frozen-lockfile", "prepare": "npm run build",
       "listTests": "git ls-files 'packages/*/test/*.test.ts' 'scripts/*.test.ts'", "runTest": "bun test ./{file}" },
     "kox-desktop": { "path": "~/codebase/icc/kox-base/kox-desktop", "branch": "dev", "issue": true, "cloneDeps": true,
       "install": "npm ci",

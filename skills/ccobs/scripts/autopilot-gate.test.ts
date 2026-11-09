@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync, mkdirSync, realpathSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText } from "./autopilot-gate.ts";
+import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText, sh } from "./autopilot-gate.ts";
 import { expandChain, isAccessError, isQuotaError, quotaBlocked } from "./autopilot-route.ts";
 
 function repo() {
@@ -112,4 +112,11 @@ test("spec: acceptance files must be new test files, commands must run them and 
   expect(v({ acceptance_files: ["test/new.test.ts", "test/b.test.ts"] })).toContain("never run");
   symlinkSync("/etc/hosts", join(dir, "test/link.test.ts"));
   expect(v({ acceptance_files: ["test/link.test.ts"] }, "bun test ./test/link.test.ts")).toContain("symlink");
+});
+
+test("sh: a timeout also kills what the command started", async () => {
+  const mark = `autopilot-sh-test-${process.pid}`;
+  await sh(`(exec -a ${mark} sleep 30) & wait`, "/tmp", 300);
+  await Bun.sleep(100);
+  expect(Bun.spawnSync(["pgrep", "-f", mark]).exitCode).toBe(1);
 });

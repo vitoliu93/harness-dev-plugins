@@ -20,9 +20,13 @@ export type Spec = { bundle: string; repo: string; goal: string; allowed_paths: 
 export type Sh = { code: number; out: string };
 const TAIL = 4000;
 export async function sh(cmd: string, cwd: string, timeoutMs = 600_000): Promise<Sh> {
-  const p = Bun.spawn(["/bin/zsh", "-c", cmd], { cwd, stdout: "pipe", stderr: "pipe", stdin: "ignore", timeout: timeoutMs, killSignal: "SIGKILL" });
+  // Own process group: a timeout must also kill what the command started, or a runaway build outlives it.
+  const p = Bun.spawn(["/bin/zsh", "-c", cmd], { cwd, stdout: "pipe", stderr: "pipe", stdin: "ignore", detached: true });
+  const killGroup = () => { try { process.kill(-p.pid, "SIGKILL"); } catch {} };
+  const timer = setTimeout(killGroup, timeoutMs);
   const [o, e] = await Promise.all([new Response(p.stdout).text(), new Response(p.stderr).text()]);
   const code = await p.exited;
+  clearTimeout(timer);
   return { code, out: (o + e).slice(-TAIL) };
 }
 export function git(cwd: string, ...args: string[]): Sh {
