@@ -162,3 +162,11 @@ export async function gate(opts: { tree: string; base: string; head: string; spe
   return { ok: reasons.length === 0, reasons, accept };
 }
 
+
+/** The first argument that is neither a known flag nor a known option with its value. */
+export function unknownArg(args: string[], flags: string[], options: string[]): string | undefined {
+  for (let i = 0; i < args.length; i++) {
+    if (options.includes(args[i])) i++;
+    else if (!flags.includes(args[i])) return args[i];
+  }
+}

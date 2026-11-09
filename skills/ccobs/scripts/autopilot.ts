@@ -11,7 +11,7 @@
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
-import { type RepoCfg, type Spec, freshTree, gate, git, hashFiles, passingTests, removeTree, riskyText, runAcceptance, sh, validateSpec } from "./autopilot-gate.ts";
+import { type RepoCfg, type Spec, freshTree, gate, git, hashFiles, passingTests, removeTree, riskyText, runAcceptance, sh, unknownArg, validateSpec } from "./autopilot-gate.ts";
 import { type RoleChain, cheapJson, runAgent } from "./autopilot-route.ts";
 import { OBS_DIR } from "./rules-digest.ts";
 import { type Decision, askDecision, checkEvidence, closeTodo, expireDecisions, openDb, resolveRepo } from "./todo.ts";
@@ -32,6 +32,8 @@ class Exhausted extends Error {}
 const args = process.argv.slice(2);
 const flag = (n: string) => args.includes(n);
 const opt = (n: string) => { const i = args.indexOf(n); return i === -1 ? undefined : args[i + 1]; };
+const badArg = unknownArg(args, ["--force", "--dry-run", "--no-land", "--check-repos"], ["--repo", "--ids", "--bundles"]);
+if (badArg) { console.error(`autopilot: unknown argument ${badArg}`); process.exit(2); }
 const dry = flag("--dry-run");
 const noLand = flag("--no-land");
 const date = new Date().toLocaleDateString("sv");

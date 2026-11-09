@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync, mkdirSync, realpathSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText, sh } from "./autopilot-gate.ts";
+import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText, sh, unknownArg } from "./autopilot-gate.ts";
 import { expandChain, isAccessError, isQuotaError, quotaBlocked } from "./autopilot-route.ts";
 
 function repo() {
@@ -119,4 +119,11 @@ test("sh: a timeout also kills what the command started", async () => {
   await sh(`(exec -a ${mark} sleep 30) & wait`, "/tmp", 300);
   await Bun.sleep(100);
   expect(Bun.spawnSync(["pgrep", "-f", mark]).exitCode).toBe(1);
+});
+
+test("unknownArg rejects a mistyped flag and accepts option values", () => {
+  const known = (a: string[]) => unknownArg(a, ["--dry-run"], ["--ids"]);
+  expect(known(["--dry"])).toBe("--dry");
+  expect(known(["--dry-run", "--ids", "t-a"])).toBeUndefined();
+  expect(known(["--ids", "--dry", "--dry"])).toBe("--dry");
 });
