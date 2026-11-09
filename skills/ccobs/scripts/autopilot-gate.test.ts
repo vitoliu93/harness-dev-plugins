@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, writeFileSync, mkdirSync, realpathSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, realpathSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText } from "./autopilot-gate.ts";
@@ -108,4 +108,8 @@ test("spec: acceptance files must be new test files, commands must run them and 
   expect(v({ acceptance_files: ["test/a.test.ts"] }, "bun test test/a.test.ts")).toContain("already exists");
   expect(v({}, "bun test ./test/new.test.ts && git push origin HEAD:dev")).toContain("not allowed");
   expect(v({}, "true")).toContain("does not run");
+  writeFileSync(join(dir, "test/b.test.ts"), "x");
+  expect(v({ acceptance_files: ["test/new.test.ts", "test/b.test.ts"] })).toContain("never run");
+  symlinkSync("/etc/hosts", join(dir, "test/link.test.ts"));
+  expect(v({ acceptance_files: ["test/link.test.ts"] }, "bun test ./test/link.test.ts")).toContain("symlink");
 });

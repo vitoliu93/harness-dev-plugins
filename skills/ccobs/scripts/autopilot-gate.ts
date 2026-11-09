@@ -2,7 +2,7 @@
 // comes from an exit code or a hash, run by this process, so an agent's Bash wrappers cannot color it.
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 export type RepoCfg = {
@@ -37,8 +37,8 @@ const RISK_PATH = /(^|\/)docs\/migrations\/|\.sql$|(^|\/)\.env|(^|\/)\.npmrc$|(^
 const RISK_ADDED = /\b(ALTER|DROP|CREATE)\s+TABLE\b|\bnpm\s+publish\b/i;
 const TEST_PATH = /(^|\/)(tests?|__tests__)\/|\.test\.[cm]?[jt]sx?$|(^|\/)test_[^/]*\.py$|_test\.py$/;
 
-// A model writes the acceptance command and it runs with this machine's git and credentials.
-const RISK_CMD = /\bgit\s+(push|remote|config)\b|\b(publish|unpublish|sudo|ssh|scp|curl|wget|kubectl|gitee|lark-cli|herdr)\b|\brm\s+-[a-z]*r|>\s*~|\.env\b/i;
+// Catches a model carelessly writing these actions. Not a security boundary: acceptance files are model code and run with full local rights.
+const RISK_CMD = /\bgit\s+(push|remote|config)\b|\b(publish|unpublish|sudo|ssh|scp|curl|wget|kubectl|gitee|lark-cli|herdr)\b|\brm\s+-[a-z]*r|>\s*~|(^|[\s/])\.env\b/i;
 
 /** Null when usable. Acceptance files enter a commit the later diff checks do not look at, so they are vetted here. */
 export function validateSpec(s: any, known: Set<string>, tree: string): string | null {
@@ -57,6 +57,8 @@ export function validateSpec(s: any, known: Set<string>, tree: string): string |
     if (!s.allowed_paths.length || !s.acceptance_files.length) return "auto items need allowed_paths and acceptance_files";
     for (const f of s.acceptance_files) {
       if (typeof f !== "string" || f.startsWith("/") || f.includes("..") || !existsSync(join(tree, f))) return `acceptance file missing: ${f}`;
+      if (lstatSync(join(tree, f)).isSymbolicLink()) return `acceptance file is a symlink: ${f}`;
+      if (!s.items.some((i: any) => i.lane === "auto" && i.acceptance.includes(f))) return `acceptance file never run: ${f}`;
       if (!TEST_PATH.test(f) || RISK_PATH.test(f)) return `not a test file: ${f}`;
       if (git(tree, "cat-file", "-e", `HEAD:${f}`).code === 0) return `acceptance file already exists in the repo: ${f}`;
     }
@@ -143,6 +145,7 @@ export async function gate(opts: { tree: string; base: string; head: string; spe
   const reasons = diffViolations(tree, base, head, spec);
   const now = hashFiles(tree, spec.acceptance_files);
   for (const f of spec.acceptance_files) if (now[f] !== acceptanceHash[f]) reasons.push(`acceptance file changed: ${f}`);
+  if (reasons.length) return { ok: false, reasons, accept: [] }; // do not execute a diff that is already out of bounds
   const items = spec.items.filter((i) => i.lane === "auto");
   const accept = await runAcceptance(tree, items);
   for (const a of accept) if (a.code !== 0) reasons.push(`acceptance failed: ${a.id} (exit ${a.code})`);
