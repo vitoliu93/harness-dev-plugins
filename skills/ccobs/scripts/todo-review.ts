@@ -21,6 +21,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { extractJson, piCall } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
+import { publishReport } from "./todo-report.ts";
 import { TODO_CAP, closeTodo, foundAt, isRelated, mergeTodos, openDb, recentRepos, touchedSince } from "./todo.ts";
 
 const STAMP = join(OBS_DIR, "todo-review.stamp");
@@ -37,6 +38,7 @@ if (!args.includes("--force") && !dry) {
 }
 
 const db = openDb();
+const CLI = resolve(import.meta.dir, "todo.ts");
 const short = (p: string | null) => (p ?? "").replace(/^\/Users\/[^/]+\//, "~/");
 type Row = { id: string; title: string; why: string | null; evidence: string | null; project: string | null; created_at: string };
 const rows = db.query(`SELECT id, title, why, evidence, project, created_at FROM todos WHERE status = 'open' ORDER BY created_at DESC LIMIT 400`).all() as Row[];
@@ -122,14 +124,16 @@ if (manual.length) {
 }
 const message = lines.join("\n");
 
-if (dry) { console.log(message); process.exit(0); }
-writeFileSync(join(OBS_DIR, "todo-review.md"), message + "\n");
 const cfgPath = join(OBS_DIR, "notify.json");
-const cfg = existsSync(cfgPath) ? JSON.parse(readFileSync(cfgPath, "utf8")) as { lark_user_id?: string; as?: string } : {};
-if (left.length || autoClosed.length || merged.length || manual.length) {
+const cfg = existsSync(cfgPath) ? JSON.parse(readFileSync(cfgPath, "utf8")) as { lark_user_id?: string; as?: string; file_base?: string } : {};
+if (dry) { const r = await publishReport(db, { top }, cfg, CLI, true); console.log(`${message}\n\nreport: ${r.file}`); process.exit(0); }
+writeFileSync(join(OBS_DIR, "todo-review.md"), message + "\n");
+const report = await publishReport(db, { top }, cfg, CLI).catch((e) => { console.error(`todo-review: report failed: ${e}`); return null; });
+const outgoing = report?.line ?? message;
+if (report?.line || left.length || autoClosed.length || merged.length || manual.length) {
   if (!cfg.lark_user_id) console.log(`todo-review: no recipient in ${cfgPath}, message saved to todo-review.md only`);
   else {
-    const send = Bun.spawnSync(["lark-cli", "im", "+messages-send", "--as", cfg.as ?? "bot", "--user-id", cfg.lark_user_id, "--markdown", message]);
+    const send = Bun.spawnSync(["lark-cli", "im", "+messages-send", "--as", cfg.as ?? "bot", "--user-id", cfg.lark_user_id, "--markdown", outgoing]);
     if (send.exitCode !== 0) { console.error(`todo-review: send failed, retry next hour: ${send.stderr.toString().slice(0, 300)}`); process.exit(1); }
     console.log("todo-review: sent");
   }

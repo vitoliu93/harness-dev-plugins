@@ -61,5 +61,32 @@ launchctl bootout "gui/$(id -u)/${LABEL}" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 
 echo "ccobs: launchd job '${LABEL}' installed (hourly + at load → ${OBS_DIR}/ingest.log)"
+
+# Autopilot is its own job: a night's run takes hours and must not hold up the hourly chain.
+AP_LABEL="com.vito.ccobs.autopilot"
+AP_PLIST="$HOME/Library/LaunchAgents/${AP_LABEL}.plist"
+mkdir -p "$OBS_DIR/autopilot"
+[ -f "$OBS_DIR/autopilot/config.json" ] || cp "${SCRIPT_DIR}/autopilot.config.example.json" "$OBS_DIR/autopilot/config.json"
+cat > "$AP_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>${AP_LABEL}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>-c</string>
+    <string>"${BUN}" "${SCRIPT_DIR}/autopilot.ts"</string>
+  </array>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>1</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>${OBS_DIR}/autopilot/autopilot.log</string>
+  <key>StandardErrorPath</key><string>${OBS_DIR}/autopilot/autopilot.log</string>
+</dict>
+</plist>
+EOF
+launchctl bootout "gui/$(id -u)/${AP_LABEL}" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$AP_PLIST"
+echo "ccobs: launchd job '${AP_LABEL}' installed (nightly 01:00)"
 echo "ccobs: running first sweep..."
 "$BUN" "${SCRIPT_DIR}/ingest.ts"
