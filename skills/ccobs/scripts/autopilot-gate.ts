@@ -31,11 +31,38 @@ export function git(cwd: string, ...args: string[]): Sh {
 }
 
 // Matched against an item's own words before any agent starts.
-const RISK_TEXT = /生产(库|环境|发布|配置|数据)|发生产|上生产|发版|迁移|migration|\bRPC\b|凭证|密钥|api.?key|access.?token|secret|轮换|删除数据|清理数据|清库|drop table|对外发|群发|npm publish|unpublish/i;
+const RISK_TEXT = /生产(库|环境|发布|配置|数据)|发生产|上生产|发版|迁移|migration|\bRPC\b|凭证|密钥|api.?key|access.?token|secret|轮换|权限配置|\bRLS\b|\bpolicy\b|删除数据|清理数据|清库|drop table|对外发|群发|发飞书|npm publish|unpublish/i;
 // Matched against what a diff touches.
 const RISK_PATH = /(^|\/)docs\/migrations\/|\.sql$|(^|\/)\.env|(^|\/)\.npmrc$|(^|\/)(bun\.lockb?|package-lock\.json|uv\.lock|yarn\.lock|pnpm-lock\.yaml)$|skills\/ccobs\/scripts\/|skills\/use-agents\/scripts\/|(^|\/)hooks\//;
 const RISK_ADDED = /\b(ALTER|DROP|CREATE)\s+TABLE\b|\bnpm\s+publish\b/i;
 const TEST_PATH = /(^|\/)(tests?|__tests__)\/|\.test\.[cm]?[jt]sx?$|(^|\/)test_[^/]*\.py$|_test\.py$/;
+
+// A model writes the acceptance command and it runs with this machine's git and credentials.
+const RISK_CMD = /\bgit\s+(push|remote|config)\b|\b(publish|unpublish|sudo|ssh|scp|curl|wget|kubectl|gitee|lark-cli|herdr)\b|\brm\s+-[a-z]*r|>\s*~|\.env\b/i;
+
+/** Null when usable. Acceptance files enter a commit the later diff checks do not look at, so they are vetted here. */
+export function validateSpec(s: any, known: Set<string>, tree: string): string | null {
+  if (!Array.isArray(s?.items) || !Array.isArray(s?.allowed_paths) || !Array.isArray(s?.acceptance_files)) return "spec shape";
+  for (const i of s.items) {
+    if (!known.has(i?.id)) return `unknown item ${i?.id}`;
+    if (!["auto", "invest", "gone", "env", "decide"].includes(i.lane)) return `bad lane ${i.lane}`;
+    if (i.lane === "auto" && !i.acceptance) return `${i.id} has no acceptance`;
+    if (i.lane === "auto" && RISK_CMD.test(i.acceptance)) return `${i.id} acceptance command not allowed: ${String(i.acceptance).slice(0, 80)}`;
+    if (i.lane === "auto" && !s.acceptance_files.some((f: string) => i.acceptance.includes(f))) return `${i.id} acceptance does not run an acceptance file`;
+    if (i.lane === "decide" && !(Array.isArray(i.decision?.options) && i.decision.options.length && i.decision.question)) return `${i.id} has no decision card`;
+    if (i.lane === "decide" && i.decision.options.some((o: string) => /合入|diff/i.test(o))) return `${i.id} option bypasses the gate`;
+    if (i.lane === "invest" && !i.conclusion) return `${i.id} has no conclusion`;
+  }
+  if (s.items.some((i: any) => i.lane === "auto")) {
+    if (!s.allowed_paths.length || !s.acceptance_files.length) return "auto items need allowed_paths and acceptance_files";
+    for (const f of s.acceptance_files) {
+      if (typeof f !== "string" || f.startsWith("/") || f.includes("..") || !existsSync(join(tree, f))) return `acceptance file missing: ${f}`;
+      if (!TEST_PATH.test(f) || RISK_PATH.test(f)) return `not a test file: ${f}`;
+      if (git(tree, "cat-file", "-e", `HEAD:${f}`).code === 0) return `acceptance file already exists in the repo: ${f}`;
+    }
+  }
+  return null;
+}
 
 export const riskyText = (s: string) => s.match(RISK_TEXT)?.[0] ?? null;
 
@@ -120,7 +147,11 @@ export async function gate(opts: { tree: string; base: string; head: string; spe
   const accept = await runAcceptance(tree, items);
   for (const a of accept) if (a.code !== 0) reasons.push(`acceptance failed: ${a.id} (exit ${a.code})`);
   const pass = await passingTests(tree, cfg);
-  for (const f of baseline) if (!pass.has(f)) reasons.push(`was passing, now not: ${f}`);
+  for (const f of baseline) {
+    if (pass.has(f)) continue;
+    // Parallel runs can collide on ports or temp files: one serial retry before calling it a regression.
+    if ((await sh(cfg.runTest.replaceAll("{file}", f), tree, 120_000)).code !== 0) reasons.push(`was passing, now not: ${f}`);
+  }
   return { ok: reasons.length === 0, reasons, accept };
 }
 

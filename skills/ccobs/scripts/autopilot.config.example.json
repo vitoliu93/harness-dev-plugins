@@ -8,26 +8,26 @@
   "deployCmd": "python3 ~/codebase/icc/kox-base/kox-agent-plugins/skills/kox-deploy-k8s/scripts/kox_release.py release {targets}",
   "repos": {
     "agent-plugins": { "path": "~/codebase/projects/agent-plugins", "branch": "main", "bump": true,
-      "listTests": "git ls-files 'skills/**/*.test.ts' 'hooks/**/*.test.ts'", "runTest": "bun test ./{file}" },
+      "listTests": "git ls-files 'skills/*.test.ts' 'hooks/*.test.ts'", "runTest": "bun test ./{file}" },
     "kox-agent-plugins": { "path": "~/codebase/icc/kox-base/kox-agent-plugins", "branch": "main", "bump": true,
       "listTests": "true", "runTest": "true" },
     "musemine-cli": { "path": "~/codebase/icc/kox-base/musemine-cli", "branch": "dev", "issue": true, "cloneDeps": true,
       "install": "bun install --frozen-lockfile", "prepare": "bun run build",
-      "listTests": "git ls-files 'packages/*/test/**/*.test.ts' 'scripts/**/*.test.ts'", "runTest": "bun test ./{file}" },
+      "listTests": "git ls-files 'packages/*/test/*.test.ts' 'scripts/*.test.ts'", "runTest": "bun test ./{file}" },
     "kox-desktop": { "path": "~/codebase/icc/kox-base/kox-desktop", "branch": "dev", "issue": true, "cloneDeps": true,
       "install": "npm ci",
       "listTests": "git ls-files 'test/*.test.mjs' 'test/*.test.ts'", "runTest": "node --experimental-strip-types --test {file}" },
     "kox-front": { "path": "~/codebase/icc/kox-base/kox-front", "branch": "dev", "issue": true, "cloneDeps": true, "deploy": "frontend",
       "install": "npm ci",
-      "listTests": "git ls-files 'src/**/*.test.ts' 'src/**/*.test.tsx' 'test/**/*.test.ts' 'test/**/*.test.tsx' | grep -v test/api-e2e", "runTest": "npx vitest run {file}" },
+      "listTests": "git ls-files 'src/*.test.ts' 'src/*.test.tsx' 'test/*.test.ts' 'test/*.test.tsx' | grep -v test/api-e2e", "runTest": "npx vitest run {file}" },
     "opencut": { "path": "~/codebase/icc/kox-base/opencut", "branch": "dev", "issue": true, "cloneDeps": true, "deploy": "opencut",
       "install": "bun install --frozen-lockfile",
       "listTests": "git ls-files '*.test.ts' '*.test.tsx'", "runTest": "bun test ./{file}" },
     "ai4every1-supabase-py": { "path": "~/codebase/icc/kox-base/ai4every1-supabase-py", "branch": "dev", "issue": true, "deploy": "backend",
       "install": "uv sync --frozen",
-      "listTests": "git ls-files 'tests/**/test_*.py' | grep -v tests/integration", "runTest": "uv run --frozen pytest -q {file}" },
+      "listTests": "git ls-files 'tests/test_*.py' | grep -v tests/integration", "runTest": "uv run --frozen pytest -q {file}" },
     "icccut-agents": { "path": "~/codebase/icc/kox-base/icccut-agents", "branch": "dev", "issue": true, "deploy": "agent",
       "install": "uv sync --frozen",
-      "listTests": "git ls-files 'tests/**/test_*.py'", "runTest": "uv run --frozen pytest -q -m 'not external' {file}" }
+      "listTests": "git ls-files 'tests/test_*.py'", "runTest": "uv run --frozen pytest -q -m 'not external' {file}" }
   }
 }

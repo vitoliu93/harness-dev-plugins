@@ -11,7 +11,7 @@
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
-import { type RepoCfg, type Spec, freshTree, gate, git, hashFiles, passingTests, removeTree, riskyText, runAcceptance, sh } from "./autopilot-gate.ts";
+import { type RepoCfg, type Spec, freshTree, gate, git, hashFiles, passingTests, removeTree, riskyText, runAcceptance, sh, validateSpec } from "./autopilot-gate.ts";
 import { type RoleChain, cheapJson, runAgent } from "./autopilot-route.ts";
 import { OBS_DIR } from "./rules-digest.ts";
 import { type Decision, askDecision, checkEvidence, closeTodo, expireDecisions, openDb, resolveRepo } from "./todo.ts";
@@ -147,24 +147,6 @@ function escalate(b: Bundle, r: Receipt, ids: string[], why: string, detail: str
   }
 }
 
-function validateSpec(s: any, b: Bundle, tree: string): string | null {
-  if (!Array.isArray(s?.items) || !Array.isArray(s?.allowed_paths) || !Array.isArray(s?.acceptance_files)) return "spec shape";
-  const known = new Set(b.items.map((i) => i.id));
-  for (const i of s.items) {
-    if (!known.has(i?.id)) return `unknown item ${i?.id}`;
-    if (!["auto", "invest", "gone", "env", "decide"].includes(i.lane)) return `bad lane ${i.lane}`;
-    if (i.lane === "auto" && !i.acceptance) return `${i.id} has no acceptance`;
-    if (i.lane === "decide" && !(Array.isArray(i.decision?.options) && i.decision.options.length && i.decision.question)) return `${i.id} has no decision card`;
-    if (i.lane === "decide" && i.decision.options.some((o: string) => /合入|diff/i.test(o))) return `${i.id} option bypasses the gate`;
-    if (i.lane === "invest" && !i.conclusion) return `${i.id} has no conclusion`;
-  }
-  if (s.items.some((i: any) => i.lane === "auto")) {
-    if (!s.allowed_paths.length || !s.acceptance_files.length) return "auto items need allowed_paths and acceptance_files";
-    for (const f of s.acceptance_files) if (typeof f !== "string" || f.startsWith("/") || f.includes("..") || !existsSync(join(tree, f))) return `acceptance file missing: ${f}`;
-  }
-  return null;
-}
-
 function copyAcceptance(spec: Spec, from: string, to: string): void {
   for (const f of spec.acceptance_files) { mkdirSync(dirname(join(to, f)), { recursive: true }); copyFileSync(join(from, f), join(to, f)); }
 }
@@ -177,7 +159,7 @@ function createIssue(b: Bundle, spec: Spec, auto: Item[]): string {
   return m[0];
 }
 
-function bumpVersion(tree: string): void {
+function bumpVersion(tree: string): boolean {
   const manifest = join(tree, ".claude-plugin/plugin.json");
   const old = JSON.parse(readFileSync(manifest, "utf8")).version as string;
   const parts = old.split("."); parts[2] = String(Number(parts[2]) + 1);
@@ -187,7 +169,7 @@ function bumpVersion(tree: string): void {
     if (t.includes(`"version": "${old}"`)) writeFileSync(join(tree, f), t.replaceAll(`"version": "${old}"`, `"version": "${next}"`));
   }
   git(tree, "add", "-u");
-  git(tree, "commit", "-qm", `chore: v${next}`);
+  return git(tree, "commit", "-qm", `chore: v${next}`).code === 0;
 }
 
 const patchId = (tree: string, range: string) => {
@@ -227,7 +209,11 @@ async function land(b: Bundle, spec: Spec, r: Receipt, dev: string, gateDir: str
       }
     }
     if (noLand) { r.status = "would-land"; r.commit = git(dev, "rev-parse", "HEAD").out; return false; }
-    if (cfg.bump) bumpVersion(dev);
+    if (cfg.bump && !bumpVersion(dev)) {
+      escalate(b, r, ids, "版本号提交失败", `分支 autopilot/${date}-${b.slug} 已保留`);
+      r.status = "bump-failed";
+      return false;
+    }
     if (git(dev, "push", "-q", "origin", `HEAD:${cfg.branch}`).code === 0) {
       r.commit = git(dev, "rev-parse", cfg.bump ? "HEAD~1" : "HEAD").out;
       r.status = "landed";
@@ -279,7 +265,7 @@ async function runBundle(b: Bundle): Promise<void> {
     if (!sc.ok) { escalate(b, r, allIds, "验收员没有产出", sc.why ?? ""); return stop("acceptance-failed"); }
     let spec: Spec;
     try { spec = JSON.parse(readFileSync(specOut, "utf8")); } catch (e) { escalate(b, r, allIds, "验收员的 spec 不是合法 JSON", String(e)); return stop("bad-spec"); }
-    const bad = validateSpec(spec, b, scout);
+    const bad = validateSpec(spec, new Set(allIds), scout);
     if (bad) { escalate(b, r, allIds, "验收员的 spec 不合格", bad); return stop("bad-spec"); }
     spec.bundle = slug; spec.repo = cfg.name;
     for (const i of spec.items) i.passes = false;
@@ -309,6 +295,8 @@ async function runBundle(b: Bundle): Promise<void> {
     const redFile = join(dir, "red.json");
     writeFileSync(redFile, JSON.stringify(redRuns, null, 2));
     removeTree(cfg.path, red);
+    const notFound = redRuns.find((a) => a.code === 127);
+    if (notFound) { escalate(b, r, allIds.filter((id) => spec.items.find((i) => i.id === id)?.lane === "auto"), "验收命令不存在", notFound.out.slice(-300)); return stop("bad-spec"); }
     for (const a of redRuns) if (a.code === 0) {
       const i = spec.items.find((x) => x.id === a.id)!;
       i.lane = "gone"; i.reason = "验收在基线上直接通过";
@@ -428,6 +416,8 @@ async function main(): Promise<void> {
     if (!dry) {
       const st = Bun.which("herdr") ? Bun.spawnSync(["herdr", "status", "server"], { stdout: "pipe", stderr: "pipe" }) : null;
       if (!st || st.exitCode || !st.stdout.toString().includes("running")) { run.status = "herdr-down"; run.notes.push("Herdr 没有运行或不在 PATH，当晚未启动"); return; }
+      // The lock says no other run is alive, so any claim left is from a killed one.
+      db.query(`UPDATE todos SET run_id = NULL WHERE status = 'open' AND run_id IS NOT NULL`).run();
       for (const id of expireDecisions(db)) run.notes.push(`${id} 超过 14 天没裁定，已移出`);
       sweepOld();
     }

@@ -28,7 +28,7 @@ export type ReportData = {
 };
 
 const repoName = (p: string | null) => (p ?? "").split("/").pop() ?? "";
-const WHY_LABEL: Record<string, string> = { "no-repo": "没有仓名", "temp-evidence": "证据失效", "no-anchor": "证据没有锚点", "not-reproduced": "未复现", unverifiable: "验证不了" };
+const WHY_LABEL: Record<string, string> = { "no-repo": "没有仓名", "temp-evidence": "证据失效", "no-anchor": "证据没有锚点", "not-reproduced": "未复现", unverifiable: "验证不了", dismiss: "你选了不做", expired: "超过 14 天没裁定" };
 
 function latestRun(now: number): any | null {
   const root = join(OBS_DIR, "autopilot");
@@ -93,7 +93,7 @@ export async function gatherReport(db: Database, input: { top: { id: string; nex
     { label: "修好落地", n: fixed },
     { label: "调查出结论", n: invest },
     { label: "移出账本", n: moved.length },
-    { label: "等你裁定", n: decisionsAll.length },
+    { label: "待裁定存量", n: decisionsAll.length },
     { label: "还开着", n: open.length },
   ];
 
@@ -200,6 +200,6 @@ export async function publishReport(db: Database, input: { top: { id: string; ne
   const token = up.exitCode === 0 ? up.stdout.toString().match(/"file_token"\s*:\s*"([^"]+)"/)?.[1] : null;
   if (!token || !cfg.file_base) { console.error(`todo-report: upload failed: ${up.stderr.toString().slice(0, 200)}`); return { file, line: null }; }
   const n = (l: string) => d.flow.find((f) => f.label === l)!.n;
-  const line = `**工作报告 ${d.date}**：修好 ${n("修好落地")} 条，等你裁定 ${n("等你裁定")} 条，还开着 ${n("还开着")} 条。${cfg.file_base}${token}`;
+  const line = `**工作报告 ${d.date}**：修好 ${n("修好落地")} 条，等你裁定 ${n("待裁定存量")} 条，还开着 ${n("还开着")} 条。${cfg.file_base}${token}`;
   return { file, line };
 }

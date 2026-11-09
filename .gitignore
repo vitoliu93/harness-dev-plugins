@@ -2,3 +2,4 @@ skills/lark-*
 .skill-lock.json
 __pycache__/
 evals/results/
+skills/ccobs/scripts/obs.db*

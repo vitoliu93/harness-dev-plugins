@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync, mkdirSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type RepoCfg, type Spec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText } from "./autopilot-gate.ts";
+import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText } from "./autopilot-gate.ts";
 import { expandChain, isAccessError, isQuotaError, quotaBlocked } from "./autopilot-route.ts";
 
 function repo() {
@@ -95,4 +95,17 @@ test("access errors switch models; ordinary failures do not", () => {
   expect(isQuotaError("401 Unauthorized")).toBe(false);
   expect(isQuotaError("insufficient_balance")).toBe(true);
   expect(isAccessError("expect(received).toBe(expected)")).toBe(false);
+});
+
+test("spec: acceptance files must be new test files, commands must run them and stay local", () => {
+  const { dir } = repo();
+  writeFileSync(join(dir, "test/new.test.ts"), "x"); writeFileSync(join(dir, ".env"), "x");
+  const known = new Set(["t-1"]);
+  const v = (over: any, cmd = "bun test ./test/new.test.ts") => validateSpec({ ...spec({ items: [{ id: "t-1", lane: "auto", acceptance: cmd }] }), ...over }, known, dir);
+  expect(v({})).toBeNull();
+  expect(v({ acceptance_files: [".env"] }, "bun test .env")).toContain("not allowed");
+  expect(v({ acceptance_files: ["src/a.ts"] }, "bun src/a.ts")).toContain("not a test file");
+  expect(v({ acceptance_files: ["test/a.test.ts"] }, "bun test test/a.test.ts")).toContain("already exists");
+  expect(v({}, "bun test ./test/new.test.ts && git push origin HEAD:dev")).toContain("not allowed");
+  expect(v({}, "true")).toContain("does not run");
 });
