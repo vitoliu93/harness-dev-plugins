@@ -18,7 +18,7 @@
       "install": "npm ci",
       "listTests": "git ls-files 'test/*.test.mjs' 'test/*.test.ts'", "runTest": "node --experimental-strip-types --test {file}" },
     "kox-front": { "path": "~/codebase/icc/kox-base/kox-front", "branch": "dev", "issue": true, "cloneDeps": true, "deploy": "frontend",
-      "install": "npm ci",
+      "install": "pnpm install --frozen-lockfile",
       "listTests": "git ls-files 'src/*.test.ts' 'src/*.test.tsx' 'test/*.test.ts' 'test/*.test.tsx' | grep -v test/api-e2e", "runTest": "npx vitest run {file}" },
     "opencut": { "path": "~/codebase/icc/kox-base/opencut", "branch": "dev", "issue": true, "cloneDeps": true, "deploy": "opencut",
       "install": "bun install --frozen-lockfile",

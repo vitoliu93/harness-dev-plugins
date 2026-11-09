@@ -119,6 +119,7 @@ async function prepareBase(cfg: RepoCfg): Promise<{ base: string; sha: string; b
   const sha = git(cfg.path, "rev-parse", `origin/${cfg.branch}`).out;
   if (!existsSync(base)) {
     mkdirSync(dirname(base), { recursive: true });
+    git(cfg.path, "worktree", "prune"); // a deleted cache dir stays registered otherwise
     const r = git(cfg.path, "worktree", "add", "-q", "--detach", base, sha);
     if (r.code) throw new Error(`base worktree: ${r.out}`);
   } else {
