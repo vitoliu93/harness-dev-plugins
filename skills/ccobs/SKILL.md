@@ -61,6 +61,26 @@ dismisses steps only the user can do, then pushes the top 3, projects over
 (`${CCOBS_DIR}/notify.json`). Only work an agent can finish alone is recorded.
 `reopen <id>` undoes a wrong close.
 
+An item needs a known repo and a live anchor (IK id, commit, or a repo file);
+`fileTodo` rejects the rest into `todo_rejects`.
+
+## Autopilot
+
+`scripts/autopilot.ts` runs nightly at 01:00 (launchd `com.vito.ccobs.autopilot`),
+a script state machine with no host agent. It turns open items into spec bundles,
+lands them on each repo's integration branch, and deploys to test. Never production
+or a Desktop release.
+
+- Config: `${CCOBS_DIR}/autopilot/config.json` (repos, model chains, limits). Run
+  `bun autopilot.ts --check-repos` after changing a repo's commands.
+- Trial run: `--force --no-land --repo <name> --ids <id>`.
+- Results: `${CCOBS_DIR}/autopilot/<date>/run.json` and receipts; the HTML report
+  goes out with `todo-review.ts`.
+- User decisions: `todo.ts decisions`, `todo.ts decide <id> <n|dismiss>`.
+- Roles run in `~/codebase/.autopilot/<date>/`. Claude roles run headless, because
+  each new worktree stops an interactive claude at the trust dialog; pi roles run
+  in Herdr. launchd PATH comes from `install.sh`.
+
 ## Read on demand
 
 - [data-model.md](references/data-model.md) — source/model, eight adapters
