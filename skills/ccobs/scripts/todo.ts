@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS todo_rejects (at TEXT NOT NULL, reason TEXT NOT NULL,
 export function migrateTodos(db: Database): void {
   db.exec(TODO_DDL);
   const have = new Set((db.query(`PRAGMA table_info(todos)`).all() as { name: string }[]).map((c) => c.name));
-  for (const col of ["repo", "decision", "run_id"]) if (!have.has(col)) db.exec(`ALTER TABLE todos ADD COLUMN ${col} TEXT`);
+  for (const col of ["repo", "decision", "run_id"]) if (!have.has(col)) try { db.exec(`ALTER TABLE todos ADD COLUMN ${col} TEXT`); } catch {} // another process added it first
 }
 
 export type Todo = { title: string; why?: string; evidence?: string; project?: string | null; repo?: string | null; source: "inline" | "distill"; session?: string | null };
@@ -120,7 +120,7 @@ export function resolveRepo(project: string | null | undefined, name?: string | 
   return project && isGitDir(join(project, ".git")) ? project : null;
 }
 
-const TEMP_PATH = /(?:\/private)?\/(?:tmp|var\/folders)\/[^\s；;,，、）)|]*/g;
+const TEMP_PATH = /(?<![\w.-])(?:\/private)?\/(?:tmp|var\/folders)\/[^\s；;,，、）)|]*/g;
 const lsCache = new Map<string, string[]>();
 function repoFiles(repo: string): string[] {
   let files = lsCache.get(repo);
@@ -140,9 +140,9 @@ function hasAnchor(repo: string, text: string): boolean {
   const files = repoFiles(repo);
   for (const raw of text.match(/[\w@+-]*[./][\w@.\/+-]*/g) ?? []) {
     let tok = raw.replace(/^\.\//, "").replace(/[./]+$/, "");
-    if (tok.startsWith(repo + "/")) tok = tok.slice(repo.length + 1);
+    if (tok.startsWith("/")) { if (files.some((f) => tok.endsWith("/" + f))) return true; continue; } // an absolute path, often from a worktree
     if (tok.startsWith(name + "/")) tok = tok.slice(name.length + 1);
-    if (tok.length < 3 || tok.startsWith("/")) continue;
+    if (tok.length < 3) continue;
     if (files.some((f) => f === tok || f.endsWith("/" + tok) || f.startsWith(tok + "/"))) return true;
   }
   return false;
@@ -237,11 +237,13 @@ export function mergeTodos(db: Database, keep: string, drop: string[], title?: s
 }
 
 export function closeTodo(db: Database, id: string, status: "done" | "dismissed" | "superseded", by: string): boolean {
-  const r = db.query(`SELECT status FROM todos WHERE id = ? AND status IN ('open', 'decision')`).get(id) as { status: string } | null;
-  if (!r) return false;
-  db.query(`UPDATE todos SET status = ?, closed_at = ?, closed_by = ? WHERE id = ?`).run(status, new Date().toISOString(), by, id);
-  logEvent(db, id, r.status, status, by);
-  return true;
+  return db.transaction(() => {
+    const r = db.query(`SELECT status FROM todos WHERE id = ? AND status IN ('open', 'decision')`).get(id) as { status: string } | null;
+    if (!r) return false;
+    db.query(`UPDATE todos SET status = ?, closed_at = ?, closed_by = ? WHERE id = ?`).run(status, new Date().toISOString(), by, id);
+    logEvent(db, id, r.status, status, by);
+    return true;
+  }).immediate();
 }
 
 /** Main checkout of the repo, so a worktree and its repo share one ledger key. */
