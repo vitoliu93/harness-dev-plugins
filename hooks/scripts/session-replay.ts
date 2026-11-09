@@ -16,7 +16,7 @@ import { homedir } from "node:os";
 import * as path from "node:path";
 
 import { MAX_PROJECT_RULES, topRules } from "../../skills/ccobs/scripts/rules-digest.ts";
-import { TODO_CAP, countOpen, flat, gitRoot, openDb, openTodos } from "../../skills/ccobs/scripts/todo.ts";
+import { TODO_CAP, countOpen, flat, gitRoot, listDecisions, openDb, openTodos } from "../../skills/ccobs/scripts/todo.ts";
 
 const MAX_ENTRIES = 5;
 const MAX_GLOBAL_RULES = 6;
@@ -29,13 +29,15 @@ const MAX_TODOS = 5;
 const TODO_CONVENTION =
   "Problems you find while working: fix it yourself if the fix keeps existing behavior (bug fixes count) and say so " +
   `when you wrap up; otherwise, if a later session could pick it up alone and verify the fix (no logins, approvals, manual checks or user decisions; ` +
-  `not this task's own review notes, not a violation that already happened, not blocked by missing access or data, not tied to a one-off release), record it: \`bun "${TODO_CLI}" add --title "<一句话>" --why "<为什么>" --evidence "<文件:行/日志>"\`. ` +
-  `No evidence, no record; irreversible steps, ask first. Resolved an open item: \`bun "${TODO_CLI}" close <id> --by "<commit>"\`.`;
+  `not this task's own review notes, not a violation that already happened, not blocked by missing access or data, not tied to a one-off release), record it: \`bun "${TODO_CLI}" add --title "<一句话>" --why "<为什么>" --repo <仓目录名> --evidence "<仓内文件:行/提交/Gitee 单号>"\`. ` +
+  `No repo or lasting evidence (temp paths do not count), no record; irreversible steps, ask first. Resolved an open item: \`bun "${TODO_CLI}" close <id> --by "<commit>"\`.`;
 
 function printTodos(cwd: string): void {
   try {
     const db = openDb();
     const project = gitRoot(cwd);
+    const waiting = listDecisions(db).length;
+    if (waiting) print(`<pending-decisions>${waiting} todo items wait for the user's call. Tell the user once; \`bun "${TODO_CLI}" decisions\` lists them, \`decide <id> <n|dismiss>\` records the answer.</pending-decisions>`);
     const rows = openTodos(db, project, MAX_TODOS);
     if (!rows.length) return;
     print("<open-todos>");

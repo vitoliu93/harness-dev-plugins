@@ -17,7 +17,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
-import { TODO_DDL, addTodo, closeTodo, flat, isTempProject, openTodos, projectFor } from "./todo.ts";
+import { AUTOPILOT_DIR, closeTodo, fileTodo, flat, isTempProject, knownRepos, migrateTodos, openTodos, projectFor } from "./todo.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -118,14 +118,14 @@ function applyTodos(s: { session_id: string; cwd: string | null }, j: any): void
     const evidence = flat(r?.evidence ? String(r.evidence) : undefined, 120);
     if (evidence && open.has(String(r.id))) closeTodo(db, String(r.id), "done", `auto:${s.session_id}:${evidence}`);
   }
-  if (isTempProject(project)) return;
+  if (isTempProject(project) || s.cwd?.includes(AUTOPILOT_DIR)) return;
   for (const t of (Array.isArray(j.todo_candidates) ? j.todo_candidates : []).slice(0, 5)) {
-    if (t?.title) addTodo(db, { title: String(t.title), why: t.why ? String(t.why) : undefined, evidence: t.evidence ? String(t.evidence) : undefined, project, source: "distill", session: s.session_id });
+    if (t?.title) fileTodo(db, { title: String(t.title), why: t.why ? String(t.why) : undefined, evidence: t.evidence ? String(t.evidence) : undefined, project, repoName: t.repo ? String(t.repo) : null, source: "distill", session: s.session_id });
   }
 }
 // 存量库迁移;已有则跳过
 db.exec("PRAGMA busy_timeout = 5000");
-db.exec(TODO_DDL);
+migrateTodos(db);
 for (const col of ["sop_candidate TEXT", "conclusion TEXT", "files TEXT", "understanding TEXT"]) {
   try { db.exec(`ALTER TABLE observations ADD COLUMN ${col}`); } catch {}
 }
@@ -166,7 +166,7 @@ if (flag("--dry-run")) {
   }
   const digest = buildDigest(s.file_path);
   console.log(`# session ${s.session_id} (${s.ended_at})\n`);
-  console.log(PROMPT_TPL.replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", digest));
+  console.log(PROMPT_TPL.replace("{{REPOS}}", [...knownRepos().keys()].join("、")).replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", digest));
   process.exit(0);
 }
 
@@ -204,7 +204,7 @@ for (const s of pending) {
   if (big) bigged++;
   try {
     const answer = await piCall(
-      PROMPT_TPL.replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : digestWithSource(s.file_path)),
+      PROMPT_TPL.replace("{{REPOS}}", [...knownRepos().keys()].join("、")).replace("{{OPEN_TODOS}}", todoList(s.cwd)).replace("{{TRANSCRIPT_DIGEST}}", big ? readItYourself(s.file_path) : digestWithSource(s.file_path)),
       // 两条分支都开工具:大文件是没别的办法,小文件是让它能补摘要删掉的那部分。
       // 大文件给更长的钟,它得整个文件自己翻一遍,来回好几趟。
       { model, system: JSON_ONLY, tools: READ_ONLY_TOOLS, timeoutMs: big ? 900_000 : 300_000 },

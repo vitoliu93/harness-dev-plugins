@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { addTodo, closeTodo, countOpen, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo, isTempProject, touchedSince } from "./todo.ts";
+import { addTodo, askDecision, checkEvidence, closeTodo, countOpen, decide, expireDecisions, fileTodo, knownRepos, listDecisions, resolveRepo, mergeTodos, openDb, openTodos, projectFor, rememberRoot, reopenTodo, isTempProject, touchedSince } from "./todo.ts";
 import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -119,4 +119,84 @@ test("touchedSince lists commits after the finding that touch a named file, olde
   ], [repo]);
   expect(hits.get("a")!.map(h => h.split(" ").slice(2).join(" "))).toEqual(["fix soft delete", "later touch"]);
   expect(hits.has("b")).toBe(false);
+});
+
+function gitRepo(parent = mkdtempSync(join(tmpdir(), "todo-"))): { dir: string; head: string; parent: string } {
+  const dir = join(parent, "demo");
+  const git = (...a: string[]) => Bun.spawnSync(["git", "-C", dir, ...a]);
+  Bun.spawnSync(["mkdir", "-p", join(dir, "src", "deep")]);
+  Bun.spawnSync(["sh", "-c", `printf x > ${join(dir, "src", "deep", "a.ts")}; printf x > ${join(dir, "package.json")}`]);
+  git("init", "-q"); git("add", "."); git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init");
+  return { dir, parent, head: git("rev-parse", "HEAD").stdout.toString().trim() };
+}
+
+test("repo: named one wins, a non-repo workspace needs the name, worktrees are not repos", () => {
+  const { dir, parent } = gitRepo();
+  process.env.TODO_REPO_ROOTS = parent;
+  try {
+    Bun.spawnSync(["git", "-C", dir, "worktree", "add", "-q", join(parent, "demo-wt")]);
+    expect([...knownRepos().keys()]).toEqual(["demo"]);
+    expect(resolveRepo(dir)).toBe(dir);
+    expect(resolveRepo(parent)).toBeNull();
+    expect(resolveRepo(parent, "demo")).toBe(dir);
+    expect(resolveRepo(dir, "nope")).toBeNull();
+  } finally { delete process.env.TODO_REPO_ROOTS; }
+});
+
+test("evidence: temp paths stripped, anchors checked against the repo", () => {
+  const { dir, head } = gitRepo();
+  const ok = (e: string) => "evidence" in checkEvidence(dir, e);
+  expect(ok("src/deep/a.ts:12")).toBe(true);
+  expect(ok("a.ts 第 3 行")).toBe(true);
+  expect(ok("package.json")).toBe(true);
+  expect(ok("src/deep/ 目录")).toBe(true);
+  expect(ok("demo/src/deep/a.ts")).toBe(true);
+  expect(ok(`提交 ${head.slice(0, 8)}`)).toBe(true);
+  expect(ok("IKTAPG")).toBe(true);
+  expect(ok("deadbeef0")).toBe(false);
+  expect(ok("missing/file.ts")).toBe(false);
+  expect(ok("TypeError: x is not a function")).toBe(false);
+  expect(checkEvidence(dir, "/tmp/kox/r5.md §2")).toEqual({ reject: "temp-evidence" });
+  expect(checkEvidence(dir, "只有一句话")).toEqual({ reject: "no-anchor" });
+  expect(checkEvidence(dir, `origin/dev ${head.slice(0, 8)}；复现 /tmp/ikt89r/x.log`)).toEqual({ evidence: `origin/dev ${head.slice(0, 8)}；复现` });
+});
+
+test("fileTodo rejects and counts; a good one carries its repo and an event", () => {
+  const { dir } = gitRepo();
+  const db = openDb(":memory:");
+  expect(fileTodo(db, { title: "a", evidence: "IKTAPG", project: "/not/a/repo", source: "distill" })).toEqual({ rejected: "no-repo" });
+  expect(fileTodo(db, { title: "b", evidence: "/tmp/x", project: dir, source: "distill" })).toEqual({ rejected: "temp-evidence" });
+  const f = fileTodo(db, { title: "c", evidence: "a.ts", project: dir, source: "inline" }) as { id: string };
+  expect((db.query("SELECT repo FROM todos WHERE id = ?").get(f.id) as any).repo).toBe(dir);
+  expect(fileTodo(db, { title: "c", evidence: "a.ts", project: dir, source: "inline" })).toEqual({ dup: true });
+  expect((db.query("SELECT COUNT(*) n FROM todo_rejects").get() as any).n).toBe(2);
+  expect(db.query("SELECT from_status, to_status FROM todo_events WHERE todo_id = ?").all(f.id)).toEqual([{ from_status: null, to_status: "open" }]);
+});
+
+test("reopen keeps the old close in the history", () => {
+  const db = openDb(":memory:");
+  const id = addTodo(db, { title: "x", project: "/p", source: "inline" })!;
+  closeTodo(db, id, "done", "auto:s1:fixed");
+  reopenTodo(db, id);
+  expect(db.query("SELECT to_status, note FROM todo_events WHERE todo_id = ? ORDER BY rowid").all(id)).toEqual([
+    { to_status: "open", note: null }, { to_status: "done", note: null }, { to_status: "open", note: "auto:s1:fixed" },
+  ]);
+});
+
+test("decision queue: ask, answer back to open, dismiss, expire", () => {
+  const db = openDb(":memory:");
+  const d = { kind: "decide" as const, question: "q", background: "b", options: ["甲", "乙"], if_ignored: "i" };
+  const a = addTodo(db, { title: "a", project: "/p", source: "inline" })!;
+  const b = addTodo(db, { title: "b", project: "/p", source: "inline" })!;
+  const c = addTodo(db, { title: "c", project: "/p", source: "inline" })!;
+  for (const id of [a, b, c]) expect(askDecision(db, id, d)).toBe(true);
+  expect(openTodos(db, "/p")).toHaveLength(0);
+  expect(decide(db, a, "3")).toContain("no option");
+  decide(db, a, "2");
+  expect(openTodos(db, "/p").map((t) => t.id)).toEqual([a]);
+  expect(JSON.parse((db.query("SELECT decision FROM todos WHERE id = ?").get(a) as any).decision).answer).toBe("乙");
+  decide(db, b, "dismiss");
+  expect(listDecisions(db).map((r) => r.id)).toEqual([c]);
+  expect(expireDecisions(db)).toEqual([]);
+  expect(expireDecisions(db, Date.now() + 15 * 86_400_000)).toEqual([c]);
 });
