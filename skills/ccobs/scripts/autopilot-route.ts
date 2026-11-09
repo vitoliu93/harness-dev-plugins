@@ -1,9 +1,9 @@
 // Who runs a role tonight: walks config's model chain, probing first and switching only when the
 // model itself cannot be reached. A failed verdict, a timeout or a stuck agent is a retry, not a switch.
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { extractJson, piCall } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
 
@@ -83,8 +83,24 @@ export async function runAgent(o: RunOpts): Promise<RunOutcome> {
     if (bad) { down(r, bad); continue; }
     if (quota.routes?.[r.id]) { delete quota.routes[r.id]; writeQuota(quota); }
 
+    if (r.kind === "claude") {
+      // Headless: every worktree is a new folder, and an interactive claude stops at its trust dialog.
+      const p = Bun.spawn(["claude", "-p", "--model", r.model, "--permission-mode", "auto", "--add-dir", dirname(o.resultFile), ...(r.effort ? ["--effort", r.effort] : []), readFileSync(o.promptFile, "utf8")], { cwd: o.cwd, stdout: "pipe", stderr: "pipe", stdin: "ignore", timeout: o.timeoutMin * 60_000, killSignal: "SIGKILL" });
+      const [out, err] = await Promise.all([new Response(p.stdout).text(), new Response(p.stderr).text()]);
+      const code = await p.exited;
+      const last = existsSync(o.resultFile) ? readFileSync(o.resultFile, "utf8").trim().split("\n").pop()?.trim() : "";
+      if (code === 0 && last === o.marker) return { ok: true, route: r.id, switched };
+      const tail = (err + out).slice(-300);
+      if (isAccessError(tail)) { down(r, tail); o.beforeRetry?.(); continue; }
+      return { ok: false, route: r.id, why: `claude exit ${code}: ${tail}`, switched };
+    }
     const launched = Bun.spawnSync(["bash", join(SCRIPTS, "launch-agent.sh"), o.name, r.kind, o.label, o.promptFile, "--", ...nativeArgs(r)], { cwd: o.cwd, stdout: "pipe", stderr: "pipe" });
-    if (launched.exitCode !== 0) return { ok: false, why: `launch failed: ${launched.stderr.toString().slice(-200)}`, switched };
+    if (launched.exitCode !== 0) {
+      const err = launched.stderr.toString();
+      const orphan = err.match(/tab (\S+) and agent/)?.[1];
+      if (orphan) herdr("tab", "close", orphan);
+      return { ok: false, why: `launch failed: ${err.slice(-200)}`, switched };
+    }
     const tab = JSON.parse(launched.stdout.toString().trim().split("\n").pop()!).tab_id as string;
     const wait = Bun.spawn(["bash", join(SCRIPTS, "wait-result.sh"), o.name, o.resultFile, o.marker, String(o.timeoutMin * 60)], { stdout: "pipe", stderr: "pipe" });
     const code = await wait.exited;
@@ -103,8 +119,10 @@ export async function cheapJson(prompt: string): Promise<any | null> {
     const a = await piCall(prompt, { scenario: "todo", system, timeoutMs: 300_000 });
     if (a) return extractJson(a);
   } catch {}
-  const p = Bun.spawn(["claude", "-p", "--model", "sonnet", `${system}\n\n${prompt}`], { stdout: "pipe", stderr: "ignore", stdin: "ignore", timeout: 300_000, killSignal: "SIGKILL", cwd: homedir() });
-  const text = await new Response(p.stdout).text();
-  try { return (await p.exited) === 0 ? extractJson(text) : null; } catch { return null; }
+  try {
+    const p = Bun.spawn(["claude", "-p", "--model", "sonnet", `${system}\n\n${prompt}`], { stdout: "pipe", stderr: "ignore", stdin: "ignore", timeout: 300_000, killSignal: "SIGKILL", cwd: homedir() });
+    const text = await new Response(p.stdout).text();
+    return (await p.exited) === 0 ? extractJson(text) : null;
+  } catch { return null; }
 }
 

@@ -37,6 +37,9 @@ else
   fi
 fi
 
+# launchd's PATH lacks herdr, claude and lark-cli; ~/.zshenv does not add them on this machine.
+JOB_PATH="$HOME/.bun/bin:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -47,7 +50,7 @@ cat > "$PLIST" <<EOF
   <array>
     <string>/bin/zsh</string>
     <string>-c</string>
-    <string>"${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"; "${BUN}" "${SCRIPT_DIR}/todo-review.ts"</string>
+    <string>export PATH="${JOB_PATH}"; "${BUN}" "${SCRIPT_DIR}/ingest.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/distill.ts" &amp;&amp; "${BUN}" "${SCRIPT_DIR}/rollup.ts"; "${BUN}" "${SCRIPT_DIR}/todo-review.ts"</string>
   </array>
   <key>StartInterval</key><integer>3600</integer>
   <key>RunAtLoad</key><true/>
@@ -77,7 +80,7 @@ cat > "$AP_PLIST" <<EOF
   <array>
     <string>/bin/zsh</string>
     <string>-c</string>
-    <string>"${BUN}" "${SCRIPT_DIR}/autopilot.ts"</string>
+    <string>export PATH="${JOB_PATH}"; "${BUN}" "${SCRIPT_DIR}/autopilot.ts"</string>
   </array>
   <key>StartCalendarInterval</key><dict><key>Hour</key><integer>1</integer><key>Minute</key><integer>0</integer></dict>
   <key>StandardOutPath</key><string>${OBS_DIR}/autopilot/autopilot.log</string>

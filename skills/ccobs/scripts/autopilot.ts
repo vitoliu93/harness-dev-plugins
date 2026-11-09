@@ -245,6 +245,9 @@ async function runBundle(b: Bundle): Promise<void> {
   const dir = join(runDir, slug);
   mkdirSync(dir, { recursive: true });
   const tree = (n: string) => join(wtDay, `${slug}-${n}`);
+  // Agents write here: claude refuses writes under ~/.claude, where the receipts live.
+  const outbox = tree("out");
+  mkdirSync(outbox, { recursive: true });
   const r: Receipt = { bundle: slug, repo: cfg.name, status: "started", items: {}, roles: {}, switched: [], rounds: 0, started: new Date().toISOString() };
   run.bundles.push(r);
   const stop = (s: string) => { r.status = s; r.ended = new Date().toISOString(); writeFileSync(join(dir, "receipt.json"), JSON.stringify(r, null, 2)); saveRun(); };
@@ -269,11 +272,13 @@ async function runBundle(b: Bundle): Promise<void> {
     const bundleFile = join(dir, "bundle.json");
     writeFileSync(bundleFile, JSON.stringify(b.items, null, 2));
     const specFile = join(dir, "spec.json");
-    const scoutResult = join(dir, "result-acceptance.md");
-    const sc = await agent("acceptance", 1, scout, fill("acceptance", { BUNDLE: bundleFile, SPEC: specFile, SLUG: slug, REPO: cfg.name, RESULT: scoutResult, MARKER }), scoutResult);
+    const specOut = join(outbox, "spec.json");
+    const scoutResult = join(outbox, "result-acceptance.md");
+    rmSync(specOut, { force: true });
+    const sc = await agent("acceptance", 1, scout, fill("acceptance", { BUNDLE: bundleFile, SPEC: specOut, SLUG: slug, REPO: cfg.name, RESULT: scoutResult, MARKER }), scoutResult);
     if (!sc.ok) { escalate(b, r, allIds, "验收员没有产出", sc.why ?? ""); return stop("acceptance-failed"); }
     let spec: Spec;
-    try { spec = JSON.parse(readFileSync(specFile, "utf8")); } catch (e) { escalate(b, r, allIds, "验收员的 spec 不是合法 JSON", String(e)); return stop("bad-spec"); }
+    try { spec = JSON.parse(readFileSync(specOut, "utf8")); } catch (e) { escalate(b, r, allIds, "验收员的 spec 不是合法 JSON", String(e)); return stop("bad-spec"); }
     const bad = validateSpec(spec, b, scout);
     if (bad) { escalate(b, r, allIds, "验收员的 spec 不合格", bad); return stop("bad-spec"); }
     spec.bundle = slug; spec.repo = cfg.name;
@@ -288,7 +293,7 @@ async function runBundle(b: Bundle): Promise<void> {
       if (i.lane === "env") closeLane(i.id, "dismissed", `autopilot:unverifiable:${String(i.reason ?? "").slice(0, 200)}`, "unverifiable");
       if (i.lane === "decide") { askDecision(db, i.id, { ...i.decision, kind: "decide" }); r.items[i.id] = "decision"; run.asked.push(i.id); }
     }
-    const saveSpec = () => { chmodSync(specFile, 0o644); writeFileSync(specFile, JSON.stringify(spec, null, 2)); chmodSync(specFile, 0o444); };
+    const saveSpec = () => { rmSync(specFile, { force: true }); writeFileSync(specFile, JSON.stringify(spec, null, 2)); chmodSync(specFile, 0o444); };
     saveSpec();
     if (!spec.items.some((i) => i.lane === "auto")) return stop("no-auto");
 
@@ -321,8 +326,8 @@ async function runBundle(b: Bundle): Promise<void> {
 
     const dev = tree("dev");
     const branch = `autopilot/${date}-${slug}`;
-    git(cfg.path, "branch", "-D", branch);
     removeTree(cfg.path, dev);
+    git(cfg.path, "branch", "-D", branch);
     await freshTree(cfg, base, sha, dev);
     git(dev, "checkout", "-q", "-b", branch);
     copyAcceptance(spec, frozen, dev);
@@ -330,9 +335,9 @@ async function runBundle(b: Bundle): Promise<void> {
     git(dev, "commit", "-qm", `test(${slug}): 验收${issue ? ` (${issue})` : ""}`);
     const accBase = git(dev, "rev-parse", "HEAD").out;
     const gateDir = tree("gate");
-    const devResult = join(dir, "result-developer.md");
-    const verdictFile = join(dir, "verdict.json");
-    const reviewResult = join(dir, "result-reviewer.md");
+    const devResult = join(outbox, "result-developer.md");
+    const verdictFile = join(outbox, "verdict.json");
+    const reviewResult = join(outbox, "result-reviewer.md");
     const cleanDev = () => { git(dev, "reset", "--hard", "-q"); git(dev, "clean", "-fdq"); };
 
     let reasons: string[] = [];
@@ -355,6 +360,7 @@ async function runBundle(b: Bundle): Promise<void> {
       if (!rv.ok) { reasons = [`审查员没有完成：${rv.why}`]; continue; }
       let v: any;
       try { v = JSON.parse(readFileSync(verdictFile, "utf8")); } catch { reasons = ["审查结论不是合法 JSON"]; continue; }
+      writeFileSync(join(dir, `verdict-${round + 1}.json`), JSON.stringify(v, null, 2));
       if (v.verdict === "PASS") { passed = true; for (const i of spec.items) if (i.lane === "auto") i.passes = true; r.acceptance = spec.items.filter((i) => i.lane === "auto").map((i) => ({ id: i.id, cmd: i.acceptance })); }
       else reasons = (v.findings ?? []).map((f: any) => `${f.file}: 「${f.quote}」${f.problem}`).concat(v.findings?.length ? [] : ["审查员判 FAIL 但没有给出依据"]);
     }
@@ -372,7 +378,7 @@ async function runBundle(b: Bundle): Promise<void> {
         const c = Bun.spawnSync(["gitee", "issue", "close", issue], { stdout: "pipe", stderr: "pipe" });
         if (c.exitCode) run.notes.push(`${issue} 关单失败：${c.stderr.toString().slice(-160)}`);
       }
-      removeTree(cfg.path, dev); removeTree(cfg.path, gateDir); removeTree(cfg.path, scout);
+      removeTree(cfg.path, dev); removeTree(cfg.path, gateDir); removeTree(cfg.path, scout); rmSync(outbox, { recursive: true, force: true });
       git(cfg.path, "branch", "-D", branch);
     }
     return stop(r.status);
@@ -420,8 +426,8 @@ async function main(): Promise<void> {
   }
   try {
     if (!dry) {
-      const st = Bun.spawnSync(["herdr", "status", "server"], { stdout: "pipe", stderr: "pipe" });
-      if (st.exitCode || !st.stdout.toString().includes("running")) { run.status = "herdr-down"; run.notes.push("Herdr 没有运行，当晚未启动"); return; }
+      const st = Bun.which("herdr") ? Bun.spawnSync(["herdr", "status", "server"], { stdout: "pipe", stderr: "pipe" }) : null;
+      if (!st || st.exitCode || !st.stdout.toString().includes("running")) { run.status = "herdr-down"; run.notes.push("Herdr 没有运行或不在 PATH，当晚未启动"); return; }
       for (const id of expireDecisions(db)) run.notes.push(`${id} 超过 14 天没裁定，已移出`);
       sweepOld();
     }
