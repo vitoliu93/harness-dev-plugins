@@ -31,9 +31,11 @@ const TAIL_BYTES = 4 * 1024 * 1024;
 
 // Each wording won its own probe: the planned one ties the items to the written plan; the
 // plan-less one lists the deliverables first and leans to parallel when unsure (5/10 -> 8/10).
+// Fable 5.2 replay (10 should-split turns, 20 serial): no hint 0/10; planned 9/10, serial split 4/20;
+// plan-less 9/10, 7/20. Naming the token cost moved neither number.
 export const hint = (n: number) => n
   ? `计划有 ${n} 项。写一行 \`拆分：\`，列出互相独立、各自超过十分钟、不改同一批文件的项；≥2 项就用 orchestrate 并行，否则写明串行的原因。一个脚本能循环完成的重复项不算。`
-  : "写一行 `拆分：`。先按交付物（不同的仓库、页面、工单、模块、文档）列出这个任务的各部分，再标出谁依赖谁。有 ≥2 个互不依赖、各自要改动并验证的部分，就用 orchestrate 并行，每个 agent 一个 worktree；否则写明哪一部分依赖哪一部分。没核实过的“可能改同一批文件”不算串行理由；只有纯查询或机械替换能一个脚本跑完，每处要单独改代码、测试的不算重复项。拿不准时并行：并行做错的代价是合并时多看一眼，串行做的代价是多等一倍时间。";
+  : "写一行 `拆分：`。先按交付物（不同的仓库、页面、工单、模块、文档）列出这个任务的各部分，再标出谁依赖谁。有 ≥2 个互不依赖、各自要改动并验证的部分，就用 orchestrate 并行，每个 agent 一个 worktree；否则写明哪一部分依赖哪一部分。没核实过的“可能改同一批文件”不算串行理由；只有纯查询或机械替换能一个脚本跑完，每处要单独改代码、测试的不算重复项。拿不准时并行：并行多花 token、合并时多看一眼，串行多等一倍时间。";
 
 function tailLines(path: string): any[] {
   if (!path || !existsSync(path)) return [];
