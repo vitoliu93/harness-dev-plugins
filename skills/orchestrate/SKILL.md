@@ -66,6 +66,9 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
   unreachable state comes back as NEED-DECISION, not as a long wait or a fix.
 - The host runs each completion check and the final integrated check.
 - Quota failure: keep the tab and partial output, then choose another available route.
+- An action that a permission prompt, hook or classifier blocked goes back to
+  the user with the block's own text. Do not retry it through a new agent, and
+  write "the user approved" on a card only when the user said so.
 
 Full lifecycle: [lifecycle.md](references/lifecycle.md).
 

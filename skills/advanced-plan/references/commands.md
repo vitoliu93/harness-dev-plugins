@@ -16,7 +16,7 @@
 
 ## `execute`
 
-Follow `todo.md`; update `exploration.md` lazily. Route each item: script / vendor / inline per [planning-discipline.md](planning-discipline.md).
+Follow `todo.md`; update `exploration.md` lazily. Route each item: script / agent / inline per [planning-discipline.md](planning-discipline.md).
 
 ## Routing `<args>`
 

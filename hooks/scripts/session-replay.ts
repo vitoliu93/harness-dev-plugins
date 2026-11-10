@@ -88,7 +88,8 @@ function run(): void {
   if (payload.source === "compact") return; // the rest survives compaction; don't re-inject
   const learned = path.join(cwd, ".claude", "LEARNED.md");
 
-  print(`<learn-convention>${CONVENTION}</learn-convention>`);
+  // A dispatched agent would record its card's requirements as the user's corrections.
+  if (!process.env.DEVKIT_DELEGATED) print(`<learn-convention>${CONVENTION}</learn-convention>`);
   // Herdr sets these for every pane it launches; agents spawned via use-agents
   // must land in this same workspace, so hand the IDs to the model up front.
   const ws = process.env.HERDR_WORKSPACE_ID;

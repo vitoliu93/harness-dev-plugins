@@ -1,5 +1,5 @@
 // Forest ranger: watch Herdr agents for rate-limit walls and act.
-// 5-hour wall  → wait for reset, then send "继续".
+// 5-hour wall  → wait for reset, then send the resume message.
 // weekly wall  → print a handoff event and exit 2 so the caller finds another agent.
 // Usage: bun watch.ts [--agents a,b] [--interval 600] [--grace 120] [--hours 24] [--once]
 // Without --agents it watches every claude/codex agent except the ranger's own pane (HERDR_PANE_ID).
@@ -7,7 +7,8 @@
 const KINDS = new Set(["claude", "codex"]);
 const LIMIT_RE = /hit your (usage |session |weekly )?limit|usage limit reached|limit reached/i;
 const WEEKLY_RE = /week/i;
-const CONTINUE = "继续";
+// A bare "继续" leaves the agent to guess what to resume; say what happened and where to pick up.
+const CONTINUE = "限额已恢复。接着做被限额打断的任务，从停下的那一步开始。";
 
 export type Wall = { kind: "weekly"; text: string } | { kind: "short"; resetAt: Date | null; text: string };
 

@@ -13,7 +13,7 @@ metadata:
 The ranger watches other agents' screens. Run it on a cheap model
 (sonnet); the script does the work, the model only reports. Two walls, two moves:
 
-- **5-hour wall** → wait until the reset time plus a grace period, then send `继续` and press Enter.
+- **5-hour wall** → wait until the reset time plus a grace period, then send a resume message and press Enter.
 - **Weekly wall**, or any reset more than a day away → stop waiting; another agent takes the task over.
 
 ## Run the watch
@@ -33,7 +33,7 @@ ranger's own pane, so agents started later are covered too. `--agents a,b`
 narrows to a list. `--once` scans once, reports, never nudges, and exits. `--hours`
 (default 24) ends the shift with `shift_over`.
 
-Polling costs no tokens: the script reads screens and types `继续` itself,
+Polling costs no tokens: the script reads screens and types the resume message itself,
 every 10 minutes (`--interval` seconds). A finished agent shows no wall and
 is skipped. Each new wall carries a new reset time and is a new wait, so one
 agent can be woken as often as the night needs.

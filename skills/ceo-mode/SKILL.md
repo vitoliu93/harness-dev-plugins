@@ -46,6 +46,8 @@ that do not close or disagree across reports are defects.
 
 Decide reversible repo changes yourself; ask only for what leaves the repo.
 Run user-authorized outward actions yourself; agents never see that consent.
+An action that a permission prompt, hook or classifier blocked goes back to
+the user with the block's own text. Do not retry it through another agent.
 Reversibility and problem fixing rules: [decisions.md](references/decisions.md).
 
 ## Report

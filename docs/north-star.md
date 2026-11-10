@@ -47,7 +47,7 @@
 
 ```
 编排层   orchestrate(拆角色、排依赖、验收、关闭 Herdr tabs) · 项目插件的生命周期 SOP
-战术层   advanced-plan · use-agents(启动独立 agent、读取渠道和配额) · grill-me · worktree(约定+安全)
+战术层   advanced-plan · use-agents(启动独立 agent、读取渠道和配额) · grill-me
 执行层   Explore · Claude Code / pi / cursor-agent · 项目自己的执行器
 项目层   kox 插件的 gitee-ent MCP / kox-browser-test / kox-deploy-k8s / gitee-issue-finalize
 沉淀层   debrief(收盘三件套)· memory(带生命周期)· skill-forge(技能铸造,消化自 yao-meta-skill)

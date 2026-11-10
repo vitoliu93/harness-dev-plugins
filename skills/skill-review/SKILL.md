@@ -25,7 +25,7 @@ skill-review · <date>
 style  : <violations by skill | clean>
 semantic: <violations by skill | clean | not run>
 overlap : N pairs, M collisions
-stale   : <skills >90d | none>
+stale   : <skills >120d | none>
 triggers: <per-skill P/R | missing fixtures>
 budget  : <over 700 | all within>
 callsite: <orphans/⚠ | wired>

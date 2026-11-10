@@ -107,24 +107,18 @@ test("plan-anchor", async () => {
   }
 }, TIMEOUT);
 
-test("standby-watchdog", async () => {
-  const base = {
-    session_id: "t-standby",
-    background_tasks: [{ id: "b1" }],
-    last_assistant_message: "Standing by for the re-render, then continuing.",
-  };
-  rmSync(join(tmpdir(), "standby-watchdog", base.session_id), { force: true });
-
-  const out = await run("standby-watchdog.ts", base);
-  expect(JSON.parse(out).hookSpecificOutput.hookEventName).toBe("Stop");
-  expect(await run("standby-watchdog.ts", base)).toBe(""); // fired twice in one session
-
-  const quiet = { ...base, session_id: "t-2", last_assistant_message: "Done, all phases green." };
-  expect(await run("standby-watchdog.ts", quiet)).toBe(""); // fired without standby language
-  const none = { ...base, session_id: "t-3", background_tasks: [] as unknown[] };
-  expect(await run("standby-watchdog.ts", none)).toBe(""); // fired with no background work
-  const active = { ...base, session_id: "t-4", stop_hook_active: true };
-  expect(await run("standby-watchdog.ts", active)).toBe(""); // ignored stop_hook_active
+test("session-replay: a dispatched agent gets no [LEARN] or todo convention", async () => {
+  const d = mkdtempSync(join(tmpdir(), "replay-"));
+  try {
+    const env = { CCOBS_DIR: d, DEVKIT_DELEGATED: "" };
+    const mine = await run("session-replay.ts", { cwd: d, source: "startup" }, env);
+    expect(mine).toContain("<learn-convention>");
+    const theirs = await run("session-replay.ts", { cwd: d, source: "startup" }, { ...env, DEVKIT_DELEGATED: "1" });
+    expect(theirs).not.toContain("<learn-convention>");
+    expect(theirs).not.toContain("<todo-convention>");
+  } finally {
+    rmSync(d, { recursive: true, force: true });
+  }
 }, TIMEOUT);
 
 test("security-relay", async () => {
