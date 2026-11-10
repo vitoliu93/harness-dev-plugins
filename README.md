@@ -38,7 +38,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | Skill | What it does |
 |---|---|
 | advanced-plan | Write and track an acceptance-bearing dev plan as a mini-project. |
-| debrief | Archive plan artifacts, distill one memory, surface skill candidates. |
+| debrief | Archive plan artifacts, distill the session into ccobs, then improve, merge, or retire skills before adding a candidate. |
 | use-agents | Start an independent agent and find its local route or definition. |
 | grill-me | Round-by-round interview across a design tree until every branch is settled. |
 | take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
@@ -52,6 +52,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
 | visual-evidence | DOM-fact evidence pack for UI / canvas behavior (PASS/FAIL). |
+| rate-limit-watcher | Watch Herdr agents for a rate-limit wall; wake them after reset or hand the task over. |
 
 ### Learning
 
@@ -75,15 +76,19 @@ Delegation now goes through the
 
 `hooks/hooks.json` registers:
 - PreToolUse: `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
-- Session/Stop/PostToolUse/PostCompact: `learn-capture.ts`, `session-replay.ts`, `plan-anchor.ts`, `security-warning-relay.ts`, `compact-audit.ts`, and ccobs `obs-enqueue.ts`
+- SessionStart: `session-replay.ts`, `plan-anchor.ts`
+- UserPromptSubmit: `recall-precedent.ts`, `understand.ts`
+- PostToolUse: `security-warning-relay.ts`, `plan-split.ts`
+- Stop: `learn-capture.ts`, ccobs `obs-enqueue.ts`
+- PostCompact: `compact-audit.ts`
 
 Restart after hook edits.
 
 ## Optional Mod: `mods/jev`
 
 Claude Code only, and a separate install from dev-kit. On each typed prompt it
-asks Jev whether to delegate and which past sessions are worth reading, then
-adds the answer as hidden context.
+asks Jev which installed skills fit the task and which past sessions are worth
+reading, then adds the answer as hidden context.
 
 ```
 /plugin install dev-kit-jev@vito-agents
@@ -97,9 +102,9 @@ checkout instead: `claude --plugin-dir <checkout-path>/mods/jev`, which
 `TYPESAFE_API_KEY` (or the `apiKey` option) is the only switch: with the plugin
 installed and a key exported, every prompt goes to TypeSafe; to stop that,
 remove the key or uninstall. Without a key, or on any failure, the
-prompt goes through unchanged. Only the current prompt, the last four messages
-and ccobs summaries are sent, redacted and size-bounded; tool output and paths
-are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
+prompt goes through unchanged. Only the current prompt, recent messages (at
+most 25,000 characters), skill names with descriptions and ccobs summaries are
+sent, redacted and size-bounded; tool output and paths are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
 While it owns a session's recall, `recall-precedent.ts` stays quiet. Codex and
 sessions without the Mod keep that hook, which also picks through Jev when the
 key is set and through pi otherwise. Manual: `mods/jev/README.md`.
@@ -109,9 +114,9 @@ key is set and through pi otherwise. Manual: `mods/jev/README.md`.
 ```
 .claude-plugin/   # plugin.json + marketplace.json
 .codex-plugin/    # Codex plugin.json
-skills/           # 22 active skills
+skills/           # 18 active skills
 hooks/            # shared hook registration + scripts
-mods/jev/         # optional Claude-only Mod (separate --plugin-dir, not in the marketplace)
+mods/jev/         # optional Claude-only Mod (marketplace entry `dev-kit-jev`)
 archive/          # retired skills + subagents (not auto-discovered)
 ```
 

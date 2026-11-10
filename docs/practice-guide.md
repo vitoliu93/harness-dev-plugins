@@ -21,11 +21,11 @@
 | 多角色协作 | "安排 advisor/programmer/audit" / "并行做" | orchestrate:拆角色、排依赖、验收，并在 Herdr 中给每个角色一个 tab |
 | 启动一个 agent | "用 fable" / "开 cursor-agent" / "配置在哪" | use-agents:读取本机渠道，给出 Herdr 或 headless 启动方式 |
 | 要第二意见 | "第二意见 / 校审" | orchestrate 安排 advisor；use-agents 只负责启动选定渠道 |
-| 干完了 | "收盘" | debrief 三件套:归档计划目录 → 至多一条带状态的 memory → 技能候选记账 |
+| 干完了 | "收盘" | debrief 三件套:归档计划目录 → 把本会话蒸馏进 ccobs → 先改/合并/退役旧技能,再记新候选 |
 | 你纠正我 | 正常说就行 | 我打一行 `[LEARN] 类型: 规则` → Stop 钩子存进 `.claude/LEARNED.md` → 下次会话自动回放最近 5 条 |
 | 月度体检 | "skill 体检" | skill-review:路由重叠 / 陈旧度 / 触发评测 / token 预算,只报告不动手 |
 | 铸造新技能 | 候选满 3 次时我会主动提议 | skill-forge(消化自 yao-meta-skill:资格门 + trigger-first 评测,工具链已 vendored) |
-| 动手前对齐决策 | "grill me / 盘问我" | grill-me(决策树按轮走前沿:每轮一批问题带推荐答案,前沿空了才动手) |
+| 动手前对齐决策 | "grill me / 盘问我" | grill-me(决策树按轮走前沿:每轮一批问题,不带推荐答案,前沿空了才动手) |
 
 **先重启会话**:v1.11 的三个钩子和新技能要重启才加载。
 

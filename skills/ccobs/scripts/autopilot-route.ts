@@ -12,7 +12,7 @@ const QUOTA = join(AGENTS_DIR, "quota.json");
 const SCRIPTS = resolve(import.meta.dir, "../../use-agents/scripts");
 const REPROBE_MS = 20 * 3_600_000; // a quota wall with no stated reset gets one probe a night
 
-export type Route = { id: string; kind: string; model: string; effort?: string };
+export type Route = { id: string; alias: string; kind: string; model: string; effort?: string };
 export type RoleChain = { alias: string; effort?: string }[];
 
 const ACCESS = /\b(401|402|403|429)\b|unauthori[sz]ed|forbidden|insufficient|quota|rate.?limit|credits? (are )?depleted|balance|overloaded|ECONN|fetch failed|network error|usage limit|hit your .*limit/i;
@@ -39,7 +39,7 @@ export function expandChain(chain: RoleChain, agents: any, quota: any, skip: Set
     const ordered = [...a.routes.filter((r: any) => r.use === "normal"), ...a.routes.filter((r: any) => r.use !== "normal")];
     for (const r of ordered) {
       if (skip.has(r.id) || quotaBlocked(quota.routes?.[r.id], now)) continue;
-      out.push({ id: r.id, kind: r.kind, model: r.model, effort: effort ?? a.effort ?? undefined });
+      out.push({ id: r.id, alias, kind: r.kind, model: r.model, effort: effort ?? a.effort ?? undefined });
     }
   }
   return out;
@@ -62,7 +62,7 @@ function nativeArgs(r: Route): string[] {
 }
 
 export type RunOpts = { role: string; name: string; label: string; cwd: string; promptFile: string; resultFile: string; marker: string; timeoutMin: number; chain: RoleChain; skip: Set<string>; beforeRetry?: () => void };
-export type RunOutcome = { ok: boolean; route?: string; why?: string; exhausted?: boolean; switched: string[] };
+export type RunOutcome = { ok: boolean; route?: string; alias?: string; why?: string; exhausted?: boolean; switched: string[] };
 
 const herdr = (...a: string[]) => Bun.spawnSync(["herdr", ...a], { stdout: "pipe", stderr: "pipe" });
 
@@ -89,10 +89,10 @@ export async function runAgent(o: RunOpts): Promise<RunOutcome> {
       const [out, err] = await Promise.all([new Response(p.stdout).text(), new Response(p.stderr).text()]);
       const code = await p.exited;
       const last = existsSync(o.resultFile) ? readFileSync(o.resultFile, "utf8").trim().split("\n").pop()?.trim() : "";
-      if (code === 0 && last === o.marker) return { ok: true, route: r.id, switched };
+      if (code === 0 && last === o.marker) return { ok: true, route: r.id, alias: r.alias, switched };
       const tail = (err + out).slice(-300);
       if (isAccessError(tail)) { down(r, tail); o.beforeRetry?.(); continue; }
-      return { ok: false, route: r.id, why: `claude exit ${code}: ${tail}`, switched };
+      return { ok: false, route: r.id, alias: r.alias, why: `claude exit ${code}: ${tail}`, switched };
     }
     const launched = Bun.spawnSync(["bash", join(SCRIPTS, "launch-agent.sh"), o.name, r.kind, o.label, o.promptFile, "--", ...nativeArgs(r)], { cwd: o.cwd, stdout: "pipe", stderr: "pipe" });
     if (launched.exitCode !== 0) {
@@ -106,9 +106,9 @@ export async function runAgent(o: RunOpts): Promise<RunOutcome> {
     const code = await wait.exited;
     const pane = herdr("agent", "read", o.name, "--lines", "25").stdout.toString();
     herdr("tab", "close", tab);
-    if (code === 0) return { ok: true, route: r.id, switched };
+    if (code === 0) return { ok: true, route: r.id, alias: r.alias, switched };
     if (isAccessError(pane)) { down(r, pane.slice(-300)); o.beforeRetry?.(); continue; }
-    return { ok: false, route: r.id, why: `wait-result exit ${code}: ${pane.slice(-200)}`, switched };
+    return { ok: false, route: r.id, alias: r.alias, why: `wait-result exit ${code}: ${pane.slice(-200)}`, switched };
   }
 }
 

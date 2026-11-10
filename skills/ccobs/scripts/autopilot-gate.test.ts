@@ -74,9 +74,11 @@ test("model chain: alias routes first, limited and skipped ones out, then the ne
   } };
   const now = Date.parse("2026-11-09T12:00:00Z");
   const quota = { routes: { g2: { limited_at: "2026-11-09T11:00:00Z", reset_at: null } } };
-  const ids = (skip: string[]) => expandChain([{ alias: "gemini" }, { alias: "deepseek" }, { alias: "sonnet" }], agents, quota, new Set(skip), now).map((r) => r.id);
+  const chain = (skip: string[]) => expandChain([{ alias: "gemini" }, { alias: "deepseek" }, { alias: "sonnet" }], agents, quota, new Set(skip), now);
+  const ids = (skip: string[]) => chain(skip).map((r) => r.id);
   expect(ids([])).toEqual(["g1", "d1", "d2", "s"]);
   expect(ids(["g1", "d1", "d2"])).toEqual(["s"]);
+  expect(chain([]).map((r) => r.alias)).toEqual(["gemini", "deepseek", "deepseek", "sonnet"]); // autopilot reads this to tell a fallback reviewer
   const [r] = expandChain([{ alias: "sonnet", effort: "medium" }], agents, quota, new Set(), now);
   expect(r.effort).toBe("medium");
 });

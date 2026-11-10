@@ -248,6 +248,8 @@ async function runBundle(b: Bundle): Promise<void> {
     rmSync(resultFile, { force: true });
     const o = await runAgent({ role, name: `ap-${role.slice(0, 3)}-${slug}`.slice(0, 32).replace(/-$/, ""), label: `autopilot ${role} ${slug}`, cwd, promptFile, resultFile, marker: MARKER, timeoutMin: CFG.limits.agentMinutes, chain: CFG.roles[role], skip, beforeRetry });
     r.roles[role] = o.route; r.switched.push(...o.switched);
+    // Degraded: the reviewer that ran is not the first choice in config, whichever model that is.
+    if (role === "reviewer") r.reviewer_degraded = o.alias !== CFG.roles.reviewer[0]?.alias;
     if (o.exhausted) throw new Exhausted(`${role}: ${o.why}`);
     return o;
   };
@@ -358,7 +360,6 @@ async function runBundle(b: Bundle): Promise<void> {
     saveSpec();
     r.reasons = reasons;
     if (!passed) { escalate(b, r, autoIds, `${CFG.limits.retries + 1} 轮没通过`, reasons.join("\n")); return stop("retries-exhausted"); }
-    r.reviewer_degraded = !r.roles.reviewer?.startsWith("claude:opus");
     if (existsSync(devResult)) r.findings = readFileSync(devResult, "utf8").replace(MARKER, "").trim().slice(0, 2000);
 
     const landed = await land(b, spec, r, dev, gateDir, accBase, acceptanceHash, autoIds, issue);

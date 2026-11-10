@@ -1,7 +1,7 @@
 {
   "name": "dev-kit",
-  "version": "2.73.2",
-  "description": "Cross-client agent toolkit with 22 project-agnostic skills and quality guards.",
+  "version": "2.73.3",
+  "description": "Cross-client agent toolkit with 18 shared skills, local model routes, and skill quality guards.",
   "author": {
     "name": "vito",
     "email": "santiagoliu333@gmail.com"
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "Dev Kit",
     "shortDescription": "Reusable skills and quality guards for coding agents",
-    "longDescription": "A cross-client collection of planning, research, review, media, observability, and skill-quality workflows for Claude Code and Codex.",
+    "longDescription": "A cross-client collection of planning, research, review, observability, and skill-quality workflows for Claude Code and Codex.",
     "developerName": "vito",
     "category": "Productivity",
     "capabilities": [

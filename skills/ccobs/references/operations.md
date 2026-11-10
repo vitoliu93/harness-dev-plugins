@@ -5,7 +5,7 @@
 - DB / queue / logs: `${CCOBS_DIR:-$HOME/.claude/observability/}` (override with `CCOBS_DIR`).
 - Model routing: `${CCOBS_DIR}/llm.json`，平表 `{"<场景>": "<provider>/<model>[:思考档]"}`。
   `pi-call.ts` 是唯一的读取者，插件里不写死任何模型；缺文件就跳过。
-  场景键：`default`、`distill`、`rollup`、`recall`、`prompt-forge`、`skill-style-review`、`vision`。
+  场景键：`default`、`distill`、`rollup`、`recall`、`todo`、`skill-style-review`。
   另可加 `"fallback": {"<provider/model>": "<provider/model>"}`：主模型没给答案（429、超时）时换备用模型重试一次，键不带思考档，主模型的思考档沿用。
   pi 把供应商错误写在 JSON 流里、退出码仍是 0，`pi-call.ts` 会把它打到 stderr。
   认证归 pi，不归这里。
