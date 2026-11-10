@@ -66,6 +66,12 @@ export type RunOutcome = { ok: boolean; route?: string; alias?: string; why?: st
 
 const herdr = (...a: string[]) => Bun.spawnSync(["herdr", ...a], { stdout: "pipe", stderr: "pipe" });
 
+// A role agent's git cannot push: every push URL is rewritten to a scheme git has no transport for.
+// Fetch is untouched, and so is the repo's own config (role trees share it). Landing stays with land() in autopilot.ts.
+// ponytail: stops a push made by habit or talked into, not one made on purpose. A remote with its own pushurl,
+// `git -c remote.origin.pushurl=<url> push`, or unsetting these still gets out; the hard version is a tree with no credentials.
+export const NO_PUSH_ENV = { GIT_CONFIG_COUNT: "1", GIT_CONFIG_KEY_0: "url.no-push://autopilot/.pushInsteadOf", GIT_CONFIG_VALUE_0: "" };
+
 export async function runAgent(o: RunOpts): Promise<RunOutcome> {
   const switched: string[] = [];
   const agents = JSON.parse(readFileSync(join(AGENTS_DIR, "agents.json"), "utf8"));
@@ -85,7 +91,7 @@ export async function runAgent(o: RunOpts): Promise<RunOutcome> {
 
     if (r.kind === "claude") {
       // Headless: every worktree is a new folder, and an interactive claude stops at its trust dialog.
-      const p = Bun.spawn(["claude", "-p", "--model", r.model, "--permission-mode", "auto", "--add-dir", dirname(o.resultFile), ...(r.effort ? ["--effort", r.effort] : []), readFileSync(o.promptFile, "utf8")], { cwd: o.cwd, stdout: "pipe", stderr: "pipe", stdin: "ignore", timeout: o.timeoutMin * 60_000, killSignal: "SIGKILL" });
+      const p = Bun.spawn(["claude", "-p", "--model", r.model, "--permission-mode", "auto", "--add-dir", dirname(o.resultFile), ...(r.effort ? ["--effort", r.effort] : []), readFileSync(o.promptFile, "utf8")], { cwd: o.cwd, env: { ...process.env, ...NO_PUSH_ENV }, stdout: "pipe", stderr: "pipe", stdin: "ignore", timeout: o.timeoutMin * 60_000, killSignal: "SIGKILL" });
       const [out, err] = await Promise.all([new Response(p.stdout).text(), new Response(p.stderr).text()]);
       const code = await p.exited;
       const last = existsSync(o.resultFile) ? readFileSync(o.resultFile, "utf8").trim().split("\n").pop()?.trim() : "";
@@ -94,7 +100,7 @@ export async function runAgent(o: RunOpts): Promise<RunOutcome> {
       if (isAccessError(tail)) { down(r, tail); o.beforeRetry?.(); continue; }
       return { ok: false, route: r.id, alias: r.alias, why: `claude exit ${code}: ${tail}`, switched };
     }
-    const launched = Bun.spawnSync(["bash", join(SCRIPTS, "launch-agent.sh"), o.name, r.kind, o.label, o.promptFile, "--", ...nativeArgs(r)], { cwd: o.cwd, stdout: "pipe", stderr: "pipe" });
+    const launched = Bun.spawnSync(["bash", join(SCRIPTS, "launch-agent.sh"), o.name, r.kind, o.label, o.promptFile, "--", ...nativeArgs(r)], { cwd: o.cwd, env: { ...process.env, LAUNCH_AGENT_ENV: Object.entries(NO_PUSH_ENV).map(([k, v]) => `${k}=${v}`).join("\n") }, stdout: "pipe", stderr: "pipe" });
     if (launched.exitCode !== 0) {
       const err = launched.stderr.toString();
       const orphan = err.match(/tab (\S+) and agent/)?.[1];

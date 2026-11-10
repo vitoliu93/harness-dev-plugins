@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, realpathSync, symlinkSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { type RepoCfg, type Spec, validateSpec, diffViolations, freshTree, gate, git, hashFiles, passingTests, riskyText, sh, unknownArg } from "./autopilot-gate.ts";
-import { expandChain, isAccessError, isQuotaError, quotaBlocked } from "./autopilot-route.ts";
+import { NO_PUSH_ENV, expandChain, isAccessError, isQuotaError, quotaBlocked } from "./autopilot-route.ts";
 
 function repo() {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "ap-")));
@@ -88,6 +88,19 @@ test("a wall with no stated reset gets probed again after a while; a stated rese
   expect(quotaBlocked({ limited_at: "2026-11-09T11:00:00Z", reset_at: null }, now)).toBe(true);
   expect(quotaBlocked({ limited_at: "2026-09-21T10:52:00Z", reset_at: null }, now)).toBe(false);
   expect(quotaBlocked({ limited_at: "2026-11-09T11:00:00Z", reset_at: "2026-11-10T00:00:00Z" }, now)).toBe(true);
+});
+
+test("a role agent's git cannot push by remote name or by URL; the script's own push still lands", () => {
+  const { root, dir } = repo();
+  const up = join(root, "up.git");
+  git(root, "init", "-q", "--bare", up);
+  git(dir, "remote", "add", "origin", up);
+  const asRole = (...a: string[]) => Bun.spawnSync(["git", "-C", dir, ...a], { env: { ...process.env, ...NO_PUSH_ENV }, stdout: "pipe", stderr: "pipe" });
+  expect(asRole("push", "origin", "HEAD:main").exitCode).not.toBe(0);
+  expect(asRole("push", up, "HEAD:main").exitCode).not.toBe(0);
+  expect(git(up, "branch", "--list").out).toBe("");
+  expect(asRole("remote", "get-url", "origin").stdout.toString().trim()).toBe(up);
+  expect(git(dir, "push", "-q", "origin", "HEAD:main").code).toBe(0);
 });
 
 test("access errors switch models; ordinary failures do not", () => {

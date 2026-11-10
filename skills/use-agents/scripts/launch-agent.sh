@@ -22,7 +22,9 @@ command -v herdr >/dev/null || { echo 'Herdr is unavailable' >&2; exit 1; }
 
 ws=(); [ -n "${HERDR_WORKSPACE_ID:-}" ] && ws=(--workspace "$HERDR_WORKSPACE_ID")
 # DEVKIT_DELEGATED marks the agent as dispatched: dev-kit hooks meant for the user stay out of its context.
-tab_json=$(herdr tab create "${ws[@]}" --cwd "$PWD" --label "$label" --no-focus --env DEVKIT_DELEGATED=1)
+# LAUNCH_AGENT_ENV: more KEY=VALUE lines for the agent's process, one per line. A tab does not inherit the caller's environment.
+more=(); while IFS= read -r kv; do [ -n "$kv" ] && more+=(--env "$kv"); done <<< "${LAUNCH_AGENT_ENV:-}"
+tab_json=$(herdr tab create "${ws[@]}" --cwd "$PWD" --label "$label" --no-focus --env DEVKIT_DELEGATED=1 ${more[@]+"${more[@]}"})
 pane=$(printf '%s' "$tab_json" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["root_pane"]["pane_id"])')
 tab=$(printf '%s' "$tab_json" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["tab"]["tab_id"])')
 sleep 3   # start in the same second as tab create can register nothing (herdr.md)
