@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { READ_ONLY_TOOLS, extractJson, llmConfigHint, piCall, resolveModel } from "./pi-call.ts";
 import { OBS_DIR } from "./rules-digest.ts";
 import { AUTOPILOT_DIR, closeTodo, fileTodo, flat, isTempProject, knownRepos, migrateTodos, openTodos, projectFor } from "./todo.ts";
+import { isTaskCard } from "../../../hooks/scripts/understand.ts";
 
 const DB_PATH = join(OBS_DIR, "obs.db");
 const PROMPT_TPL = readFileSync(join(import.meta.dir, "distill-prompt.md"), "utf8");
@@ -41,6 +42,12 @@ const opt = (name: string) => {
 
 function buildDigest(filePath: string): string {
   const lines: string[] = [];
+  // A dispatched agent's session opens with the host's task card. Labelled [用户], its
+  // boilerplate ("只回复结果文件路径") was distilled as a user preference and reached ×29
+  // in the global digest. Only a prompt before the first reply can be a card: later
+  // the user may just be talking about cards.
+  // ponytail: files over BIG_FILE skip this digest, so a card there is not labelled.
+  let opened = false;
   for (const raw of readFileSync(filePath, "utf8").split("\n")) {
     if (!raw.trim()) continue;
     let o: any;
@@ -58,9 +65,10 @@ function buildDigest(filePath: string): string {
       }
       for (const t of texts) {
         if (t.startsWith("<system-reminder") || t.includes('"type":"tool_result"')) continue;
-        lines.push(`[用户] ${t.slice(0, 600)}`);
+        lines.push(`${!opened && isTaskCard(t.trimStart()) ? "[任务卡]" : "[用户]"} ${t.slice(0, 600)}`);
       }
     } else if (o.type === "assistant") {
+      opened = true;
       for (const c of Array.isArray(m.content) ? m.content : []) {
         if (c?.type === "text" && c.text) lines.push(`[助手] ${c.text.slice(0, 400)}`);
         else if (c?.type === "tool_use") {

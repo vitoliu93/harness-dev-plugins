@@ -22,7 +22,10 @@ const MIN_CHARS = 6;
 const MAX_TRIES = 3; // a question first, the task later: keep offering until the lines appear
 const ACK = /^(继续|continue|go( on)?|ok(ay)?|好的?|可以|行|嗯|yes|y|是的?|对|没问题|lgtm|谢谢|thanks?)[\s。.!！,，]*$/i;
 // Written by a dispatching agent, not the user: same signals the 2026-10 prompt audit used.
-export const CARD = /任务卡|角色卡|只回复(结果)?(文件)?路径|回复只写|最后一行[^\n]{0,8}DONE|你是(独立|外部|这条|第一次)|独立(审核|审计|reviewer|复核|验收)|card\.md|BRIEF\.md|Read and execute the complete/m;
+// The last alternative is orchestrate's role card: a YAML block that opens with `role:` then `goal:` or `baseline:`.
+export const CARD = /任务卡|角色卡|只回复(结果)?(文件)?路径|回复只[写给]|最后一行[^\n]{0,8}DONE|你是(独立|外部|这条|第一次)|独立(审核|审计|reviewer|复核|验收)|card\.md|BRIEF\.md|Read and execute the complete|^role: \S[^\n]*\n(goal|baseline):/m;
+/** A session's opening prompt is a card from a dispatching agent. A compaction summary quotes cards without being one. */
+export const isTaskCard = (firstPrompt: string) => !firstPrompt.startsWith("This session is being continued") && CARD.test(firstPrompt);
 
 export const PROTOCOL =
   "<understand-first>动手前，先用三行写出你对这个任务的理解，行首固定：\n" +

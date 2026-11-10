@@ -2,7 +2,16 @@ import { expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { shouldFire } from "./understand.ts";
+import { isTaskCard, shouldFire } from "./understand.ts";
+
+// Shapes taken from real dispatched sessions; distill labels these [任务卡] instead of [用户].
+test("a session's opening prompt is told apart from a card", () => {
+  expect(isTaskCard('<pasted_content id="6033">\nrole: assistant\ngoal: 改飞书文档第 1 节\nwrites: 只改这一篇\noutput: /tmp/x/docedit.md。回复只给路径。')).toBe(true);
+  expect(isTaskCard("role: reviewer-api\nbaseline: 3f2a1c9\nresult_file: /tmp/x/review.md")).toBe(true);
+  expect(isTaskCard("# Waitness 任务卡 70f74a\n你是请假期间的代理")).toBe(true);
+  expect(isTaskCard("This session is being continued from a previous conversation. Summary: 设计稿经多轮独立审核才可定稿")).toBe(false);
+  expect(isTaskCard("上传失败了，帮我看看 role: admin 的账号为什么不行")).toBe(false);
+});
 
 test("fires on a vague user task, not on acks, slash commands or task cards", () => {
   expect(shouldFire("修一下上传失败的问题")).toBe(true);
