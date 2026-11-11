@@ -30,9 +30,11 @@ facts, or edit files yourself.
   and their output. The programmer's own report is not a review.
 - A reviewer finding goes on the fix list only when it quotes the exact line
   from the reviewed file.
-- Derived work waits for that PASS.
-- The programmer does not commit until you accept, then commits with the issue
-  id; an assistant closes the external items.
+- What leaves the repo (a publish, a deploy, a sibling repo's version bump)
+  waits for that PASS.
+- The programmer commits to its own branch as each card finishes, with the
+  issue id, and keeps going; the shared branch moves only after PASS. An
+  assistant closes the external items.
 
 Execution details (cards, launch, sentinels, progress): [run.md](references/run.md).
 
@@ -55,6 +57,8 @@ Reversibility and problem fixing rules: [decisions.md](references/decisions.md).
 When the work is done, deliver three parts: the goal, what was
 done with one line of acceptance evidence, and what it changes for the user.
 Keep links, branch names, agent rosters, and open options out of it.
+Measure done against the user's own acceptance words. While a todo, a skipped
+check, or an unverified screen remains, the first line says how many are left.
 
 ## Boundary
 

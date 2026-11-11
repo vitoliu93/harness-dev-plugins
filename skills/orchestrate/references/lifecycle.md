@@ -32,10 +32,15 @@
 3. Choose another available `normal` route for the same alias or role.
 4. Use `fallback` only when normal routes are unavailable.
 5. Wait for reset only when the user chooses to wait.
+6. The host's own quota under a fifth: before the wall, give each running role
+   its next card and write agent, card, frozen commit and marker to the run log.
+   Roles keep working while the host is out; recovery is one read.
 
 ## 5. Accept and close
 
 1. Run every role's completion checks.
 2. Run the final integrated check.
+   A package that a sibling repo pins: build that repo against the packed
+   artifact before publishing, and push its version bump in the same batch.
 3. Close only recorded tabs after all checks pass.
 4. On cancellation or an unresolved block, leave tabs open and report IDs.

@@ -6,7 +6,9 @@ Execution mechanics for loading teams, authoring cards, launching agents, sentin
   for routes and launch.
 - Use `orchestrate`'s default Herdr transport unless the user chooses another
   transport.
-- Send a researcher for facts before choosing an approach.
+- Send a researcher for facts before choosing an approach. A plan item that
+  fails review twice has a fact gap, not a wording gap: stop redrafting and send
+  one narrow fact card (which processes and versions coexist, who shares the store).
 - Write the card with Write; the first prompt is the full task pointing at that
   file — never a fragment, never mixed into a publish/install/commit Bash call.
 - Launch with the carrier's default interactive mode; do not pass a `--mode`

@@ -47,6 +47,9 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
 - Runtime-changing delivery always gets a reviewer for correctness, project fit
   and simplification, and algorithm and performance. Blocking findings cite
   exact code and evidence; no PASS, no delivery.
+- Review once per repository on the integrated diff, not once per work package:
+  makers commit to their own branches and keep going. Reverse injection per item
+  is for fixes to data loss, concurrency, and permission; the rest gets a diff read.
 - Review roles run at effort medium or higher on any agent; pass the level
   for the run when the alias default is lower or empty.
 - Freeze reviewed targets during review: the reviewed directory accepts no
@@ -55,7 +58,9 @@ Read quota first; use `fallback` only when all `normal` routes are unavailable.
   baseline (commit, or use-agents `scripts/fingerprint.sh` for uncommitted work).
 - Any diff after a PASS voids it, the host's own edits included: a one-line
   fix, a rebase conflict, a reviewer's suggested change. Push only after that
-  diff passes review; there is no size exemption. Non-blocking findings go to
+  diff passes review; runtime code has no size exemption. A diff that touches
+  only tests or a lockfile: the host reads it, reruns the full suite, and names
+  it in the report as not independently reviewed. Non-blocking findings go to
   the next phase's card by default instead of a fix-and-re-review loop.
 - Launch and wait with use-agents `scripts/launch-agent.sh` and
   `scripts/wait-result.sh`, never a hand-written marker loop: the script sees a

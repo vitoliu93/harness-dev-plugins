@@ -102,6 +102,8 @@ test("plan-anchor", async () => {
     expect(only).not.toContain("never opened here"); // newest-mtime plan not from this session leaked
     writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "unrelated" } }) + "\n");
     expect(await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp })).toBe(""); // no mention → silent
+    writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "worktrees/advanced-plan-2026-07-25-demo abc123 [advanced-plan-2026-07-25-demo]" } }) + "\n");
+    expect(await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp })).toBe(""); // a branch name that contains the slug is not a mention
   } finally {
     rmSync(d, { recursive: true, force: true });
   }

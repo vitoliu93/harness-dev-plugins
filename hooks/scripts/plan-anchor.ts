@@ -80,7 +80,9 @@ function mentionedIn(transcriptPath: unknown, goals: string[]): string[] {
   } catch {
     return goals;
   }
-  return goals.filter((g) => text.includes(path.posix.basename(path.posix.dirname(g))));
+  // A slug glued to a longer name (branch `advanced-plan-<slug>` in `git worktree list`) is not a mention.
+  const named = (slug: string) => new RegExp(`(?<![\\w-])${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(text);
+  return goals.filter((g) => named(path.posix.basename(path.posix.dirname(g))));
 }
 
 /** Keep only the sections that carry constraints, drop the narrative. */

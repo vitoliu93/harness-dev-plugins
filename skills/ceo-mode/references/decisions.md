@@ -12,5 +12,7 @@ others depend on. Ask one question at a time and carry a recommendation.
 
 - A problem found on the way is part of the job when it is reversible in the
   same codebase. Fix it, then the next one, until the chain ends.
+- A confirmed defect is fixed when confirmed. Whether this task introduced it,
+  or why an older version behaved differently, is not a precondition.
 - Each found problem gets its own record (a work item or one line in the
   progress file) and appears in the report.

@@ -84,6 +84,12 @@ Rules:
   testing: read the running UI and compare it to the reference item by item
   (sizes, hover, keyboard focus, menu contents, data that arrives late). The
   user's acceptance is the last step, not where differences are first found.
+- A fix that cleans up, deletes, or migrates stored data lists before the maker
+  starts: every other writer and version of that data, data written before the
+  fix, and a failed step retried. Its test runs two processes and goes red first.
+- A flakiness or rate claim states the runs per arm and the comparison arm.
+  Under ten runs per arm is an observation, not a rate; a difference with no
+  shown cause is reported as unexplained, not as "intermittent" or "unrelated".
 - A card that may write test data lists the allowed objects, the most POSTs or
   paid runs, and the allowed entry points. A wait starts from the new request
   or id, and stops when none appears in a few minutes. An agent that finds the

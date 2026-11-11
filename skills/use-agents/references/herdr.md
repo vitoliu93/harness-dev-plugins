@@ -95,6 +95,9 @@ On exit 5, stderr prints the reason and the last line of the progress file.
 Always `run_in_background`; a foreground poll blocks the user's next message.
 It must recognise three stuck states besides "no result file": prompt left
 unsubmitted in the input box, a permission box, and `agent_status: blocked`.
+A prompt cannot reach a Codex agent stopped at a question box: dismiss it with
+`herdr agent send-keys <name> 'ctrl+]'`, then prompt. Cards say "questions go
+in the report, not a question box".
 `idle` alone is not stopped: an agent that pushed work into a background shell
 ends its turn while the screen tail still shows `N shells`; keep waiting. Text
 sent through `pane send-text` is shell-parsed again — quote lines containing `=`.
