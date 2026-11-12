@@ -14,7 +14,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { type RepoCfg, type Spec, freshTree, gate, git, hashFiles, passingTests, removeTree, riskyText, runAcceptance, sh, unknownArg, validateSpec } from "./autopilot-gate.ts";
 import { type RoleChain, cheapJson, runAgent } from "./autopilot-route.ts";
 import { OBS_DIR } from "./rules-digest.ts";
-import { type Decision, askDecision, checkEvidence, closeTodo, expireDecisions, openDb, resolveRepo } from "./todo.ts";
+import { type Decision, askDecision, checkEvidence, closeTodo, expireDecisions, foundAt, openDb, resolveRepo, touchedSince } from "./todo.ts";
 
 const ROOT = join(OBS_DIR, "autopilot");
 const CARDS = resolve(import.meta.dir, "../references/autopilot-cards");
@@ -62,6 +62,11 @@ function select(): Item[] {
   const rows = db.query(`SELECT id, title, why, evidence, project, repo, decision FROM todos WHERE status = 'open' AND run_id IS NULL ORDER BY created_at`).all() as any[];
   const out: Item[] = [];
   const onlyIds = opt("--ids")?.split(",");
+  // Someone may already be on it: any branch or worktree committed to a named file since the item was found.
+  // ponytail: last 3 days only, so a hot file does not block an item forever; uncommitted work needs `todo.ts claim`.
+  const recent = new Date(Date.now() - 3 * 86_400_000).toISOString();
+  const busy = touchedSince(foundAt(db).map((f) => ({ ...f, since: f.since > recent ? f.since : recent })),
+    [...new Set(rows.map((r) => r.repo ?? resolveRepo(r.project)).filter(Boolean))]);
   for (const r of rows) {
     if (onlyIds && !onlyIds.includes(r.id)) continue;
     const moveOut = (why: string) => { if (!dry) closeTodo(db, r.id, "dismissed", `autopilot:${why}`); run.moved.push({ id: r.id, title: r.title, why }); };
@@ -71,6 +76,7 @@ function select(): Item[] {
     if ("reject" in ev) { moveOut(ev.reject); continue; }
     const name = basename(repo);
     if (!CFG.repos[name] || (opt("--repo") && opt("--repo") !== name)) continue;
+    if (busy.has(r.id)) { run.notes.push(`${r.id}: 找到后已有提交改过它点名的文件（${busy.get(r.id)![0]}），可能有人在做，今晚跳过`); continue; }
     const decision = r.decision ? JSON.parse(r.decision) as Decision : null;
     if (decision?.answer && (decision.kind === "risk" || decision.answer.includes("白天"))) continue; // daytime session only
     const risky = decision?.answer ? null : riskyText(`${r.title} ${r.why ?? ""} ${r.evidence ?? ""}`);
