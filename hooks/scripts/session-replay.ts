@@ -30,7 +30,7 @@ const TODO_CONVENTION =
   "Problems you find while working: fix it yourself if the fix keeps existing behavior (bug fixes count) and say so " +
   `when you wrap up; otherwise, if a later session could pick it up alone and verify the fix (no logins, approvals, manual checks or user decisions; ` +
   `not this task's own review notes, not a violation that already happened, not blocked by missing access or data, not tied to a one-off release), record it: \`bun "${TODO_CLI}" add --title "<一句话>" --why "<为什么>" --repo <仓目录名> --evidence "<仓内文件:行/提交/Gitee 单号>"\`. ` +
-  `No repo or lasting evidence (temp paths do not count), no record; irreversible steps, ask first. Resolved an open item: \`bun "${TODO_CLI}" close <id> --by "<commit>"\`.`;
+  `No repo or lasting evidence (temp paths do not count), no record; irreversible steps, ask first. Starting on an open item: \`bun "${TODO_CLI}" claim <id>\` so the nightly autopilot skips it. Resolved an open item: \`bun "${TODO_CLI}" close <id> --by "<commit>"\`.`;
 
 function printTodos(cwd: string): void {
   try {

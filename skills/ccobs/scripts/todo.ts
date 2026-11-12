@@ -10,6 +10,7 @@
 //   bun todo.ts list [--project <dir>] [--all] [--json]
 //   bun todo.ts close <id> [--by <commit/issue/说明>]
 //   bun todo.ts dismiss <id>
+//   bun todo.ts claim <id>           # this session is working it; autopilot skips it for 3 days
 //   bun todo.ts reopen <id>          # undo an automatic close
 //   bun todo.ts check                # open items whose named files were committed to since they were found
 //   bun todo.ts decisions            # items waiting for the user's call
@@ -356,10 +357,14 @@ if (import.meta.main) {
     for (const r of listDecisions(db)) console.log(`${r.id} [${r.decision.kind}] ${r.decision.question}\n${r.decision.options.map((o, i) => `  ${i + 1}. ${o}`).join("\n")}`);
   } else if (cmd === "decide" && rest[0] && rest[1]) {
     console.log(`todo: ${decide(db, rest[0], rest[1])}`);
+  } else if (cmd === "claim" && rest[0]) {
+    // A session working an item marks it so the nightly autopilot skips it; autopilot drops claims older than 3 days.
+    const ok = db.query(`UPDATE todos SET run_id = ? WHERE id = ? AND status = 'open'`).run(`session:${new Date().toISOString().slice(0, 10)}`, rest[0]).changes > 0;
+    console.log(ok ? `todo: claimed ${rest[0]}` : `todo: ${rest[0]} not open`);
   } else if (cmd === "reopen" && rest[0]) {
     console.log(reopenTodo(db, rest[0]) ? `todo: reopened ${rest[0]}` : `todo: ${rest[0]} already open or unknown`);
   } else {
-    console.error("usage: todo.ts add --title <t> [--why] [--evidence] [--repo] [--project] [--session] | list [--project] [--all] [--json] | close <id> [--by] | dismiss <id> | reopen <id> | check | decisions | decide <id> <n|dismiss>");
+    console.error("usage: todo.ts add --title <t> [--why] [--evidence] [--repo] [--project] [--session] | list [--project] [--all] [--json] | close <id> [--by] | dismiss <id> | claim <id> | reopen <id> | check | decisions | decide <id> <n|dismiss>");
     process.exit(1);
   }
   } catch (e) {

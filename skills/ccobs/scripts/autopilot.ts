@@ -420,8 +420,8 @@ async function main(): Promise<void> {
     if (!dry) {
       const st = Bun.which("herdr") ? Bun.spawnSync(["herdr", "status", "server"], { stdout: "pipe", stderr: "pipe" }) : null;
       if (!st || st.exitCode || !st.stdout.toString().includes("running")) { run.status = "herdr-down"; run.notes.push("Herdr 没有运行或不在 PATH，当晚未启动"); return; }
-      // The lock says no other run is alive, so any claim left is from a killed one.
-      db.query(`UPDATE todos SET run_id = NULL WHERE status = 'open' AND run_id IS NOT NULL`).run();
+      // The lock says no other run is alive, so any claim left is from a killed one. Session claims live 3 days.
+      db.query(`UPDATE todos SET run_id = NULL WHERE status = 'open' AND run_id IS NOT NULL AND (run_id NOT LIKE 'session:%' OR substr(run_id, 9) < date('now', '-3 days'))`).run();
       for (const id of expireDecisions(db)) run.notes.push(`${id} 超过 14 天没裁定，已移出`);
       sweepOld();
     }
