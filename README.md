@@ -84,8 +84,8 @@ Restart after hook edits.
 ## Optional Mod: `mods/jev`
 
 Claude Code only, and a separate install from dev-kit. On each typed prompt it
-asks Jev which installed skills fit the task and which past sessions are worth
-reading, then adds the answer as hidden context.
+asks Jev which installed skills fit the task, then adds the answer as hidden
+context.
 
 ```
 /plugin install dev-kit-jev@vito-agents
@@ -100,7 +100,7 @@ checkout instead: `claude --plugin-dir <checkout-path>/mods/jev`, which
 installed and a key exported, every prompt goes to TypeSafe; to stop that,
 remove the key or uninstall. Without a key, or on any failure, the
 prompt goes through unchanged. Only the current prompt, recent messages (at
-most 25,000 characters), skill names with descriptions and ccobs summaries are
+most 25,000 characters) and skill names with descriptions are
 sent, redacted and size-bounded; tool output and paths are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
 Manual: `mods/jev/README.md`.
 

@@ -1,9 +1,8 @@
 # dev-kit-jev
 
-A Claude Code Mod. On each prompt you type it asks Jev two things — which of
-your installed skills fit this task, and which past sessions are worth
-re-reading — and adds the answer as hidden context. Advice only: it never
-invokes a skill or starts an agent.
+A Claude Code Mod. On each prompt you type it asks Jev which of your installed
+skills fit this task and adds the answer as hidden context. Advice only: it
+never invokes a skill or starts an agent.
 
 Claude Code only. Codex ignores this directory.
 
@@ -49,11 +48,10 @@ Options go in user or `--settings` settings under
 ## What the model sees
 
 Only when something matched. A `<jev-skills>` block listing every skill Jev
-scored at 0.75 or above, best first, with no cap on the count — and a
-`<session-precedents>` block with up to three past sessions and their
-transcript paths. Nothing matched means nothing is injected. Both blocks say in
-plain words that they are advice and untrusted data; your instructions,
-`orchestrate` team order and `use-agents` quota checks still win.
+scored at 0.75 or above, best first, with no cap on the count. Nothing matched
+means nothing is injected. The block says in plain words that it is advice;
+your instructions, `orchestrate` team order and `use-agents` quota checks still
+win.
 
 ## Which skills are candidates
 
@@ -70,8 +68,8 @@ shows up within five minutes or on restart.
 
 ## What leaves this machine
 
-Sent: the current prompt (≤3000 chars), recent user/assistant messages, skill
-names with their descriptions, and ccobs summaries. Messages are picked from
+Sent: the current prompt (≤3000 chars), recent user/assistant messages, and
+skill names with their descriptions. Messages are picked from
 the newest backwards (≤2000 chars each, at most 25,000 in all) and sent in
 time order. Never sent: tool output (file reads and command output live
 there), local paths (a `/Users/...`, `/home/...` or `~/...` path becomes
@@ -81,17 +79,13 @@ normal message and is sent.
 
 The whole request is capped at 40 KB, counted in UTF-8 bytes. To fit, messages
 are dropped oldest-first, then skills last-first (plugin skills go before
-workspace ones); precedents go last-first only after every skill is gone. With about 70 skills on this
-kind of setup only the newest message or two remain, and with more than
-roughly 80 skills the last ones are not scored. The debug line names how many
-skills were scored.
-
-History candidates come from obs.db, read through a separate read-only process
-(`scripts/recall-candidates.ts`); `CCOBS_DIR` overrides its location for testing.
+workspace ones). With about 70 skills on this kind of setup only the newest
+message or two remain, and with more than roughly 80 skills the last ones are
+not scored. The debug line names how many skills were scored.
 
 ## When it breaks
 
-Timeout, HTTP error, bad response, missing obs.db, no skills found, request
+Timeout, HTTP error, bad response, no skills found, request
 over 40 KB: the prompt goes through unchanged and a line lands in the debug log
 only. The prompt is never dropped or edited, and `next()` is called exactly
 once.
@@ -104,7 +98,7 @@ rg 'dev-kit-jev' /tmp/jev.log
 ```
 
 Look for `hooks module dev-kit-jev@inline loaded ... events: prompt.submit`
-(loaded), `dev-kit-jev: 2 skill suggestion(s), 1 reference(s)` (a decision
+(loaded), `dev-kit-jev: 2 skill suggestion(s) from 70/70 scored` (a decision
 came back) and `prompt.submit settled in ...ms` (what it cost you).
 
 `/plugin` can list this Mod as "not used": it has no skills or commands to
@@ -116,7 +110,7 @@ count. Judge it by the debug log above, not by that number.
 TYPESAFE_API_KEY=... bun mods/jev/scripts/live-eval.ts
 ```
 
-Eight fictional cases — fictional skills, fictional history, fictional prompts.
+Six fictional cases — fictional skills, fictional prompts.
 It prints one line per case plus a p50. Nothing from your own sessions is sent.
 Small sample: it shows the wiring works, not an accuracy or latency guarantee.
 

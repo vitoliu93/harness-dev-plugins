@@ -5,16 +5,14 @@ const inject = (text: string) => JSON.stringify({ type: "attachment", attachment
 const say = (text: string, input?: object) => JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text }, ...(input ? [{ type: "tool_use", input }] : [])] } });
 
 test("a hook counts as followed only when a later turn does what it asked", () => {
-  const sid = "0c4ab459-2174-443a-be67-072d18000000";
   const got = scan([
     say("【理解】目标：too early, before the injection"),
     inject("<understand-first>…</understand-first>"),
-    inject(`<session-precedents>\n[{"session_id":"${sid}"}]\n</session-precedents>`),
     inject("<plan-anchor>\nContext was just compacted.\n</plan-anchor>"),
     inject("<todo-convention>…</todo-convention>"),
-    say("【理解】目标：ship it", { command: `rg -n retry /tmp/${sid}.jsonl` }),
+    say("【理解】目标：ship it", { command: "rg -n retry src" }),
   ].join("\n"));
-  expect(Object.fromEntries(got)).toEqual({ understand: true, "jev/precedents": true, "session-replay/todo": false });
+  expect(Object.fromEntries(got)).toEqual({ understand: true, "session-replay/todo": false });
 });
 
 test("verdict", () => {

@@ -25,12 +25,6 @@ const listed = (injected: string, re: RegExp) => [...injected.matchAll(re)].map(
 export const HOOKS: Hook[] = [
   { name: "understand", fired: (s) => s.includes("<understand-first>"), followed: (t) => t.text.includes("【理解】目标") },
   { name: "plan-split", fired: (s) => s.includes("写一行 `拆分：`"), followed: (t) => /^拆分[：:]/m.test(t.text) },
-  {
-    // injected by mods/jev; followed = the agent opened or queried one of the sessions it was handed
-    name: "jev/precedents",
-    fired: (s) => s.includes("<session-precedents>"),
-    followed: (t, s) => listed(s, /\b([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]{20,})\b/g).some((sid) => t.tools.includes(sid)),
-  },
   // session-replay carries two conventions; each is judged on its own
   { name: "session-replay/todo", fired: (s) => s.includes("<todo-convention>"), followed: (t) => t.tools.includes("todo.ts") },
   { name: "session-replay/learn", fired: (s) => s.includes("<learn-convention>"), followed: (t) => /^\[LEARN\]/m.test(t.text) },

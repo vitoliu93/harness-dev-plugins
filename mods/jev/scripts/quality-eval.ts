@@ -42,7 +42,7 @@ const cases: Case[] = [
 ];
 const t0 = performance.now(); let hits = 0, wants = 0, fps = 0; const rows: any[] = []; let low = 1, high = 0;
 for (const c of cases) {
-  const { body, snapshot } = makeRequest({ prompt: c.prompt, recent: c.recent ?? [], skills, history: [] }, "jev-1.13.0", [key]);
+  const { body, snapshot } = makeRequest({ prompt: c.prompt, recent: c.recent ?? [], skills }, "jev-1.13.0", [key]);
   const start = performance.now();
   const r = await fetch("https://api.typesafe.ai/v1/systemone", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body, signal: AbortSignal.timeout(15000) });
   if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text()}`);

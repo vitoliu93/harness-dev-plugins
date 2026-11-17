@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-// Shared between the writer (rollup.ts) and the readers (session-replay hook,
-// mods/jev recall-candidates). The project key MUST be derived by one function on both sides:
+// Shared between the writer (rollup.ts) and the reader (session-replay hook).
+// The project key MUST be derived by one function on both sides:
 // a mismatch shows up as "no rules yet", which is indistinguishable from success
 // because the hook always exits 0.
 
