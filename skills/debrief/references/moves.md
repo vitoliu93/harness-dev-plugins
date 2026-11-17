@@ -46,18 +46,7 @@ sqlite3 ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db \
   "UPDATE observations SET conclusion='<结论：…；放弃了…因为…>' WHERE session_id='<this session id>'"
 ```
 
-这是 recall 先例里「结论」那一行的唯一来源；写得像 summary，两周后 recall 就还是没用。
-
-### 2c 先例用没用
-
-开场 recall 注进来的先例，这场到底翻没翻。跑一下，它把结果记回台账：
-
-```bash
-CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";
-bun "$CCOBS_SKILL_DIR/scripts/recall-mark.ts" "<this session id>" "<transcript path>"
-```
-
-输出照抄进收盘的「先例」行。没注入就写「本会话无注入」，不用解释。
+以后查到这场会话的人先看这一行；写得像 summary，两周后查到也没用。
 
 ### 2d 本周摩擦
 
