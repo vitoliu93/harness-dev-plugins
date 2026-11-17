@@ -16,7 +16,7 @@ import { homedir } from "node:os";
 import * as path from "node:path";
 
 import { MAX_PROJECT_RULES, topRules } from "../../skills/ccobs/scripts/rules-digest.ts";
-import { TODO_CAP, countOpen, flat, gitRoot, listDecisions, openDb, openTodos } from "../../skills/ccobs/scripts/todo.ts";
+import { TODO_CAP, countOpen, flat, gitRoot, openDb, openTodos } from "../../skills/ccobs/scripts/todo.ts";
 
 const MAX_ENTRIES = 5;
 const MAX_GLOBAL_RULES = 6;
@@ -36,8 +36,6 @@ function printTodos(cwd: string): void {
   try {
     const db = openDb();
     const project = gitRoot(cwd);
-    const waiting = listDecisions(db).length;
-    if (waiting) print(`<pending-decisions>${waiting} todo items wait for the user's call. Tell the user once; \`bun "${TODO_CLI}" decisions\` lists them, \`decide <id> <n|dismiss>\` records the answer.</pending-decisions>`);
     const rows = openTodos(db, project, MAX_TODOS);
     if (!rows.length) return;
     print("<open-todos>");
