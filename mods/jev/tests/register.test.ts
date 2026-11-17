@@ -10,10 +10,9 @@ function fixture(on:On, options:{key?:string,skills?:unknown,answer?:unknown,del
  const env:Record<string,string|undefined>={HOME:"/fiction",TYPESAFE_API_KEY:options.key??secret};
  const sent:any[]=[];const logs:string[]=[];const processes:any[]=[];const seen:any[]=[];const messages:any[]=[];
  on("env.get",($,e)=>({value:env[e.name]}));
- on("env.set",($,e)=>{env[e.name]=e.value;return {value:undefined};});
  on("session.cwd",()=>({value:"/fiction/repo"}));
  on("session.messages",()=>({value:messages}));
- on("process.run",($,e)=>{processes.push(e);return {value:{exitCode:0,stdout:JSON.stringify(options.skills??skills),stderr:""}};});
+ on("process.run",($,e)=>{processes.push(e);return {value:{exitCode:0,stdout:JSON.stringify(options.skills??skills),stderr:"",isStdoutTruncated:false,isStderrTruncated:false}};});
  on("ui.log",($,e)=>{logs.push(e.text);return {value:undefined};});
  on("http.fetch",async($,e)=>{sent.push(e);if(options.delay)await clock.sleep(options.delay);return {value:{ok:!options.bad,status:options.bad?401:200,headers:{},text:options.bad?secret:JSON.stringify(options.answer??answer)}};});
  on("prompt.submit",($,e)=>{seen.push(e);if(options.throwNext)throw new Error("downstream-failure");return {text:e.text,context:e.context,origin:e.origin};});

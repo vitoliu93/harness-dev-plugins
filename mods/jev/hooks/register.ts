@@ -1,5 +1,5 @@
 import type { On, PluginOptions, Timer } from "claude-code";
-import { decide, makeRequest, recentFrom, render, skillsFrom, type Snapshot } from "./core.ts";
+import { decide, makeRequest, recentFrom, render, skillsFrom, type Snapshot } from "./core.js";
 
 // ponytail: one in-memory cache per working directory; a new skill shows up within five minutes or on restart.
 const SKILL_CACHE_MS = 300_000;
