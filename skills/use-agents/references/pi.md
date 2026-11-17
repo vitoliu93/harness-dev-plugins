@@ -4,7 +4,7 @@
 providers at once. A bare model name is a fuzzy match and can land on any of
 them. The provider is part of the route, so copy the `model` field of the
 chosen route in `agents.json` verbatim:
-`--model cliproxyapi/gemini-3.8-flash`, never `--model gemini-3.8-flash`.
+`--model zhipu/glm-5.3-flash`, never `--model glm-5.3-flash`.
 
 ## Check
 
