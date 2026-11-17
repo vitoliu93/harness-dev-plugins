@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 19 shared skills live under `skills/`; both hosts
+repo root is the plugin root — 13 shared skills live under `skills/`; both hosts
 can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -41,19 +41,14 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | debrief | Archive plan artifacts, distill the session into ccobs, then improve, merge, or retire skills before adding a candidate. |
 | use-agents | Start an independent agent and find its local route or definition. |
 | grill-me | Round-by-round interview across a design tree until every branch is settled. |
-| take-over | Continue an interrupted agent task via ccobs; optional handoff to shared tmp. |
 | use-html | One HTML page of diagrams and charts that makes a concept, repo, flow, document, retro, or report quick to grasp. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
 | skill-review | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
 | ccobs | Build or query the agent observability ledger obs.db. |
-| recall | Retrieve up to five past-session clues from ccobs. |
 | orchestrate | Compose agent roles and coordinate their work through completion. |
 | skill-forge | Create or improve skills through deterministic and semantic style (`style_review.ts`), budget, routing, and trigger gates. |
-| cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
-| visual-evidence | DOM-fact evidence pack for UI / canvas behavior (PASS/FAIL). |
 | self-profile | Profile the user from their own session history as one chart-first HTML page. |
-| rate-limit-watcher | Watch Herdr agents for a rate-limit wall; wake them after reset or hand the task over. |
 
 ### Learning
 
@@ -61,7 +56,6 @@ Boundary: *learning vs shipping* (`docs/study/north-star.md`).
 
 | Skill | What it does |
 |---|---|
-| resume-learning | Save/restore learning progress to `RESUME.md` with evidence + recall. |
 | teach-me | Probe what you know about one topic, then explain only the gap. |
 
 Moved out (v2.0): `ship` → `kox-agent-plugins`.

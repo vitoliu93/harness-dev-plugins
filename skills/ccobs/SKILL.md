@@ -27,7 +27,7 @@ bun "$CCOBS_SKILL_DIR/scripts/ingest.ts"
 sqlite3 -header ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db "SELECT * FROM v_tool_overview LIMIT 5"
 ```
 
-Before recall/take-over on a fresh session, resolve the same `CCOBS_SKILL_DIR`
+Before reading a fresh session from the ledger, resolve the same `CCOBS_SKILL_DIR`
 and run `scripts/ingest.ts`; skip if missing.
 
 ## Rules digest

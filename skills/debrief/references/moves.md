@@ -141,10 +141,3 @@ For agent routes, inspect `${CCOBS_DIR:-$HOME/.claude/observability}/agents/quot
 For compaction: read `${CCOBS_DIR:-$HOME/.claude/observability}/compaction.jsonl` for this session.
 Repeated `dropped` anchors (参考真源, prototype.html, done criteria) → fix plan-anchor / goal.md anchors, not longer summaries.
 
-### Audit signal
-
-Append「建议召集 cto-audit:<原因>」when either hits:
-- Same structural theme ≥3× in LEARNED.md / SKILL-CANDIDATES.md
-- `docs/audit/` constitution stale or recurring bugs hit existing rules
-
-Otherwise skip.

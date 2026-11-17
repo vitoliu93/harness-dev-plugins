@@ -10,20 +10,14 @@
 | advanced-plan | sop | ship(kox) 计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
 | skill-review | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ②③ |
-| rate-limit-watcher | sop | "守林员/限额了帮我盯着/rate limit watcher" · use-agents 夜间无人值守启动后 | ①③ |
-| take-over | sop | "接手/take over/继续 <session>" · handoff/save | ③ |
 | ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
-| recall | meta | "以前查过吗/recall" · research 开工 | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
 | orchestrate | sop | "编排角色/fan out/advisor+programmer+audit/独立复核" · 模型主动(准备多角色协作或运行行为改动验收前) | ①③ |
-| cto-audit | meta | /cto-audit · debrief 审计信号提醒 | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
 | skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
-| resume-learning | sop | "存档/读档/继续 <学习主题>" | ③ |
 | teach-me | atom | "teach me/教我/讲讲 <topic>" · 看文档卡在某概念 | ③ |
 | use-html | atom | 看懂概念/仓库/流程/文档 · 复盘/汇报 · 模型主动(图比文字讲得清时) | ①③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
-| visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
 | self-profile | sop | /self-profile · 定时自我复盘(月度) | ②③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
 
@@ -33,10 +27,7 @@
 
 - **orchestrate** — 观察角色卡、Herdr tab 收尾和 agent 交接是否稳定
 - **use-agents** — 观察个人渠道配置与配额记录是否足够简单
-- **recall** — 仅触发词;观察"以前查过吗"是否长成肌肉记忆
-- **cto-audit** — debrief 提醒是否真触发
 - **ceo-mode** — 仅触发词;观察全权授权后是否真的零自己动手、汇报是否稳定收敛到三段
-- **resume-learning vs take-over/advanced-plan** — 裸"继续"争路由;收紧到"读档"
 
 ## 已归档
 
@@ -44,3 +35,5 @@
 - **skill-style-review** — 并入 skill-forge,脚本在 `skill-forge/scripts/style_review.ts`
 
 - **worktree** — 约定内联 advanced-plan;`worktree-guard` hook 仍在
+- **resume-learning** · **cto-audit** · **visual-evidence** · **recall** — 连续三个月零调用;先例查询由 `recall-precedent` hook 自动做
+- **take-over** · **rate-limit-watcher** — 只在终端加 Herdr 的无人值守流程里用;主力转到桌面端后一个月不到两次调用

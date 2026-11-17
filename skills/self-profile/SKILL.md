@@ -12,8 +12,8 @@ metadata:
 
 The user reads this page to see themselves and to plan a career. Spare
 nothing: facts over comfort, one verdict per question, no two-sided hedging.
-It profiles the person, not the harness (context-audit), a project
-(cto-audit) or one session (debrief).
+It profiles the person, not the harness (context-audit) or one session
+(debrief).
 
 ## 1. Corpus
 

@@ -34,7 +34,7 @@ bun "$CCOBS_SKILL_DIR/scripts/distill.ts" --dry-run
 
 ## On-demand sync
 
-Recent sessions may not be ingested yet. Before recall or take-over, run incremental ingest (idempotent):
+Recent sessions may not be ingested yet. Before reading them, run incremental ingest (idempotent):
 
 ```bash
 CCOBS_SKILL_DIR="<absolute path of the directory containing the loaded ccobs/SKILL.md>";

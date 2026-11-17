@@ -28,7 +28,7 @@ orchestration/tooling optimizations.
 
 1. **Archive** plan dir → `_archive/` ([moves.md](references/moves.md) §1)
 2. **Sediment** 立刻蒸馏本会话、补齐结论、标记先例用没用、读一眼本周摩擦、至多纠正一条被打脸的规则 ([moves.md](references/moves.md) §2)
-3. **Promote** improve / merge / retire existing skills first, new candidate last + harness drift + cto-audit signal ([moves.md](references/moves.md) §3)
+3. **Promote** improve / merge / retire existing skills first, new candidate last + harness drift ([moves.md](references/moves.md) §3)
 
 ## Output
 

@@ -1,8 +1,8 @@
 # 子代理 Prompt 模板
 
-三路取证的 prompt 骨架。`<项目>` / `<路径>` / `<issue源>` 按目标替换。三个代理**一条消息并行发出**。
+四路取证的 prompt 骨架。`<项目>` / `<路径>` / `<issue源>` 按目标替换。四个代理**一条消息并行发出**。
 
-## 1. Issue 聚类（gitee-operator 或对应 issue 源，bare 模型）
+## 1. Issue 聚类（项目对应 issue 源 operator，bare 模型）
 
 ```
 目标：为 <项目> 的 CTO 级审计收集 issue 证据。
@@ -17,7 +17,7 @@
 输出中文。
 ```
 
-## 2. 代码结构勘察（code-search，bare 模型）
+## 2. 代码结构勘察（Explore，bare 模型）
 
 ```
 目标：为 CTO 级审计绘制 <路径> 的架构全貌。返回结构化中文 digest（引用 file:line，不贴大段代码）：
@@ -30,6 +30,7 @@
 6. 测试与质量：tests/ 有什么、覆盖哪些核心路径、CI 有没有测试环节、lint 是否固化
 7. 构建与部署：Dockerfile/发版脚本的分工与冗余
 8. 坏味道清单 5-10 条最扎眼的，带 file:line：死代码、重复实现、双轨依赖、超长文件
+9. 依赖方向抽查：core/domain 层有没有反向 import adapter/infra 层（列 import 证据）
 ```
 
 ## 3. Git 历史挖掘（general-purpose，**sonnet**）
@@ -47,6 +48,20 @@
 数字必须来自命令输出，不臆造。
 ```
 
+## 4. 盲画领域模型（general-purpose，**opus**）
+
+```
+目标：为 CTO 级审计提供领域基准蓝图。硬约束：**禁止读 src/ 等任何实现代码**，
+只许读 <路径> 下的 README、docs/、产品描述、API 接口名/路由清单（如有）。
+
+基于这些材料，盲写"这个系统的领域模型和模块边界理应长什么样"：
+1. 核心领域实体清单：每个实体一句话定义 + 权威名字（你认为它应该叫什么）
+2. 理想模块切分：按领域关节切出的模块边界，每个模块一句话职责
+3. 模块间依赖方向：谁可以知道谁，哪些方向不该存在
+4. 3-5 条关键领域不变量（金额非负、状态机合法迁移之类）
+输出中文。不许猜实现，只从领域推演。你的产出会与真实代码结构 diff，偏差本身就是审计发现。
+```
+
 ## Phase 1.5 主上下文验证命令（示例）
 
 ```bash
@@ -60,14 +75,33 @@ grep -c '^[A-Z_]*=' env.example
 # 可疑死代码：零引用验证
 grep -rln '<可疑模块名>' <src> --include='*.py'
 
-# 技能/插件层代码量 vs 受管控层
-find <外围目录> -name '*.py' | xargs wc -l | tail -1
+# 临时兼容考古：扫化石候选，逐条 git blame 问出生理由
+rg -n 'TODO|FIXME|HACK|XXX|workaround|临时|兼容|fallback|deprecated' <src> | head -40
+git log -1 --format='%ad %s' -- <命中文件>   # 出生时间与理由
+
+# 概念一致性抽查：核心名词的别名拼写
+rg -io 'userId|user_id|uid' <src> | sort | uniq -c   # 按项目核心名词替换
+
+# 宪法断言验证（上次审计遗产还活着吗）
+ls <项目>/docs/audit/constitution/ && bash <项目>/docs/audit/constitution/*.sh
 
 # 共享代码 hack 计数
 grep -rl 'sys.path' <目录> --include='*.py' | wc -l
 ```
 
-## Phase 4 算法层追加（复用 code-search 或主上下文精读）
+## 宪法断言格式（Phase 2.5 落地用）
+
+每条一个可执行文件，落 `<项目>/docs/audit/constitution/`，头部注释即出生证明：
+
+```bash
+#!/usr/bin/env bash
+# rule: domain 层不得 import infra 层
+# source: domain 直查 DB 绕开 repository 的复发缺陷
+# retire-when: 分层重构完成且连续两次审计零违例
+! rg -l 'from infra' src/domain/ || { echo '违宪: domain→infra'; exit 1; }
+```
+
+## Phase 4 算法层追加（复用 Explore 或主上下文精读）
 
 优先找项目自带的算法清单文档（如 `docs/*algorithm*inventory*.md`）。逐域核对：
 
@@ -76,3 +110,5 @@ grep -rl 'sys.path' <目录> --include='*.py' | wc -l
 - LLM task：有无 schema 硬校验、prompt 有无版本与回归、可否内容哈希缓存
 - 管线：有无断点续跑、耗时数据是否驱动优化
 - 数据层：ID 是否确定性派生、降级是否显式打标、产物有无 QA 门禁
+
+常用武器库：golden set + recall@k / RRF 排名融合 / MMR 多样性 / schema 硬校验+有界重试 / prompt 版本化+LLM-as-judge 回归 / 内容哈希缓存 / stage 断点续跑 / 确定性 ID / fail-loud 降级协议 / 成片(产物) QA 门禁
