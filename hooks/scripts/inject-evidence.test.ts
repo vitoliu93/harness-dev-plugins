@@ -14,7 +14,7 @@ test("a hook counts as followed only when a later turn does what it asked", () =
     inject("<todo-convention>…</todo-convention>"),
     say("【理解】目标：ship it", { command: `rg -n retry /tmp/${sid}.jsonl` }),
   ].join("\n"));
-  expect(Object.fromEntries(got)).toEqual({ understand: true, "recall-precedent": true, "session-replay/todo": false });
+  expect(Object.fromEntries(got)).toEqual({ understand: true, "jev/precedents": true, "session-replay/todo": false });
 });
 
 test("verdict", () => {

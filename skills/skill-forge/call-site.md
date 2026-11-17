@@ -34,6 +34,6 @@
 - **skill-review** — 体检走 skill-forge 的 Fleet check
 - **skill-style-review** — 语义评审走 `skill-forge/scripts/style_review.ts`
 - **worktree** — 约定在 advanced-plan;退出顺序由 `worktree-guard` hook 拦
-- **recall** — 先例查询走 `recall-precedent` hook
+- **recall** — 先例查询用 ccobs 查 obs.db
 - **resume-learning** · **cto-audit** · **visual-evidence** — 无替代,按需手做
 - **take-over** · **rate-limit-watcher** — 会话接续和限额恢复走客户端自带功能

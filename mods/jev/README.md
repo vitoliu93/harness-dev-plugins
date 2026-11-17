@@ -89,16 +89,6 @@ skills were scored.
 History candidates come from obs.db, read through a separate read-only process
 (`scripts/recall-candidates.ts`); `CCOBS_DIR` overrides its location for testing.
 
-## Legacy recall
-
-While this Mod owns a session it sets `DEVKIT_JEV_RECALL_SESSION`, and
-`hooks/scripts/recall-precedent.ts` returns without doing anything — one recall
-per turn, never two. Ownership starts as soon as a key is present, even
-if the Jev call then fails, so a failure does not fall through to a second model
-call. Codex, other sessions and sessions without the Mod keep the hook, which
-asks Jev itself when `TYPESAFE_API_KEY` is set (up to 24 candidates, 5-second
-cap) and falls back to pi only when there is no key.
-
 ## When it breaks
 
 Timeout, HTTP error, bad response, missing obs.db, no skills found, request

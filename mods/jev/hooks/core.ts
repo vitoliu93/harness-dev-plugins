@@ -38,7 +38,7 @@ export function skillsFrom(input: unknown, secrets: string[] = []): SkillMeta[] 
   }
   return result;
 }
-/** The Mod keeps 8 so skills keep most of the 40 KB; the recall hook sends no skills and takes up to 24. */
+/** The Mod keeps 8 so skills keep most of the 40 KB. */
 export function historyFrom(input: unknown, currentSession: string, secrets: string[] = [], limit = 8): Candidate[] {
   if (!Array.isArray(input)) return [];
   const seen = new Set<string>();

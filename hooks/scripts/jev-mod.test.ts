@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
-import { mkdtempSync, rmSync, existsSync, statSync } from "node:fs";
+import { mkdtempSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { skillsFrom, historyFrom, recentFrom, makeRequest, decide, render, redact, type Snapshot } from "../../mods/jev/hooks/core.ts";
@@ -58,7 +58,7 @@ describe("Jev shaping",()=>{
   const c=makeRequest({prompt:"中".repeat(3000),recent:[],skills:skills(85,"中".repeat(200)),history},"jev-test");
   expect(size(c.body)).toBeLessThanOrEqual(40000);expect(c.body.length).toBeLessThan(size(c.body));expect(c.snapshot.skills.length).toBeGreaterThan(30);
   expect(historyFrom(Array.from({length:30},(_,i)=>({...row,session_id:`history-${i}`})),"none")).toHaveLength(8);
-  // Recall hook: 24 candidates at historyFrom's own caps, no skills, longest prompt — trims precedents last-first instead of throwing.
+  // 24 candidates at historyFrom's own caps, no skills, longest prompt — trims precedents last-first instead of throwing.
   const recall=historyFrom(Array.from({length:30},(_,i)=>({...row,session_id:`history-${i}`,summary:"中".repeat(300),conclusion:"中".repeat(300)})),"none",[],24);
   expect(recall).toHaveLength(24);
   const r=makeRequest({prompt:"中".repeat(3000),recent:[],skills:[],history:recall},"jev-test");
@@ -109,7 +109,7 @@ describe("read-only skill scan",()=>{
  });
 });
 
-describe("read-only history adapter and legacy compatibility",()=>{
+describe("read-only history adapter",()=>{
  test("restricts project, age, current session; folds worktrees; bounds output without writes",()=>{
   const dir=mkdtempSync(join(tmpdir(),"jev-history-test-"));const path=join(dir,"obs.db");
   try{
@@ -121,17 +121,6 @@ describe("read-only history adapter and legacy compatibility",()=>{
    const result=candidates(path,"/demo/.claude/worktrees/task","retry","current-session");
    expect(result.map(x=>x.session_id)).toEqual(["matching-session"]);expect(result[0]!.summary.length).toBe(200);expect(result[0]!.conclusion.length).toBe(240);
    expect(statSync(path).mtimeMs).toBe(before);expect(candidates(join(dir,"missing.db"),"/demo","retry","s")).toEqual([]);
-  }finally{rmSync(dir,{recursive:true,force:true});}
- });
- test("matching ownership skips legacy, absent/different ownership retains original behavior",async()=>{
-  const dir=mkdtempSync(join(tmpdir(),"jev-legacy-test-"));
-  try{
-   for(const marker of ["current-session","other-session",""]){
-    const root=join(dir,marker||"unset");
-    const child=Bun.spawn(["bun",join(import.meta.dir,"recall-precedent.ts")],{env:{...process.env,CCOBS_DIR:root,DEVKIT_JEV_RECALL_SESSION:marker},stdin:new Blob([JSON.stringify({session_id:"current-session",cwd:"/demo",prompt:"A long enough synthetic request for legacy recall"})]),stdout:"pipe",stderr:"pipe"});
-    const timer=setTimeout(()=>child.kill(),3000);
-    try{expect(await child.exited).toBe(0);expect(await new Response(child.stdout).text()).toBe("");expect(existsSync(join(root,"recall-fired","current-session"))).toBe(marker!=="current-session");}finally{clearTimeout(timer);}
-   }
   }finally{rmSync(dir,{recursive:true,force:true});}
  });
 });

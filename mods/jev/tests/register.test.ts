@@ -18,24 +18,24 @@ function fixture(on:On, options:{key?:string,skills?:unknown,rows?:unknown,answe
  on("process.run",($,e)=>{processes.push(e);const scan=String(e.argv[1]).endsWith("scan-skills.ts");return {value:{exitCode:0,stdout:JSON.stringify(scan?options.skills??skills:options.rows??rows),stderr:""}};});
  on("ui.log",($,e)=>{logs.push(e.text);return {value:undefined};});
  on("http.fetch",async($,e)=>{sent.push(e);if(options.delay)await clock.sleep(options.delay);return {value:{ok:!options.bad,status:options.bad?401:200,headers:{},text:options.bad?secret:JSON.stringify(options.answer??answer)}};});
- on("prompt.submit",($,e)=>{seen.push({...e,legacyOwner:env.DEVKIT_JEV_RECALL_SESSION});if(options.throwNext)throw new Error("downstream-failure");return {text:e.text,context:e.context,origin:e.origin};});
+ on("prompt.submit",($,e)=>{seen.push(e);if(options.throwNext)throw new Error("downstream-failure");return {text:e.text,context:e.context,origin:e.origin};});
  return {clock,env,sent,logs,processes,seen,messages};
 }
 const prompt={text:"Plan the retry bug fix",origin:{kind:"sdk" as const},wait:false};
 const scans=(f:{processes:any[]})=>f.processes.filter(p=>String(p.argv[1]).endsWith("scan-skills.ts"));
 describe("register",()=>{
- test("a missing key never sends, injects or owns recall",async($,on)=>{
+ test("a missing key never sends or injects",async($,on)=>{
   const f=fixture(on,{key:""});
-  const result=await $.prompt.submit(prompt);expect(result.text).toBe(prompt.text);expect(result.context).toBeUndefined();expect(f.sent).toEqual([]);expect(f.processes).toEqual([]);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
+  const result=await $.prompt.submit(prompt);expect(result.text).toBe(prompt.text);expect(result.context).toBeUndefined();expect(f.sent).toEqual([]);expect(f.processes).toEqual([]);
   f.env.TYPESAFE_API_KEY=undefined; // unset, not just empty
-  await $.prompt.submit(prompt);expect(f.sent).toEqual([]);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
+  await $.prompt.submit(prompt);expect(f.sent).toEqual([]);
  });
  test("injects skills and original sources without changing the user input",async($,on)=>{
   const f=fixture(on);const result=await $.prompt.submit({...prompt,context:["existing"]});
   expect(result.text).toBe(prompt.text);expect(result.origin).toEqual(prompt.origin);expect(result.context?.[0]).toBe("existing");
   expect(result.context?.[1]).toContain('<jev-skills>\nAdvisory only. The user task may benefit from invoking these skills:\n["fiction-plan"]\n</jev-skills>');
   expect(result.context?.[1]).not.toContain("fiction-html");expect(result.context?.[1]).toContain("/fiction/transcript.jsonl");
-  expect(f.sent.length).toBe(1);expect(f.seen[0].legacyOwner).toBe("fictional-current");expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
+  expect(f.sent.length).toBe(1);
   expect(f.processes.map(p=>p.argv[0])).toEqual(["bun","bun"]);expect(scans(f)[0].init.timeoutMs).toBe(1500);
   expect(f.sent[0].url).toBe("https://api.typesafe.ai/v1/systemone");expect(f.sent[0].init.headers.Authorization).toBe(`Bearer ${secret}`);
   expect(f.sent[0].init.body).not.toContain("/fiction/");expect(f.sent[0].init.body).not.toContain(secret);
@@ -58,21 +58,19 @@ describe("register",()=>{
   await $.prompt.submit({...prompt,text:"/help"});await $.prompt.submit({...prompt,text:"! pwd"});
   expect(f.sent).toEqual([]);expect(f.processes).toEqual([]);expect(f.seen.length).toBe(3);
  });
- test("timeout releases the prompt once, ignores late response and owns legacy recall",async($,on)=>{
+ test("timeout releases the prompt once, ignores late response",async($,on)=>{
   const f=fixture(on,{delay:6000});const pending=$.prompt.submit(prompt);await f.clock.settle();
   expect(f.sent.length).toBe(1);expect(f.seen.length).toBe(0);
   await f.clock.advance(3001);const result=await pending;
-  expect(result.context).toBeUndefined();expect(f.seen.length).toBe(1);expect(f.seen[0].legacyOwner).toBe("fictional-current");expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
+  expect(result.context).toBeUndefined();expect(f.seen.length).toBe(1);
   await f.clock.advance(4000);expect(f.seen.length).toBe(1);expect(f.logs.length).toBe(1);expect(f.logs[0]).toContain("timed out");
  });
  test("provider failure passes input and never logs its body or key",async($,on)=>{
   const f=fixture(on,{bad:true});const result=await $.prompt.submit(prompt);
   expect(result.context).toBeUndefined();expect(f.seen.length).toBe(1);expect(f.logs.join(" ")).not.toContain(secret);
  });
- test("no candidates needs no network and removing the key restores legacy ownership",async($,on)=>{
+ test("no candidates needs no network",async($,on)=>{
   const f=fixture(on,{skills:[],rows:[]});const result=await $.prompt.submit(prompt);expect(f.sent).toEqual([]);expect(result.context).toBeUndefined();
-  expect(f.seen[0].legacyOwner).toBe("fictional-current");expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
-  f.env.TYPESAFE_API_KEY="";await $.prompt.submit(prompt);expect(f.env.DEVKIT_JEV_RECALL_SESSION).toBeUndefined();
  });
  test("nothing above threshold injects nothing",async($,on)=>{
   const f=fixture(on,{skills:[skills[2]],rows:[],answer:{answers:{s0:{type:"noul",noul:0.74}}}});const result=await $.prompt.submit(prompt);

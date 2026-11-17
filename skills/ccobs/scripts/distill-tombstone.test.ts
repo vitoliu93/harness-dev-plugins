@@ -33,7 +33,7 @@ test("tombstone stays out of recall, rollup and the SOP roll-up", () => {
   // whether or not the tombstone was ever written, which proves nothing.
   expect(one(`SELECT session_id FROM observations WHERE distill_model = '${TOMB_MODEL}'`)).toEqual(["gone"]);
 
-  // recall-precedent.ts
+  // precedent lookup (mods/jev recall-candidates.ts)
   expect(one(`SELECT session_id FROM observations
               WHERE summary IS NOT NULL AND summary != ''`)).toEqual(["real"]);
   // rollup.ts

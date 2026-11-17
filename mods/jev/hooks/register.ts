@@ -6,33 +6,18 @@ const SKILL_CACHE_MS = 300_000;
 
 export function register(on: On, options: PluginOptions): void {
   const skillCache = new Map<string, { at: number; rows: unknown }>();
-  // Serialize overlapping submissions' marker updates; never leave an ownership
-  // token behind after downstream classic hooks finish (including hot unload).
-  let owners = 0;
-  let markerUpdate: Promise<void> = Promise.resolve();
-  const updateMarker = (operation: () => Promise<void>) => {
-    markerUpdate = markerUpdate.catch(() => {}).then(operation);
-    return markerUpdate;
-  };
   on("prompt.submit", async ($, e, next) => {
     // Notifications and plugin-generated prompts must never start another routing loop.
     if (!["composer", "bridge", "sdk"].includes(e.origin?.kind) || !e.text.trim() || /^[!/]/.test(e.text.trim())) return next(e);
     let extra: string | undefined;
-    let ownSession: string | undefined;
     let timer: Timer | undefined;
     let expired = false;
     let abort: (() => void) | undefined;
     try {
       const session = await $.session.id();
-      // The key is the only switch: no key, no Jev, and the session must not stay
-      // owned by a Mod that cannot work — the legacy recall has to take over again.
+      // The key is the only switch: no key, no Jev.
       const key = String(options.apiKey || await $.env.get("TYPESAFE_API_KEY") || "");
-      if (!key) {
-        if (!owners && await $.env.get("DEVKIT_JEV_RECALL_SESSION") === session) await $.env.set("DEVKIT_JEV_RECALL_SESSION", undefined);
-      } else {
-        // This authenticated Mod owns recall for this session, including failure:
-        // no second 12-second legacy model call after a Jev timeout. Child sessions have other IDs.
-        ownSession = session;
+      if (key) {
         const timeoutMs = Math.min(8000, Math.max(200, Number(options.timeoutMs) || 3000));
         const deadline = new Promise<null>(resolve => {
           abort = () => { expired = true; resolve(null); };
@@ -87,20 +72,6 @@ export function register(on: On, options: PluginOptions): void {
       if (abort) next.signal.removeEventListener("abort", abort);
     }
     // Call next exactly once, outside the catch: a downstream failure must never replay the prompt.
-    let claimed = false;
-    if (ownSession) {
-      await updateMarker(async () => {
-        await $.env.set("DEVKIT_JEV_RECALL_SESSION", ownSession);
-        owners++;
-        claimed = true;
-      }).catch(() => {});
-    }
-    try {
-      return await next(extra ? { ...e, context: [...(e.context ?? []), extra] } : e);
-    } finally {
-      if (claimed) await updateMarker(async () => {
-        if (--owners === 0) await $.env.set("DEVKIT_JEV_RECALL_SESSION", undefined);
-      }).catch(() => {});
-    }
+    return await next(extra ? { ...e, context: [...(e.context ?? []), extra] } : e);
   });
 }

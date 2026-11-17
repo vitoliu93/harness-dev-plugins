@@ -71,7 +71,7 @@ Delegation now goes through the
 `hooks/hooks.json` registers:
 - PreToolUse: `worktree-guard.sh`, `skill-atlas-guard.sh`, `skill-path-fallback.sh`
 - SessionStart: `session-replay.ts`, `plan-anchor.ts`
-- UserPromptSubmit: `recall-precedent.ts`, `understand.ts`
+- UserPromptSubmit: `understand.ts`
 - PostToolUse: `security-warning-relay.ts`, `plan-split.ts`
 - Stop: `learn-capture.ts`, ccobs `obs-enqueue.ts`
 - PostCompact: `compact-audit.ts`
@@ -102,9 +102,7 @@ remove the key or uninstall. Without a key, or on any failure, the
 prompt goes through unchanged. Only the current prompt, recent messages (at
 most 25,000 characters), skill names with descriptions and ccobs summaries are
 sent, redacted and size-bounded; tool output and paths are not. Each prompt waits at most `timeoutMs` (default 3000, capped at 8000).
-While it owns a session's recall, `recall-precedent.ts` stays quiet. Codex and
-sessions without the Mod keep that hook, which also picks through Jev when the
-key is set and through pi otherwise. Manual: `mods/jev/README.md`.
+Manual: `mods/jev/README.md`.
 
 ## Layout
 
