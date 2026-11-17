@@ -44,5 +44,6 @@ budget  : <over 700 | all within>
 callsite: <orphans/⚠ | wired>
 xref    : <stale names | clean>
 usage   : <top/zero | post-change zero | obs.db absent>
+inject  : <hooks under 10% followed | all kept>
 proposed: <actions → debrief Move 3>
 ```

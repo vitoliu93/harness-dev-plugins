@@ -76,6 +76,9 @@ Delegation now goes through the
 - Stop: `learn-capture.ts`, ccobs `obs-enqueue.ts`
 - PostCompact: `compact-audit.ts`
 
+Hooks that inject text are kept only while `bun hooks/scripts/inject-evidence.ts`
+shows sessions following them.
+
 Restart after hook edits.
 
 ## Optional Mod: `mods/jev`

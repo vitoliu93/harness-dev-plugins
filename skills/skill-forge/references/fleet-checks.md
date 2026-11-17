@@ -141,3 +141,13 @@ Zero-use after description change ≠ death. Triage: scene absent / scene presen
 Explicit-only skills are naturally low frequency.
 
 External channels may resurrect deleted skill names — check obs.db before retiring.
+
+## 10. Injection hooks
+
+```bash
+SKILL_FORGE_DIR="<absolute path of the directory containing the loaded skill-forge/SKILL.md>";
+bun "$SKILL_FORGE_DIR/../../hooks/scripts/inject-evidence.ts" --days 30
+```
+
+Gate: a `remove` row means the hook's text was followed in under 10% of the
+sessions it fired in; archive the hook. A `thin` row waits for the next window.

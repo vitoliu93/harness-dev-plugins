@@ -104,6 +104,9 @@ test("plan-anchor", async () => {
     expect(await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp })).toBe(""); // no mention → silent
     writeFileSync(tp, JSON.stringify({ type: "user", message: { content: "worktrees/advanced-plan-2026-07-25-demo abc123 [advanced-plan-2026-07-25-demo]" } }) + "\n");
     expect(await run("plan-anchor.ts", { source: "compact", cwd: d, transcript_path: tp })).toBe(""); // a branch name that contains the slug is not a mention
+    writeFileSync(join(plan, "goal.md"), "# Goal\n\n## Intent\nno anchor sections here\n");
+    writeFileSync(join(other, "goal.md"), "# Goal\n");
+    expect(await run("plan-anchor.ts", { source: "compact", cwd: d })).toBe(""); // an empty wrapper is noise
   } finally {
     rmSync(d, { recursive: true, force: true });
   }

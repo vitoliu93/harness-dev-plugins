@@ -111,24 +111,25 @@ function run(): void {
   const goals = mentionedIn(payload.transcript_path, findGoals(cwd)).slice(0, MAX_PLANS);
   if (!goals.length) return;
 
+  const blocks: string[] = [];
+  for (const g of goals) {
+    // Python slices by code points, not UTF-16 units
+    const body = [...sectionsOf(readFileSync(g, "utf-8"))].slice(0, MAX_CHARS).join("");
+    if (!body) continue;
+    const parent = path.posix.dirname(g);
+    const proto = path.posix.join(parent, "prototype.html");
+    blocks.push(`\n### ${path.posix.basename(parent)} (${g})`, body);
+    if (isFile(proto)) blocks.push(`\n**目标原型(已批准的验收参照物)**: ${proto}`);
+  }
+  if (!blocks.length) return; // a goal.md with none of the anchor sections has nothing to replay
+
   print("<plan-anchor>");
   print(
     "Context was just compacted. These constraints are NOT summaries — they are " +
     "the locked plan and outrank anything the summary implies. Re-read the " +
     "reference source before the next phase if you are about to build against it.",
   );
-  for (const g of goals) {
-    // Python slices by code points, not UTF-16 units
-    const body = [...sectionsOf(readFileSync(g, "utf-8"))].slice(0, MAX_CHARS).join("");
-    if (!body) continue;
-    const parent = path.posix.dirname(g);
-    print(`\n### ${path.posix.basename(parent)} (${g})`);
-    print(body);
-    const proto = path.posix.join(parent, "prototype.html");
-    if (isFile(proto)) {
-      print(`\n**目标原型(已批准的验收参照物)**: ${proto}`);
-    }
-  }
+  for (const b of blocks) print(b);
   print("</plan-anchor>");
 }
 
