@@ -10,7 +10,7 @@
     },
     "lifecycle": {
       "weight": 0.65,
-      "phrases": ["through completion", "依赖顺序", "验收", "完成后", "关闭 herdr", "不要撞车", "handoff"]
+      "phrases": ["through completion", "to completion", "依赖顺序", "验收", "完成后", "关闭 herdr", "不要撞车", "handoff"]
     },
     "independent_review": {
       "weight": 0.65,

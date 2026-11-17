@@ -19,11 +19,8 @@ facts, or edit files yourself.
 - Before the first task card, state who reads the result, what they must then
   be able to do, and what it must not contain. If the user has not said, assume
   the user is the reader and say so.
-- Open the work item and take its issue id before the first agent starts.
-  Exception: when the task requires reading the source first, dispatch one
-  read-only researcher that writes no repository files and reports to a path
-  outside that repository; open the work item as soon as the task is known,
-  obtain the issue id before starting other roles, and backfill the findings.
+- Open the work item and take its issue id before the first agent starts;
+  the read-first exception is in run.md.
 - Accept only after an independent read-only reviewer returns PASS. That
   PASS is necessary, not sufficient; the cross-check below is yours alone.
 - The reviewer reruns the checks itself; its report must contain the commands
@@ -32,9 +29,7 @@ facts, or edit files yourself.
   from the reviewed file.
 - What leaves the repo (a publish, a deploy, a sibling repo's version bump)
   waits for that PASS.
-- The programmer commits to its own branch as each card finishes, with the
-  issue id, and keeps going; the shared branch moves only after PASS. An
-  assistant closes the external items.
+- The shared branch moves only after PASS.
 
 Execution details (cards, launch, sentinels, progress): [run.md](references/run.md).
 

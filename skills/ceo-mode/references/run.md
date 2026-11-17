@@ -6,6 +6,12 @@ Execution mechanics for loading teams, authoring cards, launching agents, sentin
   for routes and launch.
 - Use `orchestrate`'s default Herdr transport unless the user chooses another
   transport.
+- When the task requires reading the source first, dispatch one read-only
+  researcher that writes no repository files and reports to a path outside that
+  repository; open the work item as soon as the task is known, obtain the issue
+  id before starting other roles, and backfill the findings.
+- The programmer commits to its own branch as each card finishes, with the
+  issue id, and keeps going. An assistant closes the external items.
 - Send a researcher for facts before choosing an approach. A plan item that
   fails review twice has a fact gap, not a wording gap: stop redrafting and send
   one narrow fact card (which processes and versions coexist, who shares the store).

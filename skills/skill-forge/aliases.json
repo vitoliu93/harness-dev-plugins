@@ -19,6 +19,7 @@
     "kox-deploy-k8s": "kox-agent-plugins:kox-deploy-k8s",
     "debrief": "dev-kit:debrief",
     "recall": "dev-kit:recall",
+    "skill-review": "skill-forge",
     "dispatch-vendors": "use-agents"
   },
   "namespace_folds": {

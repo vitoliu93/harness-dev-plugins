@@ -29,52 +29,28 @@ launch until outputs, writes, dependencies, and checks are clear.
 ## Launch through use-agents
 
 Load `use-agents` for local routes and carrier commands. In Herdr, create one
-tab per role instance and keep `{role, agent_name, tab_id, route_id}`. Use
-`--no-focus` so the user's tab stays in place.
+tab per role instance and keep `{role, agent_name, tab_id, route_id}`.
 
 Launch each role on the team's default agents in the listed order, not on a
 subagent you pick yourself: each listed agent already has its tools and MCP.
-Read quota first; use `fallback` only when all `normal` routes are unavailable.
 
 ## Coordinate
 
 - Start independent roles in parallel; serialize declared dependencies.
 - Agents do not coordinate with each other. The host passes outputs between them.
 - Whoever made a change does not check it. The checking role reruns the checks
-  itself and does not accept the maker's report as evidence, and builds its own
-  fixture: a maker's rig can disable the very thing it claims to prove — an env
-  override that also starves a dependency, a probe that samples only the hit.
-- Runtime-changing delivery always gets a reviewer for correctness, project fit
-  and simplification, and algorithm and performance. Blocking findings cite
-  exact code and evidence; no PASS, no delivery.
-- Review once per repository on the integrated diff, not once per work package:
-  makers commit to their own branches and keep going. Reverse injection per item
-  is for fixes to data loss, concurrency, and permission; the rest gets a diff read.
-- Review roles run at effort medium or higher on any agent; pass the level
-  for the run when the alias default is lower or empty.
-- Freeze reviewed targets during review: the reviewed directory accepts no
-  changes once review starts; to change it, stop review or await its report,
-  record the new commit or diff summary, and re-review. Review cards state the
-  baseline (commit, or use-agents `scripts/fingerprint.sh` for uncommitted work).
-- Any diff after a PASS voids it, the host's own edits included: a one-line
-  fix, a rebase conflict, a reviewer's suggested change. Push only after that
-  diff passes review; runtime code has no size exemption. A diff that touches
-  only tests or a lockfile: the host reads it, reruns the full suite, and names
-  it in the report as not independently reviewed. Non-blocking findings go to
-  the next phase's card by default instead of a fix-and-re-review loop.
+  itself on its own fixture and does not accept the maker's report as evidence.
+- Runtime-changing delivery always gets a reviewer. No PASS, no delivery.
+- Any diff after a PASS voids it, the host's own edits included.
 - Launch and wait with use-agents `scripts/launch-agent.sh` and
-  `scripts/wait-result.sh`, never a hand-written marker loop: the script sees a
-  stuck or dead agent, the loop waits blind. Resend a prompt only when the
-  agent's status shows it was not received, never because the pane looks quiet.
-- Before a card relies on a state (a todo still reproduces, a failure can be
-  produced, a deployed response shape), a read-only preflight proves it. An
-  unreachable state comes back as NEED-DECISION, not as a long wait or a fix.
+  `scripts/wait-result.sh`, never a hand-written marker loop.
+- A read-only preflight proves any state a card relies on.
 - The host runs each completion check and the final integrated check.
-- Quota failure: keep the tab and partial output, then choose another available route.
 - An action that a permission prompt, hook or classifier blocked goes back to
   the user with the block's own text. Do not retry it through a new agent, and
   write "the user approved" on a card only when the user said so.
 
+Review rules: [review.md](references/review.md).
 Full lifecycle: [lifecycle.md](references/lifecycle.md).
 
 ## Close

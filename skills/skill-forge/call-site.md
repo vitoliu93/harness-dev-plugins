@@ -9,12 +9,11 @@
 |---|---|---|---|
 | advanced-plan | sop | ship(kox) 计划阶段 · "写计划/plan" | ①③ |
 | debrief | meta | ship(kox) finalize · "收盘/复盘/debrief" | ①③ |
-| skill-review | meta | skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ②③ |
-| ccobs | meta | "观测报告/usage report" · debrief/skill-review 取使用率 | ③ |
+| ccobs | meta | "观测报告/usage report" · debrief/skill-forge 取使用率 | ③ |
 | use-agents | sop | "启动 agent/模型渠道/配置在哪" · orchestrate 下游 | ①③ |
 | orchestrate | sop | "编排角色/fan out/advisor+programmer+audit/独立复核" · 模型主动(准备多角色协作或运行行为改动验收前) | ①③ |
 | grill-me | atom | advanced-plan new · ship Stage 2 · "grill me/盘问/blindspot" | ①③ |
-| skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" | ①③ |
+| skill-forge | meta | debrief 候选毕业 · "铸造/建 skill" · skill-atlas-guard(commit 碰 skills/) · "skill 体检/review" | ①②③ |
 | teach-me | atom | "teach me/教我/讲讲 <topic>" · 看文档卡在某概念 | ③ |
 | use-html | atom | 看懂概念/仓库/流程/文档 · 复盘/汇报 · 模型主动(图比文字讲得清时) | ①③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
@@ -31,9 +30,10 @@
 
 ## 已归档
 
-- **doc-claim-verify** — 两个月零调用;文档核验交给独立评审的任务卡
-- **skill-style-review** — 并入 skill-forge,脚本在 `skill-forge/scripts/style_review.ts`
-
-- **worktree** — 约定内联 advanced-plan;`worktree-guard` hook 仍在
-- **resume-learning** · **cto-audit** · **visual-evidence** · **recall** — 连续三个月零调用;先例查询由 `recall-precedent` hook 自动做
-- **take-over** · **rate-limit-watcher** — 只在终端加 Herdr 的无人值守流程里用;主力转到桌面端后一个月不到两次调用
+- **doc-claim-verify** — 文档核验走独立评审的任务卡
+- **skill-review** — 体检走 skill-forge 的 Fleet check
+- **skill-style-review** — 语义评审走 `skill-forge/scripts/style_review.ts`
+- **worktree** — 约定在 advanced-plan;退出顺序由 `worktree-guard` hook 拦
+- **recall** — 先例查询走 `recall-precedent` hook
+- **resume-learning** · **cto-audit** · **visual-evidence** — 无替代,按需手做
+- **take-over** · **rate-limit-watcher** — 会话接续和限额恢复走客户端自带功能

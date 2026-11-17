@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 13 shared skills live under `skills/`; both hosts
+repo root is the plugin root — 12 shared skills live under `skills/`; both hosts
 can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -43,10 +43,9 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | grill-me | Round-by-round interview across a design tree until every branch is settled. |
 | use-html | One HTML page of diagrams and charts that makes a concept, repo, flow, document, retro, or report quick to grasp. |
 | context-audit | Audit always-loaded context or project docs; adopt placement rules. |
-| skill-review | Fleet health: deterministic and semantic style, overlap, staleness, trigger evals, budget, usage. |
 | ccobs | Build or query the agent observability ledger obs.db. |
 | orchestrate | Compose agent roles and coordinate their work through completion. |
-| skill-forge | Create or improve skills through deterministic and semantic style (`style_review.ts`), budget, routing, and trigger gates. |
+| skill-forge | Create or improve skills, or check the whole fleet, through deterministic and semantic style (`style_review.ts`), budget, routing, and trigger gates. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
 | self-profile | Profile the user from their own session history as one chart-first HTML page. |
 

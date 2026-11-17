@@ -30,60 +30,25 @@ sqlite3 -header ${CCOBS_DIR:-$HOME/.claude/observability}/obs.db "SELECT * FROM 
 Before reading a fresh session from the ledger, resolve the same `CCOBS_SKILL_DIR`
 and run `scripts/ingest.ts`; skip if missing.
 
-## Rules digest
+## Pipelines
 
-`scripts/rollup.ts` folds `observations.learn_candidates` into one markdown file
-per project plus `_global.md`, under `${CCOBS_DIR:-$HOME/.claude/observability}/rules/`.
-The SessionStart hook reads them with zero model calls.
+Detail for all three: [pipelines.md](references/pipelines.md).
 
-```bash
-CCOBS_SKILL_DIR="<absolute path of the directory containing this SKILL.md>";
-bun "$CCOBS_SKILL_DIR/scripts/rollup.ts" --dry-run
-```
-
-- Incremental, watermarked on `distilled_at` (never `ended_at`: distill lags and retries)
-- The model only classifies new candidates as "same as rule #n" or "new"; counts and
-  wording are done in code, so a hand-edited line is never reworded
-- Refuses to write if the digest changed while it was merging; keeps 5 backups in `rules/.bak/`
-- Rides the hourly launchd job, never the Stop hook
-- After merging it sweeps each project's `.claude/LEARNED.md`: entries dated
-  before that scope's watermark are deleted, so the inbox only holds what the
-  pipeline hasn't caught up with
-
-## Todo ledger
-
-`scripts/todo.ts` keeps problems found but not handled (`todos` in obs.db).
-Agents add with `add --title --why --evidence`; distill files `todo_candidates`
-and closes items a session resolved (evidence required); `scripts/todo-review.ts`
-runs daily at the end of the launchd chain: merges items one change fixes,
-dismisses steps only the user can do, then pushes the top 3, projects over
-`TODO_CAP` open items, stale items and automatic closes to Feishu
-(`${CCOBS_DIR}/notify.json`). Only work an agent can finish alone is recorded.
-`reopen <id>` undoes a wrong close.
-
-An item needs a known repo and a live anchor (IK id, commit, or a repo file);
-`fileTodo` rejects the rest into `todo_rejects`.
-
-## Autopilot
-
-`scripts/autopilot.ts` runs nightly at 01:00 (launchd `com.vito.ccobs.autopilot`),
-a script state machine with no host agent. It turns open items into spec bundles,
-lands them on each repo's integration branch, and deploys to test. Never production
-or a Desktop release.
-
-- Config: `${CCOBS_DIR}/autopilot/config.json` (repos, model chains, limits). Run
-  `bun autopilot.ts --check-repos` after changing a repo's commands.
-- Trial run: `--force --no-land --repo <name> --ids <id>`.
-- Results: `${CCOBS_DIR}/autopilot/<date>/run.json` and receipts; the HTML report
-  goes out with `todo-review.ts`.
-- User decisions: `todo.ts decisions`, `todo.ts decide <id> <n|dismiss>`.
-- Roles run in `$AUTOPILOT_WT_ROOT/<date>/`. Claude roles run headless, because
-  each new worktree stops an interactive claude at the trust dialog; pi roles run
-  in Herdr. launchd PATH comes from `install.sh`.
+- **Rules digest** — `scripts/rollup.ts` folds distilled rule candidates into
+  one markdown digest per project under `rules/`; the SessionStart hook reads
+  them with zero model calls. Preview with `--dry-run`. It rides the hourly
+  launchd job, never the Stop hook.
+- **Todo ledger** — `scripts/todo.ts` keeps problems found but not handled.
+  Record only work an agent can finish alone, with a known repo and a live
+  anchor (IK id, commit, or a repo file). `reopen <id>` undoes a wrong close.
+- **Autopilot** — `scripts/autopilot.ts` runs nightly, lands open items on each
+  repo's integration branch and deploys to test. Never production or a Desktop
+  release. User decisions: `todo.ts decisions`, `todo.ts decide <id> <n|dismiss>`.
 
 ## Read on demand
 
 - [data-model.md](references/data-model.md) — source/model, eight adapters
 - [operations.md](references/operations.md) — install, ingest flags, layout
+- [pipelines.md](references/pipelines.md) — rules digest, todo ledger, autopilot
 - [queries.md](references/queries.md) — views, Cursor SQL
 - [data-quality.md](references/data-quality.md) — filters, new source, wiring

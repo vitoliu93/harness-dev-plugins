@@ -6,10 +6,14 @@
 2. Pick the fewest roles.
 3. Write role cards and dependency order.
 4. Load `use-agents`; read routes and quota state.
+5. Before a card relies on a state (a todo still reproduces, a failure can be
+   produced, a deployed response shape), a read-only preflight proves it. An
+   unreachable state comes back as NEED-DECISION, not as a long wait or a fix.
 
 ## 2. Start
 
 - Create one Herdr tab per role instance.
+- Use `--no-focus` so the user's tab stays in place.
 - Name agents `<run>-<role>` with a short unique run prefix.
 - Record the returned agent name, tab ID, pane ID, and route ID.
 - Keep all created tabs open until the full run finishes.
@@ -20,6 +24,9 @@
 - When a dependency finishes, the host checks its output and passes the exact
   artifact to the next role.
 - Agents do not talk to each other directly.
+- `wait-result.sh` sees a stuck or dead agent; a hand-written loop waits blind.
+  Resend a prompt only when the agent's status shows it was not received, never
+  because the pane looks quiet.
 - Once a sentinel watches a role's result file, do not poll that role by hand;
   the sentinel wakes the host. Hand-poll at most once when the host's own line is idle.
 - Send one clear correction list when a role misses its card. Repeated failure

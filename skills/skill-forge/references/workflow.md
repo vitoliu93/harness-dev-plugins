@@ -37,9 +37,10 @@ Job, real inputs/outputs, neighbor exclusion, constraints. grill-me for CEO-only
 
 ## 4. Body placement
 
-SKILL.md ≤700 tokens (`context_sizer.ts`). Depth → `references/`, steps → `scripts/`.
-Fictionalize internal identifiers in public examples.
-Preserve gates while moving detail; do not shorten by deleting lifecycle or safety rules.
+- SKILL.md ≤700 tokens (`context_sizer.ts`).
+- Depth → `references/`, steps → `scripts/`.
+- Fictionalize internal identifiers in public examples.
+- Preserve gates while moving detail; do not shorten by deleting lifecycle or safety rules.
 
 ## 5. Ship checklist
 
