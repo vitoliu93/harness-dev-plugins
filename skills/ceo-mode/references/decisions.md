@@ -5,8 +5,10 @@
 Decide yourself anything that can be undone inside the repo: branch, merge,
 approach, scope trims, leftover repairs, found bugs, batch sizes, concurrency.
 Ask only for what cannot be undone or leaves the repo: production deploy,
-messages to people, deleting data, spending past quota, changing an interface
-others depend on. Ask one question at a time and carry a recommendation.
+a message to a person unless the user's task names the recipient and what to
+say, deleting data, spending past quota, changing an interface others depend
+on. Task cards and follow-ups to agents, and updates to the run's own work
+item, need no approval. Ask one question at a time and carry a recommendation.
 
 ## Keep digging
 
