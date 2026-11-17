@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 18 shared skills live under `skills/`; both hosts
+repo root is the plugin root — 19 shared skills live under `skills/`; both hosts
 can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -52,6 +52,7 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | cto-audit | CTO-lens audit of architecture, domain model, and harness rules. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
 | visual-evidence | DOM-fact evidence pack for UI / canvas behavior (PASS/FAIL). |
+| self-profile | Profile the user from their own session history as one chart-first HTML page. |
 | rate-limit-watcher | Watch Herdr agents for a rate-limit wall; wake them after reset or hand the task over. |
 
 ### Learning

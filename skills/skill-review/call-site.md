@@ -24,6 +24,7 @@
 | use-html | atom | 看懂概念/仓库/流程/文档 · 复盘/汇报 · 模型主动(图比文字讲得清时) | ①③ |
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | visual-evidence | sop | orchestrate UI-facing 验证 lane · "UI 验收/界面取证" | ①③ |
+| self-profile | sop | /self-profile · 定时自我复盘(月度) | ②③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
 
 新增/改名原子 → 本表补一行。填不出 call site → 别 ship 或显式豁免低频按需。

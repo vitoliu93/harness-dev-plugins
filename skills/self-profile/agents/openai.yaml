@@ -1,0 +1,5 @@
+interface:
+  display_name: Self Profile
+  short_description: Profile the user from their session history as one chart-first page
+policy:
+  allow_implicit_invocation: false

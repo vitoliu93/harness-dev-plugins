@@ -1,6 +1,6 @@
 {
   "name": "dev-kit-jev",
-  "version": "2.73.12",
+  "version": "2.74.0",
   "description": "Optional Claude Mod: contextual skill recommendations and historical references through Jev.",
   "author": {
     "name": "vito"
