@@ -41,7 +41,8 @@ subagent you pick yourself: each listed agent already has its tools and MCP.
 - Whoever made a change does not check it. The checking role reruns the checks
   itself on its own fixture and does not accept the maker's report as evidence.
 - Runtime-changing delivery always gets a reviewer. No PASS, no delivery.
-- Any diff after a PASS voids it, the host's own edits included.
+- PASS invalidation is tiered (host edits included) and re-review is capped at
+  2 rounds per integrated diff; see [review.md](references/review.md).
 - Launch and wait with use-agents `scripts/launch-agent.sh` and
   `scripts/wait-result.sh`, never a hand-written marker loop.
 - A read-only preflight proves any state a card relies on.
