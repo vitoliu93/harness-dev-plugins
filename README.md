@@ -1,7 +1,7 @@
 # dev-kit
 
 Vito's **atom library** for Claude Code and Codex, packaged as one plugin. The
-repo root is the plugin root — 12 shared skills live under `skills/`; both hosts
+repo root is the plugin root — 14 shared skills live under `skills/`; both hosts
 can discover hooks under `hooks/`. Retired skills and subagents live under `archive/`.
 North star: `docs/north-star.md`.
 
@@ -47,6 +47,8 @@ Restart the session. Skills load as `dev-kit:<skill>` (for example,
 | orchestrate | Compose agent roles and coordinate their work through completion. |
 | skill-forge | Create or improve skills, or check the whole fleet, through deterministic and semantic style (`style_review.ts`), budget, routing, and trigger gates. |
 | ceo-mode | Hold the CEO seat: keep the goal, hand work to agents, report the outcome. |
+| chief-of-staff | Supervise running coding agents, verify primary evidence, and clear external blockers (`/chief-of-staff`). |
+| in-your-own-words | Restate in your own words what the user's goals and problem are (`/in-your-own-words`). |
 | self-profile | Profile the user from their own session history as one chart-first HTML page. |
 
 ### Learning
@@ -109,7 +111,7 @@ Manual: `mods/jev/README.md`.
 ```
 .claude-plugin/   # plugin.json + marketplace.json
 .codex-plugin/    # Codex plugin.json
-skills/           # 18 active skills
+skills/           # 14 active skills
 hooks/            # shared hook registration + scripts
 mods/jev/         # optional Claude-only Mod (marketplace entry `dev-kit-jev`)
 archive/          # retired skills + subagents (not auto-discovered)
