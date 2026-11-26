@@ -13,28 +13,29 @@ bash "$USE_AGENTS_SKILL_DIR/scripts/wait-result.sh" <agent> "${CCOBS_DIR:-$HOME/
 - Run it as a background task that wakes the host on exit (`run_in_background`
   in Claude Code). If the host has no waking background task, tell the user and
   check by hand at each turn; do not sleep.
-- The result path is never written. Exit 2 = stuck or interrupted, 3 = idle,
-  4 = interval elapsed: check stakeholder channels, then re-arm.
-- After exit 3 the agent is waiting on someone. Re-arm with
+- The result path is never written. On exit 2 (stuck or interrupted): inspect
+  and steer before re-arming. On exit 4 (interval elapsed): check stakeholder
+  channels, then re-arm. On exit 3 (idle, waiting on someone): check channels,
+  then re-arm with
   `herdr agent wait <agent> --until working --until blocked --timeout <channel-interval-ms>`
-  instead; `wait-result.sh` would exit 3 again within three polls (~120s).
+  instead (`wait-result.sh` would exit 3 again within ~120s).
 - One sentinel per agent. Stop the old one through the client's task-stop
   before re-arming; the exit notice of a sentinel you stopped is not a signal.
 - Channel read: only messages after the ledger's last-read id, and skip your
   own sender id.
-- Screen text is not evidence of output; verify commits and files.
 
 ## Steer
 
 1. `herdr agent get <agent>` + `herdr agent read <agent> --lines 20`: check
-   whether a long foreground command is running (it will not read queued
-   prompts while running).
+   whether a long foreground command is running (queued prompts will not be
+   read until it ends — either wait for it or interrupt in step 2).
 2. Stop the sentinel first (it reports an interrupt as stuck). Interrupt only a
    working agent: `herdr agent send-keys <agent> esc`, then read until the
    screen shows the interrupt or an idle prompt.
-3. Send the steer via `herdr agent prompt <agent> '<steer>'` (when asking it to
-   converge, include "do not split or spawn subagents" so user-facing hooks do
-   not fan it out). Then `herdr agent read <agent> --lines 12`: confirm the
-   agent is acting on it; only send `herdr agent send-keys <agent> Enter` if
-   the text is still sitting unsubmitted in the input box (`❯ <steer>`).
-4. Re-arm the sentinel.
+3. Send the steer via `herdr agent prompt <agent> '<steer>'`. When asking it to
+   converge, add `"do not split or spawn subagents"` to prevent hook-driven
+   fan-out.
+4. Verify with `herdr agent read <agent> --lines 12` that the agent is acting
+   on the steer; send `herdr agent send-keys <agent> Enter` only if the text is
+   still sitting unsubmitted in the input box.
+5. Re-arm the sentinel.

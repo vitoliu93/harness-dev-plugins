@@ -1,5 +1,5 @@
 interface:
   display_name: Chief of Staff
-  short_description: Supervise running coding agents, verify live evidence, and clear external blockers
+  short_description: Supervise running coding agents, verify primary evidence, and clear external blockers
 policy:
   allow_implicit_invocation: false
