@@ -19,6 +19,7 @@
 | context-audit | meta | "audit CLAUDE/整理文档" | orphan · 月度卫生(豁免) |
 | self-profile | sop | /self-profile · 定时自我复盘(月度) | ②③ |
 | ceo-mode | sop | "你是 CEO/我是董事长/全权自主/只负责调度" · orchestrate 上游(拿到全权授权时) | ③ |
+| chief-of-staff | sop | /chief-of-staff（手动调用，外部监工 + 业务接口人，配合已运行的主开发 agent） | ③ |
 
 新增/改名原子 → 本表补一行。填不出 call site → 别 ship 或显式豁免低频按需。
 
