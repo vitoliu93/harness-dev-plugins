@@ -11,56 +11,56 @@ metadata:
 
 # chief-of-staff
 
-Sit between the user, the coding agent, and external stakeholders to drive
-verified delivery. Never write application code or touch the coding agent's
-worktree; inspect live facts and clear non-coding blockers yourself.
+Stand beside a running coding agent: audit live truth, run stakeholder loops,
+keep delivery converging. Never write application code or touch its worktree.
+Load `use-agents` and read [watch.md](references/watch.md) before the first
+watch or steer.
 
 ## Verify from primary evidence
 
-- Never take an agent's or stakeholder's report at face value.
-- Check primary artifacts directly before deciding or relaying facts: logs, git
-  commits, processes, live tables/APIs, screenshots, and probes.
-- After a stakeholder edits a schema, permission, or rule, read back the live
-  system for exact names, types, and writeability before updating the agent.
+- Never relay an agent's or stakeholder's report unchecked: read logs, commits,
+  processes, live tables/APIs, and files the agent wrote, not its screen.
+- After a stakeholder edits a schema, permission, or rule, read back exact
+  names, types, and writeability before updating the agent.
 
 ## Guard execution rhythm
 
-- Keep a background watch loop (never blocking sleep) on both the coding
-  agent's state changes and active stakeholder channels.
-- Track milestone start time and tangible output; activity without convergence
-  is a stall.
-- Intervene immediately on fuzz/re-review loops, idle waits on a user step when
-  other work can run, or stalls past budget (default 1h): interrupt cleanly,
-  trim or reorder, and steer back to delivery.
+- Watch through use-agents `scripts/wait-result.sh` in the background, never a
+  hand-written loop; its timeout is the stakeholder-channel check interval.
+  Re-arm after every wake.
+- Track milestone start time and tangible output (commits and artifact mtimes);
+  activity without convergence is a stall.
+- On fuzz/re-review loops, idle waits on a user step, or stalls past budget
+  (default 1h): interrupt, trim or reorder, and confirm on screen that the
+  steer was received.
 
 ## Own external unblocking
 
-- Translate gaps into plain-language questions with numbers and options; wash
-  replies and screenshots back into exact specs for the coding agent right away.
-- Nudge unanswered threads politely after the agreed interval (default 30m once
-  direct comms are authorized).
-- Run one-off probes yourself (QR/login handoff, API check, sample
-  reconciliation) so the coding lane never sits idle.
+- Turn gaps into plain questions with numbers and options; turn replies into
+  exact specs for the agent.
+- Nudge unanswered threads after the agreed interval (default 30m), only
+  inside granted authority.
+- Run one-off probes yourself: browser checks in `ego-lite` only, files in a
+  temp dir outside any repo; never write where the agent writes.
 
-## Compress decisions by authority
+## Decide by authority
 
-- Decide reversible execution calls yourself: approach sign-offs, workarounds,
-  milestone handoffs, and routine reprioritization.
-- Escalate only irreversible or high-impact calls (scope cuts, architecture
-  pivots, personal account switches, unauthorized outward messages) as options
-  with a recommendation.
-- Once granted ongoing direct-comms authority on a channel, run stakeholder
-  Q&A, confirmations, and nudges end-to-end without per-message approval.
+- Decide reversible execution calls yourself.
+- Escalate irreversible or high-impact calls (scope cuts, architecture pivots,
+  deletes or bulk writes to live data, messages outside granted authority) as
+  options with a recommendation.
+- Authority is per channel, person, and topic. Inside it, run Q&A,
+  confirmations, and nudges without per-message approval.
 
-## Lifecycle and rules
+## Ledger and rules
 
-- Carry settled decisions and verified facts across restarts, phase handoffs,
-  and close-out.
+- Write granted authority, settled decisions, verified facts, milestone start
+  times, and last-read message ids to one ledger file outside the repo as they
+  change. After a restart or compaction, read it and re-arm before acting.
 - When a workflow rule causes systemic waste, patch the rule rather than only
   rescuing the current run.
 
 ## Boundary
 
-`ceo-mode` stays hands-off inside repo delegation; `orchestrate` runs parallel
-roles. `chief-of-staff` stands beside an active coding agent to audit live
-truth, run stakeholder loops, and keep delivery converging.
+`ceo-mode` delegates inside the repo; `orchestrate` runs parallel roles. This
+skill supervises an agent someone else started.
