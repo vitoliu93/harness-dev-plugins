@@ -3,6 +3,21 @@
 The user names the supervised agent; operate that agent's tab only (this
 overrides `use-agents`'s default rule against touching existing tabs).
 
+## Read progress from the session file
+
+Judge progress, stalls, and loops only from the agent's session file, never
+from its screen. A screen shows the tool calls inside one long script as a
+repeating command, so a waiting agent looks stuck.
+
+- Get the session id: `herdr agent get <agent>` → `agent_session.value`.
+- Claude Code: `~/.claude/projects/<cwd with / and . as ->/<session id>.jsonl`.
+  Read the assistant text, the tool inputs, and the tool results with
+  timestamps after the last checked time.
+- Before you call it a stall, write down what changed in that period (results,
+  answers, commits, files). Only "nothing changed" is a stall.
+- Use `herdr agent read` only for screen state: whether the agent is idle,
+  interrupted, or has unsubmitted text in its input box.
+
 ## Watch
 
 ```bash
@@ -26,7 +41,8 @@ bash "$USE_AGENTS_SKILL_DIR/scripts/wait-result.sh" <agent> "${CCOBS_DIR:-$HOME/
 
 ## Steer
 
-1. `herdr agent get <agent>` + `herdr agent read <agent> --lines 20`: check
+1. Read the session file (see above) to find out what the agent is doing and
+   why. Then `herdr agent read <agent> --lines 20` only to check
    whether a long foreground command is running (queued prompts will not be
    read until it ends — either wait for it or interrupt in step 2).
 2. Stop the sentinel first (it reports an interrupt as stuck). Interrupt only a
