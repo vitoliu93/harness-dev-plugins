@@ -98,8 +98,12 @@ unsubmitted in the input box, a permission box, and `agent_status: blocked`.
 A prompt cannot reach a Codex agent stopped at a question box: dismiss it with
 `herdr agent send-keys <name> 'ctrl+]'`, then prompt. Cards say "questions go
 in the report, not a question box".
-`idle` alone is not stopped: an agent that pushed work into a background shell
-ends its turn while the screen tail still shows `N shells`; keep waiting. Text
+`idle` with `N shells` on the screen is ambiguous: the agent may have pushed work
+into a background shell, or it may own a long-lived service (dev server, desktop
+app) and be done. `wait-result.sh` asks `scripts/jev-idle.ts` (Jev reads the
+session file) and exits 3 unless Jev says the agent waits on something it started
+itself; without `TYPESAFE_API_KEY` it exits 3 after `WAIT_RESULT_SHELL_IDLE`
+(600s). On exit 3, read the session file before acting. Text
 sent through `pane send-text` is shell-parsed again — quote lines containing `=`.
 
 ## Inspect and take over

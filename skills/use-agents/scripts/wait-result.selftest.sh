@@ -202,6 +202,21 @@ echo "1 shell still running" > "$TMP_DIR/pane_text"
 run_wait agent-11d "$TMP_DIR/res10.md" DONE 1
 assert_rc 4 "11d. Idle with running background shell -> not 3, timeout 4"
 
+# 11e: idle with a background shell, judge says finished -> exit 3
+reset_stub; echo "idle" > "$TMP_DIR/agent_status"; echo "1 shell" > "$TMP_DIR/pane_text"
+WAIT_RESULT_JUDGE_AFTER=0 WAIT_RESULT_JUDGE='echo {\"verdict\":\"finished\"}' run_wait agent-11e "$TMP_DIR/res11e.md" DONE 2
+assert_rc 3 "11e. Idle with shell, judge finished -> 3"
+
+# 11f: judge says waiting_on_itself -> keeps waiting, timeout 4
+reset_stub; echo "idle" > "$TMP_DIR/agent_status"; echo "1 shell" > "$TMP_DIR/pane_text"
+WAIT_RESULT_JUDGE_AFTER=0 WAIT_RESULT_JUDGE='echo {\"verdict\":\"waiting_on_itself\"}' run_wait agent-11f "$TMP_DIR/res11f.md" DONE 1
+assert_rc 4 "11f. Idle with shell, judge waiting_on_itself -> not 3, timeout 4"
+
+# 11g: judge off -> falls back to the shell-idle cap
+reset_stub; echo "idle" > "$TMP_DIR/agent_status"; echo "1 shell" > "$TMP_DIR/pane_text"
+WAIT_RESULT_JUDGE_AFTER=0 WAIT_RESULT_SHELL_IDLE=0 WAIT_RESULT_JUDGE='echo JEV off: test' run_wait agent-11g "$TMP_DIR/res11g.md" DONE 2
+assert_rc 3 "11g. Idle with shell, judge off -> cap fallback 3"
+
 # --- 12. Marker written while agent still working ---
 # 12a: never stops -> exits 0 with WARN only after settle
 reset_stub

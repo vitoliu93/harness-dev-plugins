@@ -42,6 +42,8 @@ settle=${WAIT_RESULT_SETTLE:-600}; marker_seen=
 agent_status() { herdr agent get "$name" 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"]["agent"]["agent_status"])' 2>/dev/null; }
 
 shell_idle_limit=${WAIT_RESULT_SHELL_IDLE:-600}
+judge_after=${WAIT_RESULT_JUDGE_AFTER:-90}; judge_every=${WAIT_RESULT_JUDGE_EVERY:-300}; judged_at=; judge_off=
+script_dir=$(cd "$(dirname "$0")" && pwd)
 end=$((SECONDS+limit)); quiet=0; shell_quiet_since=; mtime_warned=0; stale_warned=0
 while [ $SECONDS -lt $end ]; do
   sleep "$interval"
@@ -103,18 +105,30 @@ while [ $SECONDS -lt $end ]; do
   echo "$tail" | grep -qE "Interrupted|Do you want to proceed|\(y/n\)|API Error: Connection lost" && { echo "STUCK: prompt/permission box/connection lost"; echo "$tail"; exit 2; }
   [ "$st" = "blocked" ] && { echo "STUCK: blocked"; echo "$tail"; exit 2; }
   # idle with a background shell still running may be working (work pushed into the shell),
-  # or may own a long-lived service (dev server, desktop app) and be finished. Count it as
-  # working, but only for shell_idle_limit seconds; then report idle so the caller reads the
-  # session file and decides. Without this cap, an agent that started a service never wakes us.
+  # or may own a long-lived service (dev server, desktop app) and be finished. Ask the judge
+  # (jev-idle.ts: Jev reads the session file) whether to wake the caller; re-ask every
+  # judge_every seconds. If the judge is off, fall back to the shell_idle_limit cap.
   if { [ "$st" = "idle" ] || [ "$st" = "done" ]; }; then
     if echo "$tail" | grep -qE '[0-9]+ shells?( still running)?'; then
       quiet=0; [ -z "$shell_quiet_since" ] && shell_quiet_since=$SECONDS
-      if [ $((SECONDS-shell_quiet_since)) -ge "$shell_idle_limit" ]; then
+      if [ "$judge_off" != 1 ] && [ $((SECONDS-shell_quiet_since)) -ge "$judge_after" ] && { [ -z "$judged_at" ] || [ $((SECONDS-judged_at)) -ge "$judge_every" ]; }; then
+        judged_at=$SECONDS
+        shells=$(echo "$tail" | grep -oE '[0-9]+ shells?' | head -1 | grep -oE '[0-9]+')
+        if [ -n "${WAIT_RESULT_JUDGE:-}" ]; then verdict=$(eval "$WAIT_RESULT_JUDGE" 2>/dev/null)
+        else verdict=$(bun "$script_dir/jev-idle.ts" --agent "$name" --shells "${shells:-1}" 2>/dev/null); fi
+        case "$verdict" in
+          *'"verdict":"waiting_on_itself"'*) : ;;
+          *'"verdict":"finished"'*|*'"verdict":"waiting_on_person"'*)
+            echo "IDLE without result (judge: $verdict)"; herdr agent read "$name" --lines 20 2>/dev/null; exit 3 ;;
+          *) echo "JEV off: ${verdict:-no output}; falling back to the ${shell_idle_limit}s cap" >&2; judge_off=1 ;;
+        esac
+      fi
+      if [ "$judge_off" = 1 ] && [ $((SECONDS-shell_quiet_since)) -ge "$shell_idle_limit" ]; then
         echo "IDLE without result (background shell still running for ${shell_idle_limit}s; read the session to decide)"
         herdr agent read "$name" --lines 20 2>/dev/null; exit 3
       fi
     else quiet=$((quiet+1)); shell_quiet_since=; fi
-  else quiet=0; shell_quiet_since=; fi
+  else quiet=0; shell_quiet_since=; judged_at=; fi
   if [ $quiet -ge 3 ]; then
     echo "IDLE without result"
     # 最常见的原因是写错了路径（多套一层目录之类）：在附近找同名文件给个提示。
