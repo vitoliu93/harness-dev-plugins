@@ -41,7 +41,8 @@ fresh_window=${WAIT_RESULT_FRESH_WINDOW:-180}
 settle=${WAIT_RESULT_SETTLE:-600}; marker_seen=
 agent_status() { herdr agent get "$name" 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin)["result"]["agent"]["agent_status"])' 2>/dev/null; }
 
-end=$((SECONDS+limit)); quiet=0; mtime_warned=0; stale_warned=0
+shell_idle_limit=${WAIT_RESULT_SHELL_IDLE:-600}
+end=$((SECONDS+limit)); quiet=0; shell_quiet_since=; mtime_warned=0; stale_warned=0
 while [ $SECONDS -lt $end ]; do
   sleep "$interval"
   if [ -f "$file" ]; then
@@ -101,8 +102,19 @@ while [ $SECONDS -lt $end ]; do
   st=$(agent_status)
   echo "$tail" | grep -qE "Interrupted|Do you want to proceed|\(y/n\)|API Error: Connection lost" && { echo "STUCK: prompt/permission box/connection lost"; echo "$tail"; exit 2; }
   [ "$st" = "blocked" ] && { echo "STUCK: blocked"; echo "$tail"; exit 2; }
-  # idle with a background shell still running is working, not stopped
-  if { [ "$st" = "idle" ] || [ "$st" = "done" ]; } && ! echo "$tail" | grep -qE '[0-9]+ shells?( still running)?'; then quiet=$((quiet+1)); else quiet=0; fi
+  # idle with a background shell still running may be working (work pushed into the shell),
+  # or may own a long-lived service (dev server, desktop app) and be finished. Count it as
+  # working, but only for shell_idle_limit seconds; then report idle so the caller reads the
+  # session file and decides. Without this cap, an agent that started a service never wakes us.
+  if { [ "$st" = "idle" ] || [ "$st" = "done" ]; }; then
+    if echo "$tail" | grep -qE '[0-9]+ shells?( still running)?'; then
+      quiet=0; [ -z "$shell_quiet_since" ] && shell_quiet_since=$SECONDS
+      if [ $((SECONDS-shell_quiet_since)) -ge "$shell_idle_limit" ]; then
+        echo "IDLE without result (background shell still running for ${shell_idle_limit}s; read the session to decide)"
+        herdr agent read "$name" --lines 20 2>/dev/null; exit 3
+      fi
+    else quiet=$((quiet+1)); shell_quiet_since=; fi
+  else quiet=0; shell_quiet_since=; fi
   if [ $quiet -ge 3 ]; then
     echo "IDLE without result"
     # 最常见的原因是写错了路径（多套一层目录之类）：在附近找同名文件给个提示。
