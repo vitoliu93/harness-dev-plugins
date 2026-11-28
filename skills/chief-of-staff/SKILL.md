@@ -29,6 +29,8 @@ watch or steer.
 
 - Watch via use-agents `scripts/wait-result.sh` in the background, never a
   hand-written loop or sleep; re-arm per [watch.md](references/watch.md).
+- Set the interval from the next expected output, and tell the user the plan
+  and the next report time before you arm the first sentinel.
 - Track milestone start time and tangible output (commits and artifact mtimes);
   activity without convergence is a stall.
 - On spin/re-review loops, idle waits on a user step when other work can run,

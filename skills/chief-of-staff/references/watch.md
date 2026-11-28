@@ -20,6 +20,16 @@ repeating command, so a waiting agent looks stuck.
 
 ## Watch
 
+Pick the interval from the task, not a fixed number: about the time until the
+next tangible output you expect (a test run, a review, a merge, a reply you are
+waiting on). Short steps get a short interval; a step that waits on a person
+gets the channel interval.
+
+Before you arm the first sentinel, tell the user in one message: what the agent
+is doing now, the next milestone you expect, the interval you chose and why,
+and when they hear from you next. Then report at each wake, even when nothing
+changed.
+
 ```bash
 USE_AGENTS_SKILL_DIR="<absolute path of the directory containing the loaded use-agents/SKILL.md>";
 bash "$USE_AGENTS_SKILL_DIR/scripts/wait-result.sh" <agent> "${CCOBS_DIR:-$HOME/.claude/observability}/chief-of-staff/never.md" NEVER <channel-interval-sec>
